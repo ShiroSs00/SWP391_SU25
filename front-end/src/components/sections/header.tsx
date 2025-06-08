@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Heart, User, LogIn } from 'lucide-react';
 import { Button } from './button.tsx';
+import Navbar from './navbar.tsx';
 
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,6 +21,8 @@ export const Header: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
+    <>
+      <Navbar />
       <header className="bg-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
@@ -130,6 +133,7 @@ export const Header: React.FC = () => {
           )}
         </div>
       </header>
+    </>
   );
 };
 
