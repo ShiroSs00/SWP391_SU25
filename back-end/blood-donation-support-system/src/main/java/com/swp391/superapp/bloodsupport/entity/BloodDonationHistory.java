@@ -18,7 +18,7 @@ public class BloodDonationHistory {
     private Profile accountId;
 
     @Column(name ="event_id")
-    private Event eventId;
+    private BloodDonationEvent leventId;
 
     @Column(name ="blood_volumn")
     private int bloodVolumn;

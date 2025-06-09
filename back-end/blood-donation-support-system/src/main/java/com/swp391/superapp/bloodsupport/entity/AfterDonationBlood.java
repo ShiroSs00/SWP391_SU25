@@ -6,8 +6,6 @@ import jakarta.persistence.*;
 public class AfterDonationBlood {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idAfterDonation;
-    @Column(name = "idHeathCheck",nullable = false)
-    private int idHeathCheck;
     @Column(name = "infectiousDiseasesChecked")
     private Boolean infectiousDiseasesChecked;
     @Column(name = "isBloodUsable")
@@ -16,16 +14,38 @@ public class AfterDonationBlood {
     private String status;
     @Column(name = "note")
     private String note;
+    @OneToOne
+    @JoinColumn(name = "AfterDonationId")
+    private AfterDonationBlood afterDonationBlood;
+    @ManyToOne()
+    @JoinColumn(name = "BloodId")
+    private Blood blood;
 
     public AfterDonationBlood() {
     }
 
-    public AfterDonationBlood(int idHeathCheck, Boolean infectiousDiseasesChecked, Boolean isBloodUsable, String status, String note) {
-        this.idHeathCheck = idHeathCheck;
+    public AfterDonationBlood( Boolean infectiousDiseasesChecked, Boolean isBloodUsable, String status, String note) {
+
         this.infectiousDiseasesChecked = infectiousDiseasesChecked;
         this.isBloodUsable = isBloodUsable;
         this.status = status;
         this.note = note;
+    }
+
+    public AfterDonationBlood getAfterDonationBlood() {
+        return afterDonationBlood;
+    }
+
+    public void setAfterDonationBlood(AfterDonationBlood afterDonationBlood) {
+        this.afterDonationBlood = afterDonationBlood;
+    }
+
+    public Blood getBlood() {
+        return blood;
+    }
+
+    public void setBlood(Blood blood) {
+        this.blood = blood;
     }
 
     public int getIdAfterDonation() {
@@ -36,13 +56,6 @@ public class AfterDonationBlood {
         this.idAfterDonation = idAfterDonation;
     }
 
-    public int getIdHeathCheck() {
-        return idHeathCheck;
-    }
-
-    public void setIdHeathCheck(int idHeathCheck) {
-        this.idHeathCheck = idHeathCheck;
-    }
 
     public Boolean getInfectiousDiseasesChecked() {
         return infectiousDiseasesChecked;
@@ -80,7 +93,6 @@ public class AfterDonationBlood {
     public String toString() {
         return "AfterDonationBlood{" +
                 "idAfterDonation=" + idAfterDonation +
-                ", idHeathCheck=" + idHeathCheck +
                 ", infectiousDiseasesChecked=" + infectiousDiseasesChecked +
                 ", isBloodUsable=" + isBloodUsable +
                 ", status='" + status + '\'' +

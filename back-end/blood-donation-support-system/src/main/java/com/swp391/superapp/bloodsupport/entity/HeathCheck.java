@@ -6,8 +6,6 @@ import jakarta.persistence.*;
 public class HeathCheck {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int heathCheckId;
-    @Column(name = "registrationId", nullable = false)
-    private String registrationId;
     @Column(name = "weight")
     private double weight;
     @Column(name = "temperate")
@@ -24,12 +22,17 @@ public class HeathCheck {
     private boolean isFitToDonate;
     @Column(name = "note")
     private String note;
+    @OneToOne
+    @JoinColumn(name = "DonationRegistrationId")
+    private DonationRegistration donationRegistration;
+    @OneToOne
+    @JoinColumn(name = "AfterDonationId")
+    private AfterDonationBlood afterDonationBlood;
 
     public HeathCheck() {
     }
 
-    public HeathCheck(String registrationId, double weight, double temperate, double bloodPressure, int pluse, double hemogobin, int volumeToTake, boolean isFitToDonate, String note) {
-        this.registrationId = registrationId;
+    public HeathCheck( double weight, double temperate, double bloodPressure, int pluse, double hemogobin, int volumeToTake, boolean isFitToDonate, String note) {
         this.weight = weight;
         this.temperate = temperate;
         this.bloodPressure = bloodPressure;
@@ -40,6 +43,22 @@ public class HeathCheck {
         this.note = note;
     }
 
+    public DonationRegistration getDonationRegistration() {
+        return donationRegistration;
+    }
+
+    public void setDonationRegistration(DonationRegistration donationRegistration) {
+        this.donationRegistration = donationRegistration;
+    }
+
+    public AfterDonationBlood getAfterDonationBlood() {
+        return afterDonationBlood;
+    }
+
+    public void setAfterDonationBlood(AfterDonationBlood afterDonationBlood) {
+        this.afterDonationBlood = afterDonationBlood;
+    }
+
     public int getHeathCheckId() {
         return heathCheckId;
     }
@@ -48,13 +67,6 @@ public class HeathCheck {
         this.heathCheckId = heathCheckId;
     }
 
-    public String getRegistrationId() {
-        return registrationId;
-    }
-
-    public void setRegistrationId(String registrationId) {
-        this.registrationId = registrationId;
-    }
 
     public double getWeight() {
         return weight;
@@ -124,7 +136,6 @@ public class HeathCheck {
     public String toString() {
         return "HeathCheck{" +
                 "heathCheckId=" + heathCheckId +
-                ", registrationId='" + registrationId + '\'' +
                 ", weight=" + weight +
                 ", temperate=" + temperate +
                 ", bloodPressure=" + bloodPressure +

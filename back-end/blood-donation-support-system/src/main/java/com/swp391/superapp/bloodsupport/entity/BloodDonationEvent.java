@@ -2,7 +2,10 @@ package com.swp391.superapp.bloodsupport.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 
 @Entity
 public class BloodDonationEvent {
@@ -24,9 +27,40 @@ public class BloodDonationEvent {
     private String location;
     @Column(name = "status")
     private String status;
+    @OneToOne
+    @JoinColumn(name = "AccountIdCreate")
+    private Account account;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "donationRegistration")
+    private List<DonationRegistration> donationRegistrations = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "account")
+    private List<BloodDonationHistory> bloodDonationHistories = new ArrayList<>();
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
+
     public BloodDonationEvent() {
     }
 
+    public List<DonationRegistration> getDonationRegistrations() {
+        return donationRegistrations;
+    }
+
+    public void setDonationRegistrations(List<DonationRegistration> donationRegistrations) {
+        this.donationRegistrations = donationRegistrations;
+    }
+
+    public List<BloodDonationHistory> getBloodDonationHistories() {
+        return bloodDonationHistories;
+    }
+
+    public void setBloodDonationHistories(List<BloodDonationHistory> bloodDonationHistories) {
+        this.bloodDonationHistories = bloodDonationHistories;
+    }
 
     public BloodDonationEvent(String nameOfEvent, Date creationDate, Date startDate, Date endDate, int expectedBloodVolume, int actualVolume, String location, String status) {
         this.nameOfEvent = nameOfEvent;
@@ -38,6 +72,8 @@ public class BloodDonationEvent {
         this.location = location;
         this.status = status;
     }
+
+
 
     public int getEventId() {
         return eventId;
@@ -115,7 +151,7 @@ public class BloodDonationEvent {
     @Override
     public String toString() {
         return "BloodDonationEvent{" +
-                "eventId='" + eventId + '\'' +
+                "eventId=" + eventId +
                 ", nameOfEvent='" + nameOfEvent + '\'' +
                 ", creationDate=" + creationDate +
                 ", startDate=" + startDate +
@@ -124,6 +160,7 @@ public class BloodDonationEvent {
                 ", actualVolume=" + actualVolume +
                 ", location='" + location + '\'' +
                 ", status='" + status + '\'' +
+                ", account=" + account +
                 '}';
     }
 }
