@@ -8,16 +8,18 @@
  */
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "account")
-public class Account {
+public class Account{
     @Id
     @Column(name = "id" )
     private String accountId;
@@ -38,8 +40,12 @@ public class Account {
     private LocalDate creationDate;
 
     @Column(name ="role")
+
+    @ManyToOne
+    @JoinColumn(name = "role")
     private Role role;
 
+    @ManyToOne
     @Column(name ="Hospital")
     private Hospital hospital;
 
@@ -48,13 +54,15 @@ public class Account {
     public Account() {
     }
 
-    public Account(String accountId, String userName, String email, String password, boolean isActive, LocalDate creationDate) {
+    public Account(String accountId, String userName, String email, String password, boolean isActive, LocalDate creationDate, Role role, Hospital hospital) {
         this.accountId = accountId;
         this.userName = userName;
         this.email = email;
         this.password = password;
         this.isActive = isActive;
         this.creationDate = creationDate;
+        this.role = role;
+        this.hospital = hospital;
     }
 
     public String getaccountId() {
@@ -103,5 +111,35 @@ public class Account {
 
     public void setCreationDate(LocalDate creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public Hospital getHospital() {
+        return hospital;
+    }
+
+    public void setHospital(Hospital hospital) {
+        this.hospital = hospital;
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "accountId='" + accountId + '\'' +
+                ", userName='" + userName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", isActive=" + isActive +
+                ", creationDate=" + creationDate +
+                ", role=" + role.getRole() +
+                ", hospital=" + hospital.getHospitalName() +
+                '}';
     }
 }

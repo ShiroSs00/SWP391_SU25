@@ -8,46 +8,43 @@
  */
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "role")
 public class Role {
 
-    @Column(name ="role_id")
-    private int roleId;
 
+    @Id
     @Column(name ="role_name")
-    private String roleName;
+    private String role;
 
     @Column(name ="description")
     private String description;
 
+    @OneToMany(mappedBy = "role")
+    private List<Account> accounts = new ArrayList<>();
+
     public Role() {
     }
 
-    public Role(int roleId, String roleName, String description) {
-        this.roleId = roleId;
-        this.roleName = roleName;
+    public Role( String role, String description) {
+
+        this.role = role;
         this.description = description;
     }
 
-    public int getRoleId() {
-        return roleId;
+
+
+    public String getRole() {
+        return role;
     }
 
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setRole(String role) {
+        this.role= role;
     }
 
     public String getDescription() {
@@ -61,9 +58,7 @@ public class Role {
     @Override
     public String toString() {
         return "Role{" +
-                "roleId=" + roleId +
-                ", roleName='" + roleName + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+                "role='" + role + '\'' +
+                ", description='" + description ;
     }
 }

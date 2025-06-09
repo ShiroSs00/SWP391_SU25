@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 
+
 @Entity
 public class BloodDonationEvent {
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,6 +28,9 @@ public class BloodDonationEvent {
     private String location;
     @Column(name = "status")
     private String status;
+
+    @OneToMany
+    private List<BloodDonationHistory> bloodDonationHistoryList = new ArrayList<>();
     @OneToOne
     @JoinColumn(name = "AccountIdCreate")
     private Account account;
@@ -46,6 +50,7 @@ public class BloodDonationEvent {
     public BloodDonationEvent() {
     }
 
+
     public List<DonationRegistration> getDonationRegistrations() {
         return donationRegistrations;
     }
@@ -61,6 +66,7 @@ public class BloodDonationEvent {
     public void setBloodDonationHistories(List<BloodDonationHistory> bloodDonationHistories) {
         this.bloodDonationHistories = bloodDonationHistories;
     }
+
 
     public BloodDonationEvent(String nameOfEvent, Date creationDate, Date startDate, Date endDate, int expectedBloodVolume, int actualVolume, String location, String status) {
         this.nameOfEvent = nameOfEvent;
