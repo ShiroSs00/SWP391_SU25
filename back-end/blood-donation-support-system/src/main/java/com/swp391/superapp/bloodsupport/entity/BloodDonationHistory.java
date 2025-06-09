@@ -15,9 +15,9 @@ public class BloodDonationHistory {
     @Column(name ="account_id")
     private Profile accountId;
 
-    @ManyToOne
-   @Column(name ="event_id")
-    private BloodDonationHistory eventId;
+    @Column(name ="event_id")
+    private BloodDonationEvent leventId;
+
 
     @Column(name ="blood_volumn")
     private int bloodVolumn;

@@ -65,11 +65,11 @@ public class Account{
         this.hospital = hospital;
     }
 
-    public String getAccountId() {
+    public String getaccountId() {
         return accountId;
     }
 
-    public void setAccountId(String accountId) {
+    public void setaccountId(String accountId) {
         this.accountId = accountId;
     }
 
