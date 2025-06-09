@@ -25,12 +25,12 @@ const RequestBloodForm: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
     // Thêm kiểm tra đăng nhập ở đây
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) {
+  //     navigate("/login");
+  //   }
+  // }, [navigate]);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Gửi dữ liệu lên server

@@ -14,6 +14,8 @@ import MapPage from "./pages/Map";
 import Blog from "./pages/blogs/blogPage";
 import Contact from "./pages/contactPage/contactPage";
 import AuthPage from "./pages/authPage";
+import Dashboard from "./pages/dashboard/dashboard";
+import StaffPage from "./pages/staffPages/staffPage";
 // Forms
 import DonorRegisterForm from "./forms/DonorRegisterForm";
 import RequestBloodForm from "./forms/RequestBloodForm";
@@ -39,6 +41,8 @@ function App() {
             <Route path="/blog" element={<Blog />} />
             <Route path="/blood-types" element={<BloodTypes />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/staff" element={<StaffPage />} />
             {/* Thêm các route khác nếu cần */}
           </Routes>
         </main>
