@@ -39,14 +39,14 @@ public class Account{
     @Column(name ="createion_date")
     private LocalDate creationDate;
 
-    @Column(name ="role")
+
 
     @ManyToOne
     @JoinColumn(name = "role")
     private Role role;
 
     @ManyToOne
-    @Column(name ="Hospital")
+    @Column(name ="hospital_name")
     private Hospital hospital;
 
 

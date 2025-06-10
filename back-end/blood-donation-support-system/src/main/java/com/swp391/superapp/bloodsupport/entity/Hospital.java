@@ -24,8 +24,7 @@ public class Hospital {
     @Column(name ="email")
     private String email;
 
-    @OneToMany(mappedBy = "hospital")
-    private List<Account> account = new ArrayList<>();
+
 
     public Hospital() {
     }
