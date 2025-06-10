@@ -2,23 +2,11 @@ package com.swp391.superapp.bloodsupport.respository;
 
 
 
+import com.swp391.superapp.bloodsupport.entity.Profile;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 
-public class ProfileService  {
+public interface ProfileService extends JpaRepository<Profile, String> {
 
-    public void addProfile(Object Profile) {
-
-    }
-
-    public void updateProfile(Object Profile) {
-
-    }
-
-    public void deleteProfile(String accountd) {
-
-    }
-
-    public List<Object> getAllProfiles() {
-        return List.of();
-    }
 }

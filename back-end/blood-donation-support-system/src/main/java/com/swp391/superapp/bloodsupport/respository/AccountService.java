@@ -1,23 +1,10 @@
 package com.swp391.superapp.bloodsupport.respository;
 
 
-public class AccountService  {
+import com.swp391.superapp.bloodsupport.entity.Account;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AccountService extends JpaRepository<Account, String> {
 
 
-    public boolean login(String username, String password) {
-        return false;
-    }
-
-
-    public void logout(String username) {
-
-    }
-
-    public Boolean activateAccount(String accountId) {
-        return null;
-    }
-
-    public Boolean registerUser(String username, String password, String email) {
-        return null;
-    }
 }

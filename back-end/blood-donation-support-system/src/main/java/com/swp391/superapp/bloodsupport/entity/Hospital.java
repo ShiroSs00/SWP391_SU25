@@ -1,9 +1,9 @@
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "hospital")
@@ -23,6 +23,8 @@ public class Hospital {
 
     @Column(name ="email")
     private String email;
+
+
 
     public Hospital() {
     }

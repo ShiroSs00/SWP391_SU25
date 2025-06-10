@@ -14,20 +14,29 @@ public class Blog {
     private Date postDate;
     @Column(name = "conponent",nullable = false)
     private String conponent;
-    @Column(name = "accountId",nullable = false,length = 10)
-    private String accountId;
     @Column(name = "tagName")
     private String tagName;
+    @ManyToOne()
+    @JoinColumn(name = "AccountId")
+    private Account account;
+
 
     public Blog() {
     }
 
-    public Blog(String content, Date postDate, String conponent, String accountId, String tagName) {
+    public Blog(String content, Date postDate, String conponent, String tagName) {
         this.content = content;
         this.postDate = postDate;
         this.conponent = conponent;
-        this.accountId = accountId;
         this.tagName = tagName;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public int getBlogId() {
@@ -62,14 +71,6 @@ public class Blog {
         this.conponent = conponent;
     }
 
-    public String getaccountId() {
-        return accountId;
-    }
-
-    public void setaccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
     public String getTagName() {
         return tagName;
     }
@@ -85,7 +86,6 @@ public class Blog {
                 ", content='" + content + '\'' +
                 ", postDate=" + postDate +
                 ", conponent='" + conponent + '\'' +
-                ", accountId='" + accountId + '\'' +
                 ", tagName='" + tagName + '\'' +
                 '}';
     }

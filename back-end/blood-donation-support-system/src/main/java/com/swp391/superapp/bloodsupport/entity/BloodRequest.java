@@ -133,7 +133,7 @@ public class BloodRequest {
         return "BloodRequest{" +
                 "idBloodRequest=" + idBloodRequest +
                 ", accountId=" + accountId.getName() +
-                ", hospitalId=" + hospitalId.getNameHospital() +
+                ", hospitalId=" + hospitalId.getHospitalName() +
                 ", requestDate=" + requestDate +
                 ", bloodCode=" + bloodCode +
                 ", urgency=" + urgency +

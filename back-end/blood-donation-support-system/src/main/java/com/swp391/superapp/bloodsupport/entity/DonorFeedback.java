@@ -3,10 +3,11 @@ package com.swp391.superapp.bloodsupport.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "FeedbackOfDonor")
 public class DonorFeedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "feedbackID")
+    @Column(name = "FeedbackID")
     private int feedbackID;
     @Column(name = "process", nullable = false)
     private int process;
@@ -18,6 +19,9 @@ public class DonorFeedback {
     private int comfortable;
     @Column(name = "description")
     private String description;
+    @OneToOne
+    @JoinColumn(name = "registrationId")
+    private DonationRegistration registration;
 
     public DonorFeedback() {
     }
@@ -28,6 +32,14 @@ public class DonorFeedback {
         this.postDonationCare = postDonationCare;
         this.comfortable = comfortable;
         this.description = description;
+    }
+
+    public DonationRegistration getRegistration() {
+        return registration;
+    }
+
+    public void setRegistration(DonationRegistration registration) {
+        this.registration = registration;
     }
 
     public int getFeedbackID() {
