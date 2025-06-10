@@ -6,8 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="blood-donation-support-system" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="blood-donation-support-system" target="24" />
+    </bytecodeTargetLevel>
   </component>
 </project>

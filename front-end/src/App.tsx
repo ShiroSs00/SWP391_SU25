@@ -15,8 +15,8 @@ import Blog from "./pages/blogs/blogPage";
 import Contact from "./pages/contactPage/contactPage";
 import AuthPage from "./pages/authPage";
 // Forms
-import DonorRegisterForm from "./forms/DonorRegisterForm";
-import RequestBloodForm from "./forms/RequestBloodForm";
+import DonorRegisterForm from "./forms/DonorRegister/DonorRegisterForm.tsx";
+import RequestBloodForm from "./forms/RequestBlood/RequestBloodForm.tsx";
 // BloodTypes
 import BloodTypes from "./pages/booldTypes/bloodTypes";
 
