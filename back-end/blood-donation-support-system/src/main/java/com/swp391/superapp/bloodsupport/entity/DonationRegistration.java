@@ -17,15 +17,15 @@ public class DonationRegistration {
     @ManyToOne
     @JoinColumn(name = "EventID")
     private BloodDonationEvent bloodDonationEvent;
-//    @OneToOne
-//    @JoinColumn(name = "ProfileIdCreate");
-//    private Profile profile;
-//    @OneToOne
-//    @JoinColumn(name = "HealthCheckId")
-//    private HeathCheck healthCheck;
-//    @OneToOne
-//    @JoinColumn(name = "DonorFeedbackId")
-//    private DonorFeedback donorFeedback;
+    @OneToOne
+    @JoinColumn(name = "ProfileIdCreate");
+    private Profile profile;
+    @OneToOne
+    @JoinColumn(name = "HealthCheckId")
+    private HealthCheck healthCheck;
+    @OneToOne
+    @JoinColumn(name = "DonorFeedbackId")
+    private DonorFeedback donorFeedback;
 
 
 
@@ -49,29 +49,29 @@ public class DonationRegistration {
         this.bloodDonationEvent = bloodDonationEvent;
     }
 
-//    public Profile getProfile() {
-//        return profile;
-//    }
-//
-//    public void setProfile(Profile profile) {
-//        this.profile = profile;
-//    }
-//
-//    public HeathCheck getHealthCheck() {
-//        return healthCheck;
-//    }
-//
-//    public void setHealthCheck(HeathCheck healthCheck) {
-//        this.healthCheck = healthCheck;
-//    }
-//
-//    public DonorFeedback getDonorFeedback() {
-//        return donorFeedback;
-//    }
-//
-//    public void setDonorFeedback(DonorFeedback donorFeedback) {
-//        this.donorFeedback = donorFeedback;
-//    }
+    public Profile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
+    }
+
+    public HealthCheck getHealthCheck() {
+        return healthCheck;
+    }
+
+    public void setHealthCheck(HealthCheck healthCheck) {
+        this.healthCheck = healthCheck;
+    }
+
+    public DonorFeedback getDonorFeedback() {
+        return donorFeedback;
+    }
+
+    public void setDonorFeedback(DonorFeedback donorFeedback) {
+        this.donorFeedback = donorFeedback;
+    }
 
     public int getRegistrationId() {
         return registrationId;

@@ -1,7 +1,7 @@
 package com.swp391.superapp.bloodsupport.controller;
 
 import com.swp391.superapp.bloodsupport.entity.Account;
-import com.swp391.superapp.bloodsupport.respository.AccountService;
+import com.swp391.superapp.bloodsupport.respository.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 @RestController
-public class AccountAPI {
+public class EventAPI {
     @Autowired
-    AccountService accountService;
+    EventService accountService;
     @GetMapping("/api/account")
     public ResponseEntity getAccount() {
         List<Account> accounts = accountService.getAllAcount();
