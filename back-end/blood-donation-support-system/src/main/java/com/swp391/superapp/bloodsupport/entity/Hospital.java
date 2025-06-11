@@ -24,6 +24,11 @@ public class Hospital {
     @Column(name ="email")
     private String email;
 
+    @OneToMany(mappedBy = "hospital")
+    private List<Account> accounts;
+
+    @OneToMany(mappedBy = "hospital")
+    private List<BloodRequest> bloodRequests;
 
 
     public Hospital() {
