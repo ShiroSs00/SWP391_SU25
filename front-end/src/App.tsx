@@ -17,8 +17,8 @@ import AuthPage from "./pages/authPage";
 import Dashboard from "./pages/dashboard/dashboard";
 import StaffPage from "./pages/staffPages/staffPage";
 // Forms
-import DonorRegisterForm from "./forms/DonorRegisterForm";
-import RequestBloodForm from "./forms/RequestBloodForm";
+import DonorRegisterForm from "./forms/DonorRegister/DonorRegisterForm.tsx";
+import RequestBloodForm from "./forms/RequestBlood/RequestBloodForm.tsx";
 // BloodTypes
 import BloodTypes from "./pages/booldTypes/bloodTypes";
 

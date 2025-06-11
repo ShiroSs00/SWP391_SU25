@@ -5,12 +5,12 @@ import { User, Mail, Phone, Calendar, MapPin, Droplet } from 'lucide-react';
 const Profile: React.FC = () => {
   // Dữ liệu mẫu, sau này thay bằng fetch từ API/backend
   const navigate = useNavigate();
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   const token = localStorage.getItem('token');
+  //   if (!token) {
+  //     navigate('/login');
+  //   }
+  // }, [navigate]);
   const [profile] = useState({
     name: 'Nguyễn Văn A',
     phone: '0123456789',
