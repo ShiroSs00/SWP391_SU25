@@ -289,3 +289,16 @@ export interface PaginatedResponse<T> {
     limit: number;
     totalPages: number;
 }
+export interface BloodOrder {
+  id: number;
+  user: string;
+  type: "Hiến máu" | "Nhận máu";
+  date: string;
+  status: string;
+  bloodType: string;
+  component?: string;
+  volume?: number;
+  hospital?: string;
+  urgency?: boolean;
+  note?: string;
+}

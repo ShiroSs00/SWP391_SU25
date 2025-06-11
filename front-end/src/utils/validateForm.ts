@@ -1,4 +1,4 @@
-import type { BloodType } from '../types';
+import type { BloodType } from '../types/types';
 import { BLOOD_TYPES, DONATION_ELIGIBILITY } from './constants';
 
 export interface ValidationError {
