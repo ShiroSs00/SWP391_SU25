@@ -68,7 +68,7 @@ public class Notification {
     public String toString() {
         return "Notification{" +
                 "notificationId=" + notificationId +
-                ", accountId=" + accountId.getAccountId() +
+                ", accountId=" + accountId +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", img='" + img + '\'' +

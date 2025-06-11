@@ -8,10 +8,7 @@
  */
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -20,11 +17,12 @@ import java.util.Date;
 @Table(name = "profile")
 public class Profile {
     @Id
-    @Column(name = "account_id")
-    private String accountId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "profile_id")
+    private int profileId;
 
-    @Column(name ="name")
-    private String name;
+    @Column(name ="full_name")
+    private String fullName;
 
     @Column(name ="phone")
     private String phone;
@@ -33,131 +31,86 @@ public class Profile {
     private Date dob; //xem lại
 
     @Column(name ="gender")
-    private boolean gender;
+    private boolean gender;  // true = male, false = female
 
     @Column(name ="address")
     private String address;
 
-    @Column(name ="role")
-    private Role role;
-
     @Column(name ="number_of_blood_donation")
     private int numberOfBloodDonation;
-
-    @Column(name ="blood_code")
-    private Blood bloodCode;
 
     @Column(name ="rest_date")
     private LocalDate restDate;
 
+    @OneToOne
+    @JoinColumn(name = "account_id")
+    private Account accountId;
+
+    @ManyToOne
+    @JoinColumn(name = "blood_type_id")
+    private Blood blood;
+
+    @ManyToOne
+    @JoinColumn(name = "achievement_id")
+    private Achievement achievement;
+
     public Profile() {
     }
 
-    public Profile(String accountId, String name, String phone, Date dob, boolean gender, String address, Role role, int numberOfBloodDonation, Blood bloodCode, LocalDate restDate) {
-        this.accountId = accountId;
-        this.name = name;
+    public Profile(String fullName, String phone, Date dob, Boolean gender,
+                   String address, Account accountId) {
+        this.fullName = fullName;
         this.phone = phone;
         this.dob = dob;
         this.gender = gender;
         this.address = address;
-        this.role = role;
-        this.numberOfBloodDonation = numberOfBloodDonation;
-        this.bloodCode = bloodCode;
-        this.restDate = restDate;
-    }
-
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
         this.accountId = accountId;
+        this.numberOfBloodDonation = 0;
     }
 
-    public String getName() {
-        return name;
-    }
+    public int getProfileId() { return profileId; }
+    public void setProfileId(int profileId) { this.profileId = profileId; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
 
-    public String getPhone() {
-        return phone;
-    }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+    public Date getDateOfBirth() { return dob; }
+    public void setDateOfBirth(Date dob) { this.dob = dob; }
 
-    public Date getDob() {
-        return dob;
-    }
+    public Boolean getGender() { return gender; }
+    public void setGender(Boolean gender) { this.gender = gender; }
 
-    public void setDob(Date dob) {
-        this.dob = dob;
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public boolean isGender() {
-        return gender;
-    }
+    public Integer getNumberOfBloodDonation() { return numberOfBloodDonation; }
+    public void setNumberOfBloodDonation(Integer numberOfBloodDonation) { this.numberOfBloodDonation = numberOfBloodDonation; }
 
-    public void setGender(boolean gender) {
-        this.gender = gender;
-    }
+    public LocalDate getRestDate() { return restDate; }
+    public void setRestDate(LocalDate restDate) { this.restDate = restDate; }
 
-    public String getAddress() {
-        return address;
-    }
+    public Account getAccount() { return accountId; }
+    public void setAccount(Account accountId) { this.accountId = accountId; }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    public Blood getBloodType() { return blood; }
+    public void setBloodType(Blood bloodType) { this.blood = blood; }
 
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public int getNumberOfBloodDonation() {
-        return numberOfBloodDonation;
-    }
-
-    public void setNumberOfBloodDonation(int numberOfBloodDonation) {
-        this.numberOfBloodDonation = numberOfBloodDonation;
-    }
-
-    public Blood getBloodCode() {
-        return bloodCode;
-    }
-
-    public void setBloodCode(Blood bloodCode) {
-        this.bloodCode = bloodCode;
-    }
-
-    public LocalDate getRestDate() {
-        return restDate;
-    }
-
-    public void setRestDate(LocalDate restDate) {
-        this.restDate = restDate;
-    }
+    public Achievement getAchievement() { return achievement; }
+    public void setAchievement(Achievement achievement) { this.achievement = achievement; }
 
     @Override
     public String toString() {
         return "Profile{" +
-                "accountId='" + accountId + '\'' +
-                ", name='" + name + '\'' +
+                "profileId=" + profileId +
+                ", fullName='" + fullName + '\'' +
                 ", phone='" + phone + '\'' +
-                ", dob=" + dob +
+                ", dateOfBirth=" + dob +
                 ", gender=" + gender +
                 ", address='" + address + '\'' +
-                ", role=" + role +
                 ", numberOfBloodDonation=" + numberOfBloodDonation +
-                ", bloodCode=" + bloodCode +
                 ", restDate=" + restDate +
                 '}';
     }

@@ -132,7 +132,7 @@ public class BloodRequest {
     public String toString() {
         return "BloodRequest{" +
                 "idBloodRequest=" + idBloodRequest +
-                ", accountId=" + accountId.getName() +
+                ", accountId=" + accountId +
                 ", hospitalId=" + hospitalId.getHospitalName() +
                 ", requestDate=" + requestDate +
                 ", bloodCode=" + bloodCode +

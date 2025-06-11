@@ -26,7 +26,6 @@ public class Role {
     private String description;
 
     @OneToMany(mappedBy = "role")
-
     private List<Account> accounts = new ArrayList<>();
 
     public Role() {

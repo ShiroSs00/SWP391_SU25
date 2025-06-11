@@ -21,10 +21,10 @@ import java.util.List;
 @Table(name = "account")
 public class Account{
     @Id
-    @Column(name = "id" )
+    @Column(name = "account_id" )
     private String accountId;
 
-    @Column(name = "name")
+    @Column(name = "username")
     private String userName;
 
     @Column(name = "email")
@@ -39,6 +39,9 @@ public class Account{
     @Column(name ="createion_date")
     private LocalDate creationDate;
 
+    @OneToOne(mappedBy = "profile_id")
+    @JoinColumn(name = "profile_id")
+    private Profile profileId;
 
 
     @ManyToOne
