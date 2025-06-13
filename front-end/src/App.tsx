@@ -9,7 +9,7 @@ import { Footer } from "./components/sections/footer";
 import Home from "./pages/home";
 // import LoginPage from "./pages/LoginPage";
 // import RegisterPage from "./pages/RegisterPage";
-import Profile from "./pages/profile";
+import Profile from "./pages/profile/profile.tsx";
 import MapPage from "./pages/Map";
 import Blog from "./pages/blogs/blogPage";
 import Contact from "./pages/contactPage/contactPage";
