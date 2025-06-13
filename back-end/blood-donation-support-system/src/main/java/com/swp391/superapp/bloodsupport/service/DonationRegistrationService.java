@@ -1,6 +1,5 @@
-package com.swp391.superapp.bloodsupport.respository;
+package com.swp391.superapp.bloodsupport.service;
 
-import com.swp391.superapp.bloodsupport.entity.Account;
 import com.swp391.superapp.bloodsupport.entity.DonationRegistration;
 import com.swp391.superapp.bloodsupport.entity.Profile;
 import com.swp391.superapp.bloodsupport.repository.DonationRegistrationRepository;
