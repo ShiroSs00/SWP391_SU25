@@ -1,9 +1,6 @@
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
@@ -15,15 +12,18 @@ public class BloodRequest {
     private int idBloodRequest;
 
     @Column(name ="name")
+    @ManyToOne()
     private Profile accountId;
 
-    @Column(name ="hospital")
+    @JoinColumn(name = "hospital_id")
+    @ManyToOne()
     private Hospital hospitalId;
 
     @Column(name ="request_date")
     private LocalDate requestDate;
 
-    @Column(name ="blood_code")
+    @JoinColumn(name ="blood_code")
+    @ManyToOne()
     private Blood bloodCode;
 
     @Column(name ="urgency")
@@ -38,7 +38,7 @@ public class BloodRequest {
     @Column(name ="quantity")
     private int quatity;
 
-    @Column(name ="")
+    @Column(name ="request_Creation_date")
     private LocalDate requestCreationDate;
 
     public BloodRequest() {

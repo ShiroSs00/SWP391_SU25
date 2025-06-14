@@ -47,11 +47,11 @@ public class Profile {
     private Account accountId;
 
     @ManyToOne
-    @JoinColumn(name = "blood_type_id")
+    @JoinColumn(name = "blood_code")
     private Blood blood;
 
     @ManyToOne
-    @JoinColumn(name = "achievement_id")
+    @JoinColumn(name = "achievement_name")
     private Achievement achievement;
 
     public Profile() {

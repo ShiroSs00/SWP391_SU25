@@ -1,9 +1,6 @@
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "notification")
@@ -12,7 +9,8 @@ public class Notification {
     @Column(name = "notification_id")
     private int notificationId;
 
-    @Column(name ="account_id")
+    @JoinColumn(name ="account_id")
+    @ManyToOne
     private Account accountId;
 
     @Column(name ="title")

@@ -39,9 +39,7 @@ public class Blood {
 
     @Column(name ="blood_match")
     private String bloodMatch;
-
-
-
+    
     public Blood() {
     }
 
