@@ -1,5 +1,6 @@
 package com.swp391.superapp.bloodsupport.service;
 
+import com.swp391.superapp.bloodsupport.entity.Account;
 import com.swp391.superapp.bloodsupport.entity.DonationRegistration;
 import com.swp391.superapp.bloodsupport.entity.Profile;
 import com.swp391.superapp.bloodsupport.repository.DonationRegistrationRepository;
@@ -12,8 +13,8 @@ import java.util.List;
 public class DonationRegistrationService {
     @Autowired
     private DonationRegistrationRepository donationRegistrationRepository;
-    public DonationRegistration createDonationRegistration(DonationRegistration donationRegistration, Profile profile) {
-        donationRegistration.setProfile(profile);
+    public DonationRegistration createDonationRegistration(DonationRegistration donationRegistration, Account account) {
+        donationRegistration.setAccount(account);
         return donationRegistrationRepository.save(donationRegistration);
     }
     public DonationRegistration updateDonationRegistration(int id, DonationRegistration updatedData) {

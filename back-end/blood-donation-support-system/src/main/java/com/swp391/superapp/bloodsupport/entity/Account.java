@@ -50,6 +50,9 @@ public class Account{
     @OneToMany(mappedBy ="account")
     private List<Notification> notifications;
 
+    @OneToOne
+    private Profile profile;
+
     public Account() {
     }
 
@@ -62,6 +65,14 @@ public class Account{
         this.creationDate = creationDate;
         this.role = role;
         this.hospital = hospital;
+    }
+
+    public Profile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
     }
 
     public String getAccountId() {

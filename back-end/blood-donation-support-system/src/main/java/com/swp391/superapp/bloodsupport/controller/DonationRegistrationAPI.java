@@ -29,7 +29,7 @@ public class DonationRegistrationAPI {
     public ResponseEntity<DonationRegistration> createDonationRegistration(
             @RequestBody DonationRegistration donationRegistration,
             @AuthenticationPrincipal Account account) {
-        DonationRegistration savedRegistration = donationRegistrationService.createDonationRegistration(donationRegistration, account.getProfile());
+        DonationRegistration savedRegistration = donationRegistrationService.createDonationRegistration(donationRegistration, account);
         return new ResponseEntity<>(savedRegistration, HttpStatus.CREATED);
     }
 
@@ -42,15 +42,17 @@ public class DonationRegistrationAPI {
         return ResponseEntity.ok(result);
     }
 
-    @DeleteMapping("/api/event/{id}")
-    public ResponseEntity<?> deleteEvent(@PathVariable int id) {
+    @DeleteMapping("/api/donation/{id}")
+    public ResponseEntity<?> deleteDonationRegistration(@PathVariable int id) {
         try {
-            donationRegistrationService.deleteDonationRegistration();
+            donationRegistrationService.deleteDonationRegistration(id);
             return ResponseEntity.noContent().build(); // 204 No Content
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found with id: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Donation registration not found with id: " + id);
         }
     }
+
 
 
 

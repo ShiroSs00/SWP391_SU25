@@ -11,7 +11,7 @@ public class Notification {
 
     @JoinColumn(name ="account_id")
     @ManyToOne
-    private Account accountId;
+    private Account account;
 
     @Column(name ="title")
     private String title;
@@ -30,12 +30,12 @@ public class Notification {
         this.notificationId = notificationId;
     }
 
-    public Account getAccountId() {
-        return accountId;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setAccountId(Account accountId) {
-        this.accountId = accountId;
+    public void setAccountId(Account account) {
+        this.account = account;
     }
 
     public String getTitle() {
@@ -66,7 +66,7 @@ public class Notification {
     public String toString() {
         return "Notification{" +
                 "notificationId=" + notificationId +
-                ", accountId=" + accountId.getAccountId() +
+                ", accountId=" + account.getAccountId() +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", img='" + img + '\'' +
