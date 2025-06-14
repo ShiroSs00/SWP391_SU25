@@ -1,8 +1,9 @@
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.*;
-
-import java.util.List;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "achievement")
@@ -13,12 +14,6 @@ public class Achievement {
 
     @Column(name ="description")
     private String description;
-
-    @OneToMany(mappedBy = "achievement")
-    private List<Profile> profiles;
-
-    public List<Profile> getProfiles() { return profiles; }
-    public void setProfiles(List<Profile> profiles) { this.profiles = profiles; }
 
     public Achievement() {
     }
