@@ -8,10 +8,7 @@
  */
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "blood")
@@ -20,14 +17,17 @@ public class Blood {
     @Column(name ="blood_code")
     private int bloodCode;
 
+    @Enumerated(EnumType.STRING)
     @Column(name ="blood_type")
-    private String bloodType;
+    private BloodType bloodType;
 
+    @Enumerated(EnumType.STRING)
     @Column(name ="rh")
-    private String rh;
+    private RhFactor rh;
 
-    @Column(name ="component")
-    private String component;
+    @JoinColumn(name ="component")
+    @ManyToOne()
+    private Component component;
 
     @Column(name ="is_rare_blood")
     private boolean isRareBood;
@@ -41,95 +41,21 @@ public class Blood {
     @Column(name ="blood_match")
     private String bloodMatch;
 
+  
     public Blood() {
     }
 
-    public Blood(int bloodCode, String bloodType, String rh, String component, boolean isRareBood, int volumn, int quantity, String bloodMatch) {
-        this.bloodCode = bloodCode;
-        this.bloodType = bloodType;
-        this.rh = rh;
-        this.component = component;
-        this.isRareBood = isRareBood;
-        this.volumn = volumn;
-        this.quantity = quantity;
-        this.bloodMatch = bloodMatch;
+
+
+    public enum BloodType{
+        A, B, AB, O
     }
 
-    public int getBloodCode() {
-        return bloodCode;
+    public enum RhFactor{
+        POSITIVE, NEGATIVE
     }
 
-    public void setBloodCode(int bloodCode) {
-        this.bloodCode = bloodCode;
-    }
-
-    public String getBloodType() {
-        return bloodType;
-    }
-
-    public void setBloodType(String bloodType) {
-        this.bloodType = bloodType;
-    }
-
-    public String getRh() {
-        return rh;
-    }
-
-    public void setRh(String rh) {
-        this.rh = rh;
-    }
-
-    public String getComponent() {
-        return component;
-    }
-
-    public void setComponent(String component) {
-        this.component = component;
-    }
-
-    public boolean isRareBood() {
-        return isRareBood;
-    }
-
-    public void setRareBood(boolean rareBood) {
-        isRareBood = rareBood;
-    }
-
-    public int getVolumn() {
-        return volumn;
-    }
-
-    public void setVolumn(int volumn) {
-        this.volumn = volumn;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public String getBloodMatch() {
-        return bloodMatch;
-    }
-
-    public void setBloodMatch(String bloodMatch) {
-        this.bloodMatch = bloodMatch;
-    }
-
-    @Override
-    public String toString() {
-        return "BloodInventory{" +
-                "bloodCode=" + bloodCode +
-                ", bloodType='" + bloodType + '\'' +
-                ", rh='" + rh + '\'' +
-                ", component='" + component + '\'' +
-                ", isRareBood=" + isRareBood +
-                ", volumn=" + volumn +
-                ", quantity=" + quantity +
-                ", bloodMatch='" + bloodMatch + '\'' +
-                '}';
+    public enum BloodStatus {
+        AVAILABLE, USED, EXPIRED
     }
 }

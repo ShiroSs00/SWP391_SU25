@@ -8,10 +8,7 @@
  */
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -20,8 +17,13 @@ import java.util.Date;
 @Table(name = "profile")
 public class Profile {
     @Id
-    @Column(name = "account_id")
-    private String accountId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "profile_id")
+    private int profileId;
+
+    @JoinColumn(name = "account_id")
+    @OneToOne
+    private Account accountId;
 
     @Column(name ="name")
     private String name;
@@ -38,13 +40,15 @@ public class Profile {
     @Column(name ="address")
     private String address;
 
-    @Column(name ="role")
+    @JoinColumn(name ="role")
+    @ManyToOne
     private Role role;
 
     @Column(name ="number_of_blood_donation")
     private int numberOfBloodDonation;
 
-    @Column(name ="blood_code")
+    @JoinColumn(name ="blood_code")
+    @ManyToOne
     private Blood bloodCode;
 
     @Column(name ="rest_date")
@@ -53,7 +57,7 @@ public class Profile {
     public Profile() {
     }
 
-    public Profile(String accountId, String name, String phone, Date dob, boolean gender, String address, Role role, int numberOfBloodDonation, Blood bloodCode, LocalDate restDate) {
+    public Profile(Account accountId, String name, String phone, Date dob, boolean gender, String address, Role role, int numberOfBloodDonation, Blood bloodCode, LocalDate restDate) {
         this.accountId = accountId;
         this.name = name;
         this.phone = phone;
@@ -66,11 +70,11 @@ public class Profile {
         this.restDate = restDate;
     }
 
-    public String getAccountId() {
+    public Account getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(String accountId) {
+    public void setAccountId(Account accountId) {
         this.accountId = accountId;
     }
 

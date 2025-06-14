@@ -1,21 +1,8 @@
-/* File: Account.java
- * Author: SE184889 - Nguyễn Trần Việt An (AnNTV)
- * Created on: 02-06-2025
- * Purpose: Pepresnets the Account entity used for user authentication and profile manage
- *
- * Change Log:
- * [02-06-2025] - Created by: AnNTV
- */
 package com.swp391.superapp.bloodsupport.entity;
 
 import jakarta.persistence.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
+
 
 @Entity
 @Table(name = "account")
@@ -24,7 +11,7 @@ public class Account{
     @Column(name = "id" )
     private String accountId;
 
-    @Column(name = "name")
+    @Column(name = "username")
     private String userName;
 
     @Column(name = "email")
@@ -39,14 +26,12 @@ public class Account{
     @Column(name ="createion_date")
     private LocalDate creationDate;
 
-    @Column(name ="role")
-
     @ManyToOne
-    @JoinColumn(name = "role")
+    @JoinColumn(name = "role_name")
     private Role role;
 
     @ManyToOne
-    @Column(name ="Hospital")
+    @JoinColumn(name ="hospital_id")
     private Hospital hospital;
 
 
@@ -65,11 +50,11 @@ public class Account{
         this.hospital = hospital;
     }
 
-    public String getaccountId() {
+    public String getAccountId() {
         return accountId;
     }
 
-    public void setaccountId(String accountId) {
+    public void setAccountId(String accountId) {
         this.accountId = accountId;
     }
 
