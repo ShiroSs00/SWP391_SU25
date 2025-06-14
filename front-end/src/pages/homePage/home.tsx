@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Hero from "../components/sections/hero.tsx";
-import WrapperSection from "../components/sections/wrapperSection.tsx";
-import GroupedHeading from "../components/sections/GroupedHeading.tsx";
-import TwoCta from "../components/sections/twoCta.tsx";
-import ThreeStepProcess from "../components/sections/threeStepProcess.tsx";
-import ContactDetails from "../components/sections/contactDetails.tsx";
+import Hero from "../../components/sections/hero.tsx";
+import WrapperSection from "../../components/sections/wrapperSection.tsx";
+import GroupedHeading from "../../components/sections/GroupedHeading.tsx";
+import TwoCta from "../../components/sections/twoCta.tsx";
+import ThreeStepProcess from "../../components/sections/threeStepProcess.tsx";
+import ContactDetails from "../../components/sections/contactDetails.tsx";
 
 const Home: React.FC = () => {
     const navigate = useNavigate();

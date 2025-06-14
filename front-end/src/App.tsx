@@ -6,14 +6,14 @@ import { Header } from "./components/sections/header";
 import { Footer } from "./components/sections/footer";
 
 // Pages
-import Home from "./pages/home";
+import Home from "./pages/homePage/home.tsx";
 // import LoginPage from "./pages/LoginPage";
 // import RegisterPage from "./pages/RegisterPage";
 import Profile from "./pages/profile/profile.tsx";
 import MapPage from "./pages/Map";
 import Blog from "./pages/blogs/blogPage";
 import Contact from "./pages/contactPage/contactPage";
-import AuthPage from "./pages/authPage";
+import AuthPage from "./pages/authPage/authPage.tsx";
 // Forms
 import DonorRegisterForm from "./forms/DonorRegister/DonorRegisterForm.tsx";
 import RequestBloodForm from "./forms/RequestBlood/RequestBloodForm.tsx";

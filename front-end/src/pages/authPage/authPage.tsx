@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Button } from "../components/sections/button";
+import { Button } from "../../components/sections/button.tsx";
 import { Mail, Lock, User } from "lucide-react";
 
 const AuthPage: React.FC = () => {
