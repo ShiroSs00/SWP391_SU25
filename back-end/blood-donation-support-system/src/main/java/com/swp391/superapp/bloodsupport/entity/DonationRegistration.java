@@ -15,7 +15,7 @@ public class DonationRegistration {
     private String status;
     @ManyToOne
     @JoinColumn(name = "event_id")
-    private BloodDonationEvent bloodDonationEvent;
+    private BloodDonationEvent event;
     @OneToOne
     @JoinColumn(name = "healthy_id")
     private HealthCheck healthCheck;
@@ -26,7 +26,7 @@ public class DonationRegistration {
     @ManyToOne
     @JoinColumn(name = "component_id")
     private Component component;
-    
+
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
@@ -43,11 +43,11 @@ public class DonationRegistration {
     }
 
     public BloodDonationEvent getBloodDonationEvent() {
-        return bloodDonationEvent;
+        return event;
     }
 
     public void setBloodDonationEvent(BloodDonationEvent bloodDonationEvent) {
-        this.bloodDonationEvent = bloodDonationEvent;
+        this.event = bloodDonationEvent;
     }
 
     public Account getAccount() {
@@ -112,7 +112,7 @@ public class DonationRegistration {
                 "registrationId=" + registrationId +
                 ", dateCreated=" + dateCreated +
                 ", status='" + status + '\'' +
-                ", bloodDonationEvent=" + bloodDonationEvent +
+                ", bloodDonationEvent=" + event +
                 '}';
     }
 }
