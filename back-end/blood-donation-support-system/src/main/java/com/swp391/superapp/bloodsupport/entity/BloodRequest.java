@@ -8,12 +8,12 @@ import java.time.LocalDate;
 @Table(name = "blood_request")
 public class BloodRequest {
     @Id
-    @Column()
+    @Column(name = "id_blood_request")
     private int idBloodRequest;
 
     @Column(name ="name")
     @ManyToOne()
-    private Profile accountId;
+    private Account accountId;
 
     @JoinColumn(name = "hospital_id")
     @ManyToOne()
@@ -44,7 +44,7 @@ public class BloodRequest {
     public BloodRequest() {
     }
 
-    public BloodRequest(int idBloodRequest, Profile accountId, Hospital hospitalId, LocalDate requestDate, Blood bloodCode, boolean urgency, String status, int volumn, int quatity) {
+    public BloodRequest(int idBloodRequest, Account accountId, Hospital hospitalId, LocalDate requestDate, Blood bloodCode, boolean urgency, String status, int volumn, int quatity) {
         this.idBloodRequest = idBloodRequest;
         this.accountId = accountId;
         this.hospitalId = hospitalId;
@@ -64,11 +64,11 @@ public class BloodRequest {
         this.idBloodRequest = idBloodRequest;
     }
 
-    public Profile getAccountId() {
+    public Account getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(Profile accountId) {
+    public void setAccountId(Account accountId) {
         this.accountId = accountId;
     }
 
@@ -132,7 +132,7 @@ public class BloodRequest {
     public String toString() {
         return "BloodRequest{" +
                 "idBloodRequest=" + idBloodRequest +
-                ", accountId=" + accountId.getName() +
+                ", accountId=" + accountId.getUserName() +
                 ", hospitalId=" + hospitalId.getHospitalName() +
                 ", requestDate=" + requestDate +
                 ", bloodCode=" + bloodCode +

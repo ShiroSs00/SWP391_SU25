@@ -1,9 +1,6 @@
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.util.List;
 
@@ -17,6 +14,7 @@ public class Achievement {
     @Column(name ="description")
     private String description;
 
+    @OneToMany
     private List<Profile> profiles;
 
     public Achievement() {
