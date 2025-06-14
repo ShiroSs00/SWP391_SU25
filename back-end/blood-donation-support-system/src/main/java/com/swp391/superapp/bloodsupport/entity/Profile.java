@@ -8,10 +8,7 @@
  */
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -44,7 +41,8 @@ public class Profile {
     @Column(name ="number_of_blood_donation")
     private int numberOfBloodDonation;
 
-    @Column(name ="blood_code")
+    @JoinColumn(name ="blood_code")
+    @ManyToOne
     private Blood bloodCode;
 
     @Column(name ="rest_date")

@@ -11,7 +11,7 @@ public class Account{
     @Column(name = "id" )
     private String accountId;
 
-    @Column(name = "name")
+    @Column(name = "username")
     private String userName;
 
     @Column(name = "email")
@@ -26,14 +26,12 @@ public class Account{
     @Column(name ="createion_date")
     private LocalDate creationDate;
 
-    @Column(name ="role")
-
     @ManyToOne
     @JoinColumn(name = "role_name")
     private Role role;
 
     @ManyToOne
-    @Column(name ="Hospital")
+    @JoinColumn(name ="hospital_id")
     private Hospital hospital;
 
 
@@ -52,11 +50,11 @@ public class Account{
         this.hospital = hospital;
     }
 
-    public String getaccountId() {
+    public String getAccountId() {
         return accountId;
     }
 
-    public void setaccountId(String accountId) {
+    public void setAccountId(String accountId) {
         this.accountId = accountId;
     }
 

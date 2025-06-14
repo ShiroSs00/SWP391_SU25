@@ -11,14 +11,13 @@ public class BloodDonationHistory {
     @Column(name ="history_id")
     private int historyId;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne
     @Column(name ="account_id")
     private Profile account;
 
     @ManyToOne
     @JoinColumn(name = "event_id")
     private BloodDonationEvent event;
-
 
     @Column(name ="blood_volumn")
     private int bloodVolumn;
