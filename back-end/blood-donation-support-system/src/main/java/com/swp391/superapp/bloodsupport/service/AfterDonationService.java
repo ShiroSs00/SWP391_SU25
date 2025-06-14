@@ -10,7 +10,6 @@ import java.util.*;
 
 @Service
 public class AfterDonationService {
-    @Autowired
     private AfterDonationRepository afterDonationRepository;
     public AfterDonationBlood createAfterDonation(AfterDonationBlood afterDonationBlood, HealthCheck healthCheck) {
         afterDonationBlood.setHealthCheck(healthCheck);

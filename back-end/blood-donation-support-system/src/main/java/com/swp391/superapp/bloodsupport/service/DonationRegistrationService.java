@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public class DonationRegistrationService {
-    @Autowired
+
     private DonationRegistrationRepository donationRegistrationRepository;
     public DonationRegistration createDonationRegistration(DonationRegistration donationRegistration, Account account) {
         donationRegistration.setAccount(account);

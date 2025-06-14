@@ -15,7 +15,6 @@ import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 @Service
 public  class EventService {
 
-    @Autowired
     private EventRepository eventRepository;
 
     public BloodDonationEvent createEvent(Account account, BloodDonationEvent bloodDonationEvent) {

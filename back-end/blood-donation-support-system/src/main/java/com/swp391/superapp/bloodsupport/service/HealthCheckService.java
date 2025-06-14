@@ -10,7 +10,6 @@ import java.util.List;
 
 @Service
 public class HealthCheckService {
-    @Autowired
     private HealthCheckRepository healthCheckRepository;
     public HealthCheck createHealthCheck(HealthCheck healthCheck, DonationRegistration donationRegistration) {
         healthCheck.setDonationRegistration(donationRegistration);

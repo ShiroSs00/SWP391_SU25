@@ -7,7 +7,7 @@ import java.util.List;
 
 @Service
 public class BlogService {
-    @Autowired
+
     private BlogService blogService;
     public Blog createBlog(Blog blog) {
         return blogService.createBlog(blog);
