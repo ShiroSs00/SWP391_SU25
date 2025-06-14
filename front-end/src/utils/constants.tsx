@@ -286,9 +286,9 @@ export const DEFAULT_FACILITY = {
   name: 'Bệnh viện Đa khoa Trung ương',
   address: {
     street: '123 Đường Lê Duẩn',
-    city: 'Hà Nội',
+    city: 'Hồ Chí Minh',
     district: 'Hoàn Kiếm',
-    province: 'Hà Nội',
+    province: 'Hồ Chí Minh',
     postalCode: '100000'
   },
   phone: '024-3975-1234',
