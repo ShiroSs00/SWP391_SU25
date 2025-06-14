@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
+
 @Entity
 @Table(name = "blood_donation_history")
 public class BloodDonationHistory {
@@ -15,8 +16,7 @@ public class BloodDonationHistory {
     @Column(name ="account_id")
     private Profile accountId;
 
-    @Column(name ="event_id")
-    private BloodDonationEvent leventId;
+
 
 
     @Column(name ="blood_volumn")
@@ -34,10 +34,14 @@ public class BloodDonationHistory {
     @Column(name ="")
     private LocalDate createdAt;
 
+    @Column(name ="event_id")
+    @ManyToOne
+    private BloodDonationEvent eventId;
+
     public BloodDonationHistory() {
     }
 
-    public BloodDonationHistory(int historyId, Profile accountId, BloodDonationHistory eventId, int bloodVolumn, String locationSnapshot, String healthResult, String status, LocalDate createdAt) {
+    public BloodDonationHistory(int historyId, Profile accountId, BloodDonationEvent eventId, int bloodVolumn, String locationSnapshot, String healthResult, String status, LocalDate createdAt) {
         this.historyId = historyId;
         this.accountId = accountId;
         this.eventId = eventId;
@@ -64,11 +68,11 @@ public class BloodDonationHistory {
         this.accountId = accountId;
     }
 
-    public BloodDonationHistory getEventId() {
+    public BloodDonationEvent getEventId() {
         return eventId;
     }
 
-    public void setEventId(BloodDonationHistory eventId) {
+    public void setEventId(BloodDonationEvent eventId) {
         this.eventId = eventId;
     }
 
