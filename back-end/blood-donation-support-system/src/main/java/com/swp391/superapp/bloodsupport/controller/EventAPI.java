@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+//import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -22,12 +22,12 @@ public class EventAPI {
        List<BloodDonationEvent> events = eventService.getAllEvent();
         return ResponseEntity.ok(events);
     }
-    @PostMapping("/api/event")
-    public ResponseEntity<BloodDonationEvent> addEvent(@RequestBody BloodDonationEvent event,
-                                                       @AuthenticationPrincipal Account account) {
-        BloodDonationEvent createdEvent = eventService.createEvent(account, event);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
-    }
+//    @PostMapping("/api/event")
+//    public ResponseEntity<BloodDonationEvent> addEvent(@RequestBody BloodDonationEvent event,
+//                                                       @AuthenticationPrincipal Account account) {
+//        BloodDonationEvent createdEvent = eventService.createEvent(account, event);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
+//    }
     @PutMapping("/api/event/{id}")
     public ResponseEntity<BloodDonationEvent> updateEvent(
             @PathVariable int id,

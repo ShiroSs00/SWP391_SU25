@@ -9,7 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+//import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,13 +25,13 @@ public class DonationRegistrationAPI {
         return ResponseEntity.ok(registrations);
     }
 
-    @PostMapping("/api/donation")
-    public ResponseEntity<DonationRegistration> createDonationRegistration(
-            @RequestBody DonationRegistration donationRegistration,
-            @AuthenticationPrincipal Account account) {
-        DonationRegistration savedRegistration = donationRegistrationService.createDonationRegistration(donationRegistration, account);
-        return new ResponseEntity<>(savedRegistration, HttpStatus.CREATED);
-    }
+//    @PostMapping("/api/donation")
+//    public ResponseEntity<DonationRegistration> createDonationRegistration(
+//            @RequestBody DonationRegistration donationRegistration,
+//            @AuthenticationPrincipal Account account) {
+//        DonationRegistration savedRegistration = donationRegistrationService.createDonationRegistration(donationRegistration, account);
+//        return new ResponseEntity<>(savedRegistration, HttpStatus.CREATED);
+//    }
 
     @PutMapping("/api/donation/{id}")
     public ResponseEntity<DonationRegistration> updateDonationRegistration(
