@@ -2,6 +2,7 @@ package com.swp391.superapp.bloodsupport.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 
 
 @Entity
@@ -34,7 +35,20 @@ public class Account{
     @JoinColumn(name ="hospital_id")
     private Hospital hospital;
 
+    @OneToMany(mappedBy ="account")
+    private List<BloodRequest> bloodRequests;
 
+    @OneToMany(mappedBy ="account")
+    private List<Blog> blogs;
+
+    @OneToMany(mappedBy ="account")
+    private List<DonationRegistration> donationRegistrations;
+
+    @OneToOne
+    private BloodDonationHistory bloodDonationHistory;
+
+    @OneToMany(mappedBy ="account")
+    private List<Notification> notifications;
 
     public Account() {
     }
