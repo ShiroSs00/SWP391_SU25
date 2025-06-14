@@ -8,7 +8,10 @@
  */
 package com.swp391.superapp.bloodsupport.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "blood")
@@ -17,13 +20,11 @@ public class Blood {
     @Column(name ="blood_code")
     private int bloodCode;
 
-    @Enumerated(EnumType.STRING)
     @Column(name ="blood_type")
-    private AboType bloodType;
+    private String bloodType;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name ="rh_factor")
-    private RhFactor rhFactor;
+    @Column(name ="rh")
+    private String rh;
 
     @Column(name ="component")
     private String component;
@@ -40,15 +41,14 @@ public class Blood {
     @Column(name ="blood_match")
     private String bloodMatch;
 
-
-
+  
     public Blood() {
     }
 
-    public Blood(int bloodCode, AboType bloodType, RhFactor rh, String component, boolean isRareBood, int volumn, int quantity, String bloodMatch) {
+    public Blood(int bloodCode, String bloodType, String rh, String component, boolean isRareBood, int volumn, int quantity, String bloodMatch) {
         this.bloodCode = bloodCode;
         this.bloodType = bloodType;
-        this.rhFactor = rh;
+        this.rh = rh;
         this.component = component;
         this.isRareBood = isRareBood;
         this.volumn = volumn;
@@ -64,20 +64,20 @@ public class Blood {
         this.bloodCode = bloodCode;
     }
 
-    public AboType getBloodType() {
+    public String getBloodType() {
         return bloodType;
     }
 
-    public void setBloodType(AboType bloodType) {
+    public void setBloodType(String bloodType) {
         this.bloodType = bloodType;
     }
 
-    public RhFactor getRh() {
-        return rhFactor;
+    public String getRh() {
+        return rh;
     }
 
-    public void setRh(RhFactor rh) {
-        this.rhFactor = rh;
+    public void setRh(String rh) {
+        this.rh = rh;
     }
 
     public String getComponent() {
@@ -125,24 +125,12 @@ public class Blood {
         return "BloodInventory{" +
                 "bloodCode=" + bloodCode +
                 ", bloodType='" + bloodType + '\'' +
-                ", rh='" + rhFactor + '\'' +
+                ", rh='" + rh + '\'' +
                 ", component='" + component + '\'' +
                 ", isRareBood=" + isRareBood +
                 ", volumn=" + volumn +
                 ", quantity=" + quantity +
                 ", bloodMatch='" + bloodMatch + '\'' +
                 '}';
-    }
-
-    public enum AboType{
-        A, B, AB, O
-    }
-
-    public enum RhFactor{
-        POSITIVE, NEGATIVE
-    }
-
-    public enum BloodStatus{
-        AVAILABLE, USED, EXPIRED
     }
 }
