@@ -1,7 +1,7 @@
-    import type React from 'react';
+import type React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Phone, Mail, MapPin, Facebook, Youtube, Instagram } from 'lucide-react';
-import { DEFAULT_FACILITY } from '../utils/constants.tsx';
+import { DEFAULT_FACILITY } from '../../utils/constants.tsx';
 
 export const Footer: React.FC = () => {
   return (
@@ -141,3 +141,5 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
+
+export default Footer;

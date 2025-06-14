@@ -1,254 +1,313 @@
-import type React from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, Users, Shield, Clock, ArrowRight, Phone, CheckCircle } from 'lucide-react';
-import { Button } from '../components/button';
-import { BLOOD_TYPES, BLOOD_TYPE_COLORS, TRANSLATIONS } from '../utils/constants';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import Hero from "../components/sections/hero.tsx";
+import WrapperSection from "../components/sections/wrapperSection.tsx";
+import GroupedHeading from "../components/sections/GroupedHeading.tsx";
+import TwoCta from "../components/sections/twoCta.tsx";
+import ThreeStepProcess from "../components/sections/threeStepProcess.tsx";
+import ContactDetails from "../components/sections/contactDetails.tsx";
 
 const Home: React.FC = () => {
-  return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-red-600 via-red-700 to-red-800 text-white">
-        <div className="absolute inset-0 bg-black opacity-20" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
-                Mỗi giọt máu <br />
-                <span className="text-red-200">cứu một mạng sống</span>
-              </h1>
-              <p className="text-xl text-red-100 mb-8 leading-relaxed">
-                Kết nối những trái tim nhân ái với những người cần được cứu giúp.
-                Hãy trở thành người anh hùng thầm lặng trong cuộc chiến cứu sống.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/register">
-                  <Button size="lg" className="bg-white text-red-600 hover:bg-red-50 w-full sm:w-auto">
-                    <Heart className="h-5 w-5 mr-2" />
-                    Đăng ký hiến máu
-                  </Button>
-                </Link>
-                <Link to="/need-blood">
-                  <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-red-600 w-full sm:w-auto">
-                    Cần máu khẩn cấp
-                    <ArrowRight className="h-5 w-5 ml-2" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
+    const navigate = useNavigate();
 
-            <div className="relative">
-              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8">
-                <h3 className="text-2xl font-semibold mb-6">Thống kê hệ thống</h3>
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-red-200">2,543</div>
-                    <div className="text-sm text-red-100">Người hiến máu</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-red-200">8,921</div>
-                    <div className="text-sm text-red-100">Lần hiến máu</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-red-200">1,205</div>
-                    <div className="text-sm text-red-100">Người được cứu</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-red-200">24/7</div>
-                    <div className="text-sm text-red-100">Hỗ trợ khẩn cấp</div>
-                  </div>
+    // Hero section data
+    const heroData = {
+        title: "Kết Nối Sự Sống Qua Hiến Máu",
+        subtitle: "Tham gia mạng lưới hiến máu toàn quốc. Mỗi giọt máu của bạn là một cơ hội cứu sống.",
+        primaryButtonText: "Đăng ký hiến máu",
+        secondaryButtonText: "Tìm hiểu thêm",
+        backgroundImage: "/images/hero-blood-donation.jpg"
+    };
+
+    // Statistics data
+    const statsData = [
+        { label: "Người hiến máu", value: "25,847", icon: "👥" },
+        { label: "Đơn vị máu đã thu", value: "89,234", icon: "🩸" },
+        { label: "Bệnh nhân được cứu", value: "156,789", icon: "💚" },
+        { label: "Bệnh viện liên kết", value: "47", icon: "🏥" }
+    ];
+
+    // Process steps
+    const processSteps = [
+        {
+            step: 1,
+            title: "Đăng ký",
+            description: "Điền thông tin cá nhân và đặt lịch hiến máu phù hợp với bạn"
+        },
+        {
+            step: 2,
+            title: "Khám sàng lọc",
+            description: "Kiểm tra sức khỏe tổng quát và xét nghiệm máu cơ bản miễn phí"
+        },
+        {
+            step: 3,
+            title: "Hiến máu",
+            description: "Quá trình hiến máu an toàn, nhanh chóng trong 10-15 phút"
+        }
+    ];
+
+    // Urgent blood types
+    const urgentBloodTypes = [
+        { type: "O-", stock: "Cực thấp", urgency: "Cần gấp", color: "bg-red-600" },
+        { type: "AB-", stock: "Rất thấp", urgency: "Cần thiết", color: "bg-orange-500" },
+        { type: "A-", stock: "Thấp", urgency: "Ưu tiên", color: "bg-yellow-500" }
+    ];
+
+    // Recent blog posts data
+    const blogPosts = [
+        {
+            title: "5 điều cần biết trước khi hiến máu lần đầu",
+            excerpt: "Hướng dẫn chi tiết cho người hiến máu lần đầu tiên để có trải nghiệm tốt nhất.",
+            date: "2024-01-15",
+            readTime: "5 phút đọc",
+            image: "/images/blog-first-time.jpg"
+        },
+        {
+            title: "Lợi ích sức khỏe của việc hiến máu",
+            excerpt: "Khám phá những lợi ích bất ngờ mà hiến máu mang lại cho sức khỏe của bạn.",
+            date: "2024-01-10",
+            readTime: "3 phút đọc",
+            image: "/images/blog-benefits.jpg"
+        },
+        {
+            title: "Câu chuyện cảm động về hiến máu",
+            excerpt: "Những câu chuyện thực tế về sự kết nối giữa người hiến và người nhận máu.",
+            date: "2024-01-05",
+            readTime: "7 phút đọc",
+            image: "/images/blog-stories.jpg"
+        }
+    ];
+
+    // Navigation handlers
+    const handleDonateBlood = () => {
+        navigate('/need-blood-donate');
+    };
+
+    const handleLearnMore = () => {
+        navigate('/blog');
+    };
+
+    const handleNeedBlood = () => {
+        navigate('/need-blood-donate');
+    };
+
+    const handleContactUs = () => {
+        navigate('/contact');
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Hero Section */}
+            <Hero
+                title={heroData.title}
+                subtitle={heroData.subtitle}
+                primaryButtonText={heroData.primaryButtonText}
+                secondaryButtonText={heroData.secondaryButtonText}
+                onPrimaryClick={handleDonateBlood}
+                onSecondaryClick={handleLearnMore}
+                backgroundImage={heroData.backgroundImage}
+            />
+
+            {/* Stats Section */}
+            <WrapperSection className="py-16 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <GroupedHeading
+                        title="Tác động của cộng đồng"
+                        description="Những con số ý nghĩa từ mạng lưới hiến máu toàn quốc"
+                    />
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12">
+                        {statsData.map((stat, index) => (
+                            <div key={index} className="text-center p-6 bg-gray-50 rounded-lg hover:shadow-md transition-shadow">
+                                <div className="text-4xl mb-3">{stat.icon}</div>
+                                <div className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</div>
+                                <div className="text-gray-600 font-medium">{stat.label}</div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+            </WrapperSection>
 
-      {/* Emergency Banner */}
-      <section className="bg-red-50 border-l-4 border-red-500 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Phone className="h-6 w-6 text-red-600 mr-3" />
-              <div>
-                <p className="text-red-800 font-medium">
-                  Đường dây nóng cấp cứu 24/7: <span className="font-bold">115</span>
-                </p>
-                <p className="text-red-600 text-sm">
-                  Liên hệ ngay nếu cần máu khẩn cấp
-                </p>
-              </div>
-            </div>
-            <Link to="/need-blood">
-              <Button variant="danger" size="sm">
-                Báo cáo khẩn cấp
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+            {/* Urgent Blood Need Alert */}
+            <WrapperSection className="py-12 bg-red-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="bg-gradient-to-r from-red-100 to-pink-100 border border-red-200 rounded-xl p-8 shadow-sm">
+                        <div className="flex flex-col md:flex-row items-center justify-between">
+                            <div className="flex items-center mb-4 md:mb-0">
+                                <div className="text-red-600 text-3xl mr-4">🚨</div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-red-800 mb-1">
+                                        Cần gấp các nhóm máu hiếm
+                                    </h3>
+                                    <p className="text-red-700">
+                                        Tồn kho máu đang ở mức thấp, cần sự hỗ trợ từ cộng đồng
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleDonateBlood}
+                                className="bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md hover:shadow-lg"
+                            >
+                                Hiến máu ngay
+                            </button>
+                        </div>
 
-      {/* Features Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Tại sao chọn BloodCare?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Hệ thống hiện đại, an toàn và hiệu quả nhất để kết nối người hiến máu với người cần máu
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8 text-red-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Cộng đồng rộng lớn</h3>
-              <p className="text-gray-600">
-                Hàng nghìn người hiến máu sẵn sàng giúp đỡ trong cộng đồng
-              </p>
-            </div>
-
-            <div className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">An toàn tuyệt đối</h3>
-              <p className="text-gray-600">
-                Quy trình kiểm tra nghiêm ngặt đảm bảo an toàn cho cả người hiến và nhận
-              </p>
-            </div>
-
-            <div className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Phản hồi nhanh</h3>
-              <p className="text-gray-600">
-                Hệ thống thông báo tức thời và xử lý yêu cầu khẩn cấp trong 15 phút
-              </p>
-            </div>
-
-            <div className="text-center p-6 rounded-lg hover:shadow-lg transition-shadow duration-300">
-              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart className="h-8 w-8 text-purple-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Miễn phí hoàn toàn</h3>
-              <p className="text-gray-600">
-                Tất cả dịch vụ đều miễn phí, vì mục đích nhân đạo cao cả
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Blood Types Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Nhóm máu và tương thích
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Hiểu rõ về nhóm máu của bạn và ai có thể nhận máu từ bạn
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
-            {BLOOD_TYPES.map((bloodType) => (
-              <div
-                key={bloodType}
-                className={`text-center p-4 rounded-lg ${BLOOD_TYPE_COLORS[bloodType]} shadow-md hover:shadow-lg transition-shadow duration-300`}
-              >
-                <div className="text-2xl font-bold mb-1">{bloodType}</div>
-                <div className="text-sm opacity-90">
-                  {TRANSLATIONS.bloodTypes[bloodType]}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                            {urgentBloodTypes.map((blood, index) => (
+                                <div key={index} className="bg-white p-4 rounded-lg border border-red-100 shadow-sm">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center">
+                                            <div className={`w-4 h-4 rounded-full ${blood.color} mr-3`}></div>
+                                            <div>
+                                                <div className="font-bold text-lg text-gray-900">Nhóm {blood.type}</div>
+                                                <div className="text-sm text-gray-600">{blood.stock}</div>
+                                            </div>
+                                        </div>
+                                        <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-1 rounded">
+                                            {blood.urgency}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-              </div>
-            ))}
-          </div>
+            </WrapperSection>
 
-          <div className="bg-white rounded-xl p-8 shadow-lg">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Thông tin quan trọng về hiến máu
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Điều kiện hiến máu:</h4>
-                <ul className="space-y-1 text-gray-600">
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Tuổi từ 18-65
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Cân nặng tối thiểu 45kg
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Sức khỏe tốt
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Không mắc các bệnh truyền nhiễm
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Lợi ích khi hiến máu:</h4>
-                <ul className="space-y-1 text-gray-600">
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Kiểm tra sức khỏe miễn phí
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Tái tạo máu mới
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Giảm nguy cơ bệnh tim mạch
-                  </li>
-                  <li className="flex items-center">
-                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    Cảm giác hạnh phúc khi giúp đỡ
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+            {/* How It Works */}
+            <WrapperSection className="py-16 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <GroupedHeading
+                        title="Quy trình hiến máu"
+                        description="3 bước đơn giản để trở thành người hiến máu và cứu sống nhiều người"
+                    />
 
-      {/* Call to Action */}
-      <section className="py-16 bg-gradient-to-r from-red-600 to-red-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-            Hãy trở thành người anh hùng ngày hôm nay!
-          </h2>
-          <p className="text-xl text-red-100 mb-8 max-w-3xl mx-auto">
-            Chỉ cần 10 phút của bạn có thể cứu sống 3 người.
-            Đăng ký ngay để tham gia vào cộng đồng những người có trái tim nhân ái.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/register">
-              <Button size="lg" className="bg-white text-red-600 hover:bg-red-50">
-                <Heart className="h-5 w-5 mr-2" />
-                Đăng ký hiến máu ngay
-              </Button>
-            </Link>
-            <Link to="/need-blood">
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-red-600">
-                Tôi cần máu khẩn cấp
-              </Button>
-            </Link>
-          </div>
+                    <ThreeStepProcess steps={processSteps} />
+
+                    <div className="text-center mt-12">
+                        <p className="text-gray-600 mb-6">
+                            Bạn có thắc mắc về quy trình hiến máu?
+                        </p>
+                        <button
+                            onClick={handleContactUs}
+                            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                        >
+                            Liên hệ tư vấn
+                        </button>
+                    </div>
+                </div>
+            </WrapperSection>
+
+            {/* Blood Types Information */}
+            <WrapperSection className="py-16 bg-gray-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <GroupedHeading
+                        title="Thông tin nhóm máu"
+                        description="Tìm hiểu về các nhóm máu và tính tương thích trong hiến máu"
+                    />
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
+                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((bloodType) => (
+                            <div key={bloodType} className="bg-white p-6 rounded-lg text-center hover:shadow-lg transition-all duration-300 border border-gray-100">
+                                <div className="text-3xl font-bold text-red-600 mb-2">{bloodType}</div>
+                                <div className="text-sm text-gray-600 mb-3">Nhóm máu {bloodType}</div>
+                                <button
+                                    onClick={() => navigate(`/blood-types?type=${bloodType}`)}
+                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+                                >
+                                    Xem chi tiết →
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="text-center mt-8">
+                        <button
+                            onClick={() => navigate('/blood-types')}
+                            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                        >
+                            Xem tất cả thông tin nhóm máu
+                        </button>
+                    </div>
+                </div>
+            </WrapperSection>
+
+            {/* Recent Blog Posts */}
+            <WrapperSection className="py-16 bg-white">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <GroupedHeading
+                        title="Tin tức & Kiến thức"
+                        description="Cập nhật thông tin mới nhất về hiến máu và sức khỏe cộng đồng"
+                    />
+
+                    <div className="grid md:grid-cols-3 gap-8 mt-12">
+                        {blogPosts.map((post, index) => (
+                            <article key={index} className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
+                                <div className="h-48 bg-gradient-to-br from-red-100 to-pink-100 flex items-center justify-center">
+                                    <div className="text-6xl">📝</div>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                                        <span>{post.date}</span>
+                                        <span className="mx-2">•</span>
+                                        <span>{post.readTime}</span>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                                        {post.title}
+                                    </h3>
+                                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                                        {post.excerpt}
+                                    </p>
+                                    <button
+                                        onClick={() => navigate('/blog')}
+                                        className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
+                                    >
+                                        Đọc thêm →
+                                    </button>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+
+                    <div className="text-center mt-8">
+                        <button
+                            onClick={() => navigate('/blog')}
+                            className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                        >
+                            Xem tất cả bài viết
+                        </button>
+                    </div>
+                </div>
+            </WrapperSection>
+
+            {/* Call to Action Section */}
+            <WrapperSection className="py-16 bg-gradient-to-r from-red-600 to-pink-600">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <TwoCta
+                        title="Bạn cần máu hay muốn hiến máu?"
+                        subtitle="Chúng tôi kết nối những người cần máu với những người sẵn sàng hiến máu trong cộng đồng"
+                        primaryText="Tôi muốn hiến máu"
+                        secondaryText="Tôi cần máu"
+                        onPrimaryClick={handleDonateBlood}
+                        onSecondaryClick={handleNeedBlood}
+                        theme="dark"
+                    />
+                </div>
+            </WrapperSection>
+
+            {/* Contact Section */}
+            <WrapperSection className="py-16 bg-gray-100">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <GroupedHeading
+                        title="Liên hệ với chúng tôi"
+                        description="Có câu hỏi hoặc cần hỗ trợ? Chúng tôi luôn sẵn sàng giúp đỡ bạn"
+                    />
+
+                    <ContactDetails />
+                </div>
+            </WrapperSection>
         </div>
-      </section>
-    </div>
-  );
+    );
 };
 
 export default Home;
