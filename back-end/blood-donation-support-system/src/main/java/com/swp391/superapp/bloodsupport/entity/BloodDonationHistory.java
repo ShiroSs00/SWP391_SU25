@@ -16,23 +16,23 @@ public class BloodDonationHistory {
     private Profile account;
 
     @ManyToOne
-    @JoinColumn(name = "EventId")
+    @JoinColumn(name = "event_id")
     private BloodDonationEvent event;
 
 
     @Column(name ="blood_volumn")
     private int bloodVolumn;
 
-    @Column(name ="")
+    @Column(name ="location_snapshot")
     private String locationSnapshot;
 
-    @Column(name ="")
+    @Column(name ="health_result")
     private String healthResult;
 
-    @Column(name ="")
+    @Column(name ="status")
     private String status;
 
-    @Column(name ="")
+    @Column(name ="created_at")
     private LocalDate createdAt;
 
     public BloodDonationHistory() {
