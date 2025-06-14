@@ -21,7 +21,7 @@ public class Profile {
     @Column(name = "profile_id")
     private int profileId;
 
-    @Column(name = "account_id")
+    @JoinColumn(name = "account_id")
     @OneToOne
     private Account accountId;
 
