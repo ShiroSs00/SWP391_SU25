@@ -3,7 +3,7 @@ package com.swp391.superapp.bloodsupport.entity;
 import jakarta.persistence.*;
 
 @Entity
-public class HeathCheck {
+public class HealthCheck {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int heathCheckId;
     @Column(name = "weight")
@@ -29,10 +29,10 @@ public class HeathCheck {
     @JoinColumn(name = "AfterDonationId")
     private AfterDonationBlood afterDonationBlood;
 
-    public HeathCheck() {
+    public HealthCheck() {
     }
 
-    public HeathCheck( double weight, double temperate, double bloodPressure, int pluse, double hemogobin, int volumeToTake, boolean isFitToDonate, String note) {
+    public HealthCheck(double weight, double temperate, double bloodPressure, int pluse, double hemogobin, int volumeToTake, boolean isFitToDonate, String note) {
         this.weight = weight;
         this.temperate = temperate;
         this.bloodPressure = bloodPressure;
@@ -134,7 +134,7 @@ public class HeathCheck {
 
     @Override
     public String toString() {
-        return "HeathCheck{" +
+        return "HealthCheck{" +
                 "heathCheckId=" + heathCheckId +
                 ", weight=" + weight +
                 ", temperate=" + temperate +

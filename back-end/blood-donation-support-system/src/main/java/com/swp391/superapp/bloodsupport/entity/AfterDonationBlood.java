@@ -15,11 +15,12 @@ public class AfterDonationBlood {
     @Column(name = "note")
     private String note;
     @OneToOne
-    @JoinColumn(name = "AfterDonationId")
-    private AfterDonationBlood afterDonationBlood;
+    @JoinColumn(name = "HealthCheckId")
+    private HealthCheck healthCheck;
     @ManyToOne()
     @JoinColumn(name = "BloodId")
     private Blood blood;
+
 
     public AfterDonationBlood() {
     }
@@ -32,12 +33,12 @@ public class AfterDonationBlood {
         this.note = note;
     }
 
-    public AfterDonationBlood getAfterDonationBlood() {
-        return afterDonationBlood;
+    public HealthCheck getHealthCheck() {
+        return healthCheck;
     }
 
-    public void setAfterDonationBlood(AfterDonationBlood afterDonationBlood) {
-        this.afterDonationBlood = afterDonationBlood;
+    public void setHealthCheck(HealthCheck healthCheck) {
+        this.healthCheck = healthCheck;
     }
 
     public Blood getBlood() {
