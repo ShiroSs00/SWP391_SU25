@@ -13,10 +13,11 @@ public class BloodDonationHistory {
 
     @OneToOne(fetch = FetchType.EAGER)
     @Column(name ="account_id")
-    private Profile accountId;
+    private Profile account;
 
-    @Column(name ="event_id")
-    private BloodDonationEvent leventId;
+    @ManyToOne
+    @JoinColumn(name = "EventId")
+    private BloodDonationEvent event;
 
 
     @Column(name ="blood_volumn")
@@ -37,10 +38,8 @@ public class BloodDonationHistory {
     public BloodDonationHistory() {
     }
 
-    public BloodDonationHistory(int historyId, Profile accountId, BloodDonationHistory eventId, int bloodVolumn, String locationSnapshot, String healthResult, String status, LocalDate createdAt) {
+    public BloodDonationHistory(int historyId,  int bloodVolumn, String locationSnapshot, String healthResult, String status, LocalDate createdAt) {
         this.historyId = historyId;
-        this.accountId = accountId;
-        this.eventId = eventId;
         this.bloodVolumn = bloodVolumn;
         this.locationSnapshot = locationSnapshot;
         this.healthResult = healthResult;
@@ -56,20 +55,20 @@ public class BloodDonationHistory {
         this.historyId = historyId;
     }
 
-    public Profile getAccountId() {
-        return accountId;
+    public Profile getAccount() {
+        return account;
     }
 
-    public void setAccountId(Profile accountId) {
-        this.accountId = accountId;
+    public void setAccount(Profile account) {
+        this.account = account;
     }
 
-    public BloodDonationHistory getEventId() {
-        return eventId;
+    public BloodDonationEvent getEvent() {
+        return event;
     }
 
-    public void setEventId(BloodDonationHistory eventId) {
-        this.eventId = eventId;
+    public void setEvent(BloodDonationEvent event) {
+        this.event = event;
     }
 
     public int getBloodVolumn() {
@@ -116,8 +115,7 @@ public class BloodDonationHistory {
     public String toString() {
         return "BloodDonationHistory{" +
                 "historyId=" + historyId +
-                ", accountId=" + accountId +
-                ", eventId=" + eventId +
+
                 ", bloodVolume=" + bloodVolumn +
                 ", locationSnapshot='" + locationSnapshot + '\'' +
                 ", healthResult='" + healthResult + '\'' +

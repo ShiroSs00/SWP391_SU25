@@ -22,7 +22,7 @@ public class DonationRegistration {
     private Profile profile;
     @OneToOne
     @JoinColumn(name = "HealthCheckId")
-    private HeathCheck healthCheck;
+    private HealthCheck healthCheck;
     @OneToOne
     @JoinColumn(name = "DonorFeedbackId")
     private DonorFeedback donorFeedback;
@@ -57,11 +57,11 @@ public class DonationRegistration {
         this.profile = profile;
     }
 
-    public HeathCheck getHealthCheck() {
+    public HealthCheck getHealthCheck() {
         return healthCheck;
     }
 
-    public void setHealthCheck(HeathCheck healthCheck) {
+    public void setHealthCheck(HealthCheck healthCheck) {
         this.healthCheck = healthCheck;
     }
 
