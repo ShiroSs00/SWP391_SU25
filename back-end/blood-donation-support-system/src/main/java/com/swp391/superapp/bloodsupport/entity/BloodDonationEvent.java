@@ -10,19 +10,20 @@ import java.util.List;
 
 @Entity
 public class BloodDonationEvent {
+    @Column(name = "event_id")
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private int eventId;
-    @Column(name = "nameOfEvent", nullable = false)
+    @Column(name = "name_of_event", nullable = false)
     private String nameOfEvent;
-    @Column(name = "creationDate",nullable = false)
+    @Column(name = "creation_date",nullable = false)
     private Date creationDate;
-    @Column(name = "startDate",nullable = false)
+    @Column(name = "start_date",nullable = false)
     private Date startDate;
-    @Column(name = "endDate",nullable = false)
+    @Column(name = "end_date",nullable = false)
     private Date endDate;
-    @Column(name = "expectedBloodVolume", nullable = false)
+    @Column(name = "expected_blood_volume", nullable = false)
     private int expectedBloodVolume;
-    @Column(name ="actualVolume")
+    @Column(name ="actual_volume")
     private int actualVolume;
     @Column (name = "location",nullable = false)
     private String location;
@@ -32,11 +33,11 @@ public class BloodDonationEvent {
     @OneToMany
     private List<BloodDonationHistory> bloodDonationHistoryList = new ArrayList<>();
     @OneToOne
-    @JoinColumn(name = "AccountIdCreate")
+    @JoinColumn(name = "account_id_create")
     private Account account;
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "donationRegistration")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
     private List<DonationRegistration> donationRegistrations = new ArrayList<>();
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "account")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
     private List<BloodDonationHistory> bloodDonationHistories = new ArrayList<>();
 
     public Account getAccount() {

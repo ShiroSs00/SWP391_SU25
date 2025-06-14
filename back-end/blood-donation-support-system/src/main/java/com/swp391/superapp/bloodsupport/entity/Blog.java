@@ -6,19 +6,19 @@ import java.util.Date;
 
 @Entity
 public class Blog {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "blog_id")
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int blogId;
     @Column(name = "content",nullable = false)
     private String content;
-    @Column(name = "postDate",nullable = false)
+    @Column(name = "post_date",nullable = false)
     private Date postDate;
     @Column(name = "conponent",nullable = false)
     private String conponent;
-    @Column(name = "tagName")
+    @Column(name = "tag_name")
     private String tagName;
     @ManyToOne()
-    @JoinColumn(name = "AccountId")
+    @JoinColumn(name = "account_id")
     private Account account;
 
 
