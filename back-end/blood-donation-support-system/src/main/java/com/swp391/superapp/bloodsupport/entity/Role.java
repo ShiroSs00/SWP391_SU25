@@ -16,8 +16,6 @@ import java.util.List;
 @Entity
 @Table(name = "role")
 public class Role {
-
-
     @Id
     @Column(name ="role_name")
     private String role;

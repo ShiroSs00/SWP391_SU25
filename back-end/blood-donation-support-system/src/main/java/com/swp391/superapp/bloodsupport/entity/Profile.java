@@ -17,8 +17,13 @@ import java.util.Date;
 @Table(name = "profile")
 public class Profile {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "profile_id")
+    private int profileId;
+
     @Column(name = "account_id")
-    private String accountId;
+    @OneToOne
+    private Account accountId;
 
     @Column(name ="name")
     private String name;
@@ -35,7 +40,8 @@ public class Profile {
     @Column(name ="address")
     private String address;
 
-    @Column(name ="role")
+    @JoinColumn(name ="role")
+    @ManyToOne
     private Role role;
 
     @Column(name ="number_of_blood_donation")
@@ -51,7 +57,7 @@ public class Profile {
     public Profile() {
     }
 
-    public Profile(String accountId, String name, String phone, Date dob, boolean gender, String address, Role role, int numberOfBloodDonation, Blood bloodCode, LocalDate restDate) {
+    public Profile(Account accountId, String name, String phone, Date dob, boolean gender, String address, Role role, int numberOfBloodDonation, Blood bloodCode, LocalDate restDate) {
         this.accountId = accountId;
         this.name = name;
         this.phone = phone;
@@ -64,11 +70,11 @@ public class Profile {
         this.restDate = restDate;
     }
 
-    public String getAccountId() {
+    public Account getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(String accountId) {
+    public void setAccountId(Account accountId) {
         this.accountId = accountId;
     }
 
