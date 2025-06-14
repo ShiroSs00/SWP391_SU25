@@ -25,11 +25,7 @@ public class Hospital {
     private String email;
 
     @OneToMany(mappedBy = "hospital")
-    private List<Account> accounts;
-
-    @OneToMany(mappedBy = "hospital")
-    private List<BloodRequest> bloodRequests;
-
+    private List<Account> account = new ArrayList<>();
 
     public Hospital() {
     }
