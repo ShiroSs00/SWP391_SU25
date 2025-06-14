@@ -2,18 +2,15 @@
 
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Header } from "./components/sections/header";
-import { Footer } from "./components/sections/footer";
+import { AuthProvider } from './context/AuthContext';
+
 
 // Pages
-import Home from "./pages/home";
-// import LoginPage from "./pages/LoginPage";
-// import RegisterPage from "./pages/RegisterPage";
-import Profile from "./pages/profile";
-import MapPage from "./pages/Map";
+import Home from "./pages/homePage/home.tsx";
+import Profile from "./pages/profilePage/profile.tsx";
 import Blog from "./pages/blogs/blogPage";
 import Contact from "./pages/contactPage/contactPage";
-import AuthPage from "./pages/authPage";
+import AuthPage from "./pages/authPage/authPage.tsx";
 import Dashboard from "./pages/dashboard/dashboard";
 import StaffPage from "./pages/staffPages/staffPage.tsx";
 // Forms
@@ -22,34 +19,36 @@ import RequestBloodForm from "./forms/RequestBlood/RequestBloodForm.tsx";
 // BloodTypes
 import BloodTypes from "./pages/booldTypes/bloodTypes";
 
-function App() {
+const App: React.FC = () => {
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            {/* <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} /> */}
-            <Route path="/login" element={<AuthPage />} />
-            <Route path="/register" element={<AuthPage />} />
-            <Route path="/donate" element={<DonorRegisterForm />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/need-blood-donate" element={<RequestBloodForm />} />
-            <Route path="/map" element={<MapPage />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blood-types" element={<BloodTypes />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/staff" element={<StaffPage />} />
-            {/* Thêm các route khác nếu cần */}
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col bg-gray-50">
+ 
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              {/* <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} /> */}
+              <Route path="/login" element={<AuthPage />} />
+              <Route path="/register" element={<AuthPage />} />
+              <Route path="/donate" element={<DonorRegisterForm />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/need-blood-donate" element={<RequestBloodForm />} />
+
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blood-types" element={<BloodTypes />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/staff/*" element={<StaffPage />} />
+              {/* Thêm các route khác nếu cần */}
+            </Routes>
+          </main>
+
+        </div>
+      </Router>
+    </AuthProvider>
   );
-}
+};
 
 export default App;

@@ -58,7 +58,7 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
                     type="text"
                     value={editedOrder.user}
                     onChange={(e) => handleChange("user", e.target.value)}
-                    className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-gray-800"
                   />
                 ) : (
                   <p className="mt-1 text-gray-900">{order.user}</p>
@@ -75,7 +75,7 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
                     type="date"
                     value={editedOrder.date}
                     onChange={(e) => handleChange("date", e.target.value)}
-                    className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-gray-800"
                   />
                 ) : (
                   <p className="mt-1 text-gray-900">{order.date}</p>
@@ -97,7 +97,7 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
                   <select
                     value={editedOrder.bloodType}
                     onChange={(e) => handleChange("bloodType", e.target.value)}
-                    className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-gray-800"
                   >
                     {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((type) => (
                       <option key={type} value={type}>{type}</option>
@@ -117,7 +117,7 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
                   <select
                     value={editedOrder.component}
                     onChange={(e) => handleChange("component", e.target.value)}
-                    className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-gray-800"
                   >
                     {bloodComponents.map((comp) => (
                       <option key={comp.value} value={comp.value}>
@@ -144,7 +144,7 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
                         type="number"
                         value={editedOrder.volume || ''}
                         onChange={(e) => handleChange("volume", e.target.value)}
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-gray-800"
                       />
                     ) : (
                       <p className="mt-1 text-gray-900">{order.volume || '-'} ml</p>
@@ -161,7 +161,7 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
                         type="text"
                         value={editedOrder.hospital || ''}
                         onChange={(e) => handleChange("hospital", e.target.value)}
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-gray-800"
                       />
                     ) : (
                       <p className="mt-1 text-gray-900">{order.hospital || '-'}</p>
@@ -178,7 +178,7 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
                         <select
                           value={editedOrder.urgency ? "true" : "false"}
                           onChange={(e) => handleChange("urgency", e.target.value === "true")}
-                          className="mt-1 rounded-md border border-gray-300 p-2"
+                          className="mt-1 rounded-md border border-gray-300 p-2 text-gray-800"
                         >
                           <option value="true">Khẩn cấp</option>
                           <option value="false">Bình thường</option>
@@ -208,7 +208,7 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
                 <select
                   value={editedOrder.status}
                   onChange={(e) => handleChange("status", e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-gray-800"
                 >
                   {["Chờ duyệt", "Đã duyệt", "Từ chối", "Hoàn thành"].map((status) => (
                     <option key={status} value={status}>{status}</option>
@@ -225,7 +225,7 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
                   value={editedOrder.note || ''}
                   onChange={(e) => handleChange("note", e.target.value)}
                   rows={3}
-                  className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+                  className="mt-1 block w-full rounded-md border border-gray-300 p-2 text-gray-800"
                   placeholder="Thêm ghi chú..."
                 />
               </div>
