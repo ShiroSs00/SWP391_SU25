@@ -115,7 +115,6 @@ public class BloodDonationHistory {
     public String toString() {
         return "BloodDonationHistory{" +
                 "historyId=" + historyId +
-
                 ", bloodVolume=" + bloodVolumn +
                 ", locationSnapshot='" + locationSnapshot + '\'' +
                 ", healthResult='" + healthResult + '\'' +

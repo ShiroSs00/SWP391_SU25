@@ -21,10 +21,10 @@ import java.util.List;
 @Table(name = "account")
 public class Account{
     @Id
-    @Column(name = "account_id" )
+    @Column(name = "id" )
     private String accountId;
 
-    @Column(name = "username")
+    @Column(name = "name")
     private String userName;
 
     @Column(name = "email")
@@ -39,17 +39,14 @@ public class Account{
     @Column(name ="createion_date")
     private LocalDate creationDate;
 
-    @OneToOne(mappedBy = "profile_id")
-    @JoinColumn(name = "profile_id")
-    private Profile profileId;
-
+    @Column(name ="role")
 
     @ManyToOne
     @JoinColumn(name = "role")
     private Role role;
 
     @ManyToOne
-    @Column(name ="hospital_name")
+    @Column(name ="Hospital")
     private Hospital hospital;
 
 
