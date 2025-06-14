@@ -4,29 +4,30 @@ import jakarta.persistence.*;
 
 @Entity
 public class HealthCheck {
+    @Column(name = "heath_check_id")
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int heathCheckId;
     @Column(name = "weight")
     private double weight;
     @Column(name = "temperate")
     private double temperate;
-    @Column(name = "bloodPressure")
+    @Column(name = "blood_pressure")
     private double bloodPressure;
     @Column(name = "pluse")
     private int pluse;
     @Column(name = "hemogobin")
     private double hemogobin;
-    @Column(name = "volumeToTake")
+    @Column(name = "volume_to_take")
     private int volumeToTake;
     @Column(name = "isFitToDonate")
     private boolean isFitToDonate;
     @Column(name = "note")
     private String note;
     @OneToOne
-    @JoinColumn(name = "DonationRegistrationId")
+    @JoinColumn(name = "donation_registration_id")
     private DonationRegistration donationRegistration;
     @OneToOne
-    @JoinColumn(name = "AfterDonationId")
+    @JoinColumn(name = "after_donation_id")
     private AfterDonationBlood afterDonationBlood;
 
     public HealthCheck() {

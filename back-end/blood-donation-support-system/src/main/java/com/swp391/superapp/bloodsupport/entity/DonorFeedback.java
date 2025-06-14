@@ -7,20 +7,20 @@ import jakarta.persistence.*;
 public class DonorFeedback {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "FeedbackID")
+    @Column(name = "feed_back_id")
     private int feedbackID;
     @Column(name = "process", nullable = false)
     private int process;
-    @Column(name = "bloodTest", nullable = false)
+    @Column(name = "blood_test", nullable = false)
     private int bloodTest;
-    @Column(name = "postDonationCare", nullable = false)
+    @Column(name = "post_donation_care", nullable = false)
     private int postDonationCare;
     @Column(name = "comfortable", nullable = false)
     private int comfortable;
     @Column(name = "description")
     private String description;
     @OneToOne
-    @JoinColumn(name = "registrationId")
+    @JoinColumn(name = "registration_id")
     private DonationRegistration registration;
 
     public DonorFeedback() {

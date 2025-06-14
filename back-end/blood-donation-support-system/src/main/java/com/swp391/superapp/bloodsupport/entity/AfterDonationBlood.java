@@ -4,21 +4,22 @@ import jakarta.persistence.*;
 
 @Entity
 public class AfterDonationBlood {
+    @Column(name = "after_donation_id")
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idAfterDonation;
-    @Column(name = "infectiousDiseasesChecked")
+    @Column(name = "infectious_diseases_checked")
     private Boolean infectiousDiseasesChecked;
-    @Column(name = "isBloodUsable")
+    @Column(name = "is_blood_usable")
     private Boolean isBloodUsable;
     @Column(name = "status")
     private String status;
     @Column(name = "note")
     private String note;
     @OneToOne
-    @JoinColumn(name = "HealthCheckId")
+    @JoinColumn(name = "health_check_id")
     private HealthCheck healthCheck;
     @ManyToOne()
-    @JoinColumn(name = "BloodId")
+    @JoinColumn(name = "blood_id")
     private Blood blood;
 
 
