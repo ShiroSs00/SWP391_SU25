@@ -3,6 +3,7 @@ package com.swp391.superapp.bloodsupport.controller;
 import com.swp391.superapp.bloodsupport.entity.Account;
 import com.swp391.superapp.bloodsupport.entity.BloodDonationEvent;
 import com.swp391.superapp.bloodsupport.service.EventService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,9 @@ import java.util.List;
 @RestController
 public class EventAPI {
     @Autowired
-    EventService eventService;
+    private EventService eventService;
     @GetMapping("/api/event")
-    public ResponseEntity getEvent() {
+    public ResponseEntity<List<BloodDonationEvent>> getEvent() {
        List<BloodDonationEvent> events = eventService.getAllEvent();
         return ResponseEntity.ok(events);
     }
@@ -35,11 +36,17 @@ public class EventAPI {
         BloodDonationEvent result = eventService.updateEvent(id, updatedEvent);
         return ResponseEntity.ok(result);
     }
+
     @DeleteMapping("/api/event/{id}")
     public ResponseEntity<?> deleteEvent(@PathVariable int id) {
-        eventService.deleteEvent(id);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        try {
+            eventService.deleteEvent(id);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found with id: " + id);
+        }
     }
+
     @GetMapping("/api/event/by-date")
     public ResponseEntity<List<BloodDonationEvent>> getEventsByDateRange(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date start,
@@ -48,6 +55,8 @@ public class EventAPI {
         List<BloodDonationEvent> events = eventService.getEventByDate(start, end);
         return ResponseEntity.ok(events);
     }
+
+
 
 
 

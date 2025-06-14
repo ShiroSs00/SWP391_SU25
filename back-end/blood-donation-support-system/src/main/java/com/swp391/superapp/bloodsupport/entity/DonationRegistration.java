@@ -6,39 +6,39 @@ import java.util.Date;
 
 @Entity
 public class DonationRegistration {
+    @Column(name = "registration_id")
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int registrationId;
-    @Column(name = "conponent",nullable = false)
-    private Enum conponent;
-    @Column(name = "dateCreated",nullable = false)
+    @Column(name = "date_created",nullable = false)
     private Date dateCreated;
     @Column(name = "status",nullable = false)
     private String status;
     @ManyToOne
-    @JoinColumn(name = "EventID")
+    @JoinColumn(name = "event_id")
     private BloodDonationEvent bloodDonationEvent;
-
-    @ManyToOne
-    @JoinColumn(name = "ProfileIdCreate")
-    private Profile profile;
-
     @OneToOne
-    @JoinColumn(name = "HealthCheckId")
+    @JoinColumn(name = "healthy_id")
     private HealthCheck healthCheck;
 
     @OneToOne
-    @JoinColumn(name = "DonorFeedbackId")
+    @JoinColumn(name = "donor_feedback_id")
     private DonorFeedback donorFeedback;
+    @ManyToOne
+    @JoinColumn(name = "component_id")
+    private Component component;
+    
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 
 
 
     public DonationRegistration() {
     }
 
-    public DonationRegistration(String status, Date dateCreated, Enum conponent, int registrationId) {
+    public DonationRegistration(String status, Date dateCreated, int registrationId) {
         this.status = status;
         this.dateCreated = dateCreated;
-        this.conponent = conponent;
         this.registrationId = registrationId;
     }
 
@@ -50,12 +50,12 @@ public class DonationRegistration {
         this.bloodDonationEvent = bloodDonationEvent;
     }
 
-    public Profile getProfile() {
-        return profile;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setProfile(Profile profile) {
-        this.profile = profile;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public HealthCheck getHealthCheck() {
@@ -82,12 +82,12 @@ public class DonationRegistration {
         this.registrationId = registrationId;
     }
 
-    public Enum getConponent() {
-        return conponent;
+    public Component getComponent() {
+        return component;
     }
 
-    public void setConponent(Enum conponent) {
-        this.conponent = conponent;
+    public void setComponent(Component component) {
+        this.component = component;
     }
 
     public Date getDateCreated() {
@@ -108,9 +108,8 @@ public class DonationRegistration {
 
     @Override
     public String toString() {
-        return "DonationRegistration{" +
+        return "DonationRegistrationAPI{" +
                 "registrationId=" + registrationId +
-                ", conponent=" + conponent +
                 ", dateCreated=" + dateCreated +
                 ", status='" + status + '\'' +
                 ", bloodDonationEvent=" + bloodDonationEvent +
