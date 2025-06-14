@@ -26,6 +26,10 @@ public class DonationRegistration {
     @ManyToOne
     @JoinColumn(name = "component_id")
     private Component component;
+    
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 
 
 
