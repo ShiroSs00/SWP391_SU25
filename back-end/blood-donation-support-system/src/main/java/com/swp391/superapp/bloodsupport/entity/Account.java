@@ -2,6 +2,7 @@ package com.swp391.superapp.bloodsupport.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 
 
 @Entity
@@ -33,6 +34,13 @@ public class Account{
     @ManyToOne
     @JoinColumn(name ="hospital_id")
     private Hospital hospital;
+
+
+    private List<BloodRequest> bloodRequests;
+
+    private List<Blog> blogs;
+
+    private List<DonationRegistration> donationRegistrations;
 
 
 

@@ -13,7 +13,7 @@ public class BloodDonationHistory {
 
     @OneToOne
     @Column(name ="account_id")
-    private Profile account;
+    private Account account;
 
     @ManyToOne
     @JoinColumn(name = "event_id")
@@ -54,11 +54,11 @@ public class BloodDonationHistory {
         this.historyId = historyId;
     }
 
-    public Profile getAccount() {
+    public Account getAccount() {
         return account;
     }
 
-    public void setAccount(Profile account) {
+    public void setAccount(Account account) {
         this.account = account;
     }
 

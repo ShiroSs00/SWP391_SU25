@@ -17,17 +17,18 @@ public class DonationRegistration {
     @ManyToOne
     @JoinColumn(name = "EventID")
     private BloodDonationEvent bloodDonationEvent;
-    @OneToOne
-    @JoinColumn(name = "ProfileIdCreate");
+
+    @ManyToOne
+    @JoinColumn(name = "ProfileIdCreate")
     private Profile profile;
+
     @OneToOne
     @JoinColumn(name = "HealthCheckId")
     private HealthCheck healthCheck;
+
     @OneToOne
     @JoinColumn(name = "DonorFeedbackId")
     private DonorFeedback donorFeedback;
-
-
 
 
 

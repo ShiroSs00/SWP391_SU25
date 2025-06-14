@@ -17,6 +17,7 @@ public class Achievement {
     @Column(name ="description")
     private String description;
 
+    private List<Profile> profiles;
 
     public Achievement() {
     }
