@@ -11,7 +11,7 @@ public class Account{
     @Column(name = "id" )
     private String accountId;
 
-    @Column(name = "name")
+    @Column(name = "username")
     private String userName;
 
     @Column(name = "email")
