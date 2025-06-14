@@ -11,19 +11,20 @@ public class BloodRequest {
     @Column(name = "id_blood_request")
     private int idBloodRequest;
 
-    @Column(name ="name")
-    @ManyToOne()
-    private Account accountId;
 
-    @JoinColumn(name = "hospital_id")
     @ManyToOne()
+    @JoinColumn(name ="name")
+    private Account account;
+
+    @ManyToOne()
+    @JoinColumn(name = "hospital_id")
     private Hospital hospitalId;
 
     @Column(name ="request_date")
     private LocalDate requestDate;
 
-    @JoinColumn(name ="blood_code")
     @ManyToOne()
+    @JoinColumn(name ="blood_code")
     private Blood bloodCode;
 
     @Column(name ="urgency")
@@ -41,12 +42,14 @@ public class BloodRequest {
     @Column(name ="request_Creation_date")
     private LocalDate requestCreationDate;
 
+
+
     public BloodRequest() {
     }
 
-    public BloodRequest(int idBloodRequest, Account accountId, Hospital hospitalId, LocalDate requestDate, Blood bloodCode, boolean urgency, String status, int volumn, int quatity) {
+    public BloodRequest(int idBloodRequest, Account account, Hospital hospitalId, LocalDate requestDate, Blood bloodCode, boolean urgency, String status, int volumn, int quatity) {
         this.idBloodRequest = idBloodRequest;
-        this.accountId = accountId;
+        this.account = account;
         this.hospitalId = hospitalId;
         this.requestDate = requestDate;
         this.bloodCode = bloodCode;
@@ -64,12 +67,12 @@ public class BloodRequest {
         this.idBloodRequest = idBloodRequest;
     }
 
-    public Account getAccountId() {
-        return accountId;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setAccountId(Account accountId) {
-        this.accountId = accountId;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public Hospital getHospitalId() {
@@ -132,7 +135,7 @@ public class BloodRequest {
     public String toString() {
         return "BloodRequest{" +
                 "idBloodRequest=" + idBloodRequest +
-                ", accountId=" + accountId.getUserName() +
+                ", accountId=" + account.getUserName() +
                 ", hospitalId=" + hospitalId.getHospitalName() +
                 ", requestDate=" + requestDate +
                 ", bloodCode=" + bloodCode +

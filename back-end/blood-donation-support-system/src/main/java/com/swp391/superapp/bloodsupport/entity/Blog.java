@@ -6,7 +6,8 @@ import java.util.Date;
 
 @Entity
 public class Blog {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int blogId;
     @Column(name = "content",nullable = false)
     private String content;

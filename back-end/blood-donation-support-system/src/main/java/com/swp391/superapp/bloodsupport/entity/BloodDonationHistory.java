@@ -12,7 +12,7 @@ public class BloodDonationHistory {
     private int historyId;
 
     @OneToOne
-    @Column(name ="account_id")
+    @JoinColumn(name ="account_id")
     private Account account;
 
     @ManyToOne

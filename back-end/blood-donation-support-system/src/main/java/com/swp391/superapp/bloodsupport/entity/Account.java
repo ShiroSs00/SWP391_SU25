@@ -35,16 +35,20 @@ public class Account{
     @JoinColumn(name ="hospital_id")
     private Hospital hospital;
 
-    @OneToMany(mappedBy ="id_blood_request")
+    @OneToMany(mappedBy ="account")
     private List<BloodRequest> bloodRequests;
 
-    @OneToMany(mappedBy ="blog_id")
+    @OneToMany(mappedBy ="account")
     private List<Blog> blogs;
 
-    @OneToMany(mappedBy ="registration_id")
+    @OneToMany(mappedBy ="account")
     private List<DonationRegistration> donationRegistrations;
 
+    @OneToOne
+    private BloodDonationHistory bloodDonationHistory;
 
+    @OneToMany(mappedBy ="account")
+    private List<Notification> notifications;
 
     public Account() {
     }
