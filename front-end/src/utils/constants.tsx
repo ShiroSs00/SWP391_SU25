@@ -1,3 +1,6 @@
+
+import type { BloodType, BloodCompatibility, BloodComponent } from '../types/types';
+
 import type { BloodType, BloodCompatibility, BloodComponent } from '../types/types.ts';
 
 // Blood Type Constants

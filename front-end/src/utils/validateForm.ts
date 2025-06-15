@@ -1,4 +1,7 @@
+
+import type { BloodType } from '../types/types';
 import type { BloodType } from '../types/types.ts';
+
 import { BLOOD_TYPES, DONATION_ELIGIBILITY } from './constants';
 
 export interface ValidationError {
