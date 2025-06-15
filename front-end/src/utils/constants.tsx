@@ -1,4 +1,7 @@
+
 import type { BloodType, BloodCompatibility, BloodComponent } from '../types/types';
+
+import type { BloodType, BloodCompatibility, BloodComponent } from '../types/types.ts';
 
 // Blood Type Constants
 export const BLOOD_TYPES: BloodType[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
