@@ -18,9 +18,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "profile")
-
 public class Profile {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "profile_id")
@@ -45,6 +43,14 @@ public class Profile {
     @Column(name ="address")
     private String address;
 
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "district")
+    private String district;
+
+    @Column(name = "ward")
+    private String ward;
 
     @Column(name ="number_of_blood_donation")
     private int numberOfBloodDonation;
@@ -63,7 +69,7 @@ public class Profile {
     public Profile() {
     }
 
-    public Profile(int profileId, Account accountId, String name, String phone, Date dob, boolean gender, String address, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate) {
+    public Profile(int profileId, Account accountId, String name, String phone, Date dob, boolean gender, String address, String city, String district, String ward, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate) {
         this.profileId = profileId;
         this.accountId = accountId;
         this.name = name;
@@ -71,9 +77,124 @@ public class Profile {
         this.dob = dob;
         this.gender = gender;
         this.address = address;
+        this.city = city;
+        this.district = district;
+        this.ward = ward;
         this.numberOfBloodDonation = numberOfBloodDonation;
         this.bloodCode = bloodCode;
         this.achievement = achievement;
+        this.restDate = restDate;
+    }
+
+    public int getProfileId() {
+        return profileId;
+    }
+
+    public void setProfileId(int profileId) {
+        this.profileId = profileId;
+    }
+
+    public Account getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Account accountId) {
+        this.accountId = accountId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public Date getDob() {
+        return dob;
+    }
+
+    public void setDob(Date dob) {
+        this.dob = dob;
+    }
+
+    public boolean isGender() {
+        return gender;
+    }
+
+    public void setGender(boolean gender) {
+        this.gender = gender;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
+    public String getWard() {
+        return ward;
+    }
+
+    public void setWard(String ward) {
+        this.ward = ward;
+    }
+
+    public int getNumberOfBloodDonation() {
+        return numberOfBloodDonation;
+    }
+
+    public void setNumberOfBloodDonation(int numberOfBloodDonation) {
+        this.numberOfBloodDonation = numberOfBloodDonation;
+    }
+
+    public Blood getBloodCode() {
+        return bloodCode;
+    }
+
+    public void setBloodCode(Blood bloodCode) {
+        this.bloodCode = bloodCode;
+    }
+
+    public Achievement getAchievement() {
+        return achievement;
+    }
+
+    public void setAchievement(Achievement achievement) {
+        this.achievement = achievement;
+    }
+
+    public LocalDate getRestDate() {
+        return restDate;
+    }
+
+    public void setRestDate(LocalDate restDate) {
         this.restDate = restDate;
     }
 
