@@ -1,7 +1,7 @@
 package com.swp391.superapp.bloodsupport.service;
 
-import com.swp391.superapp.bloodsupport.DTO.LoginRequest;
-import com.swp391.superapp.bloodsupport.DTO.LoginResponse;
+import com.swp391.superapp.bloodsupport.DTO.log.LoginRequest;
+import com.swp391.superapp.bloodsupport.DTO.log.LoginResponse;
 import com.swp391.superapp.bloodsupport.entity.Account;
 import com.swp391.superapp.bloodsupport.repository.AccountRepository;
 import com.swp391.superapp.bloodsupport.util.JwtUtil;
