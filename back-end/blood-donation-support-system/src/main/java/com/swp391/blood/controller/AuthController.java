@@ -1,8 +1,9 @@
 package com.swp391.blood.controller;
 
-import com.swp391.superapp.bloodsupport.DTO.log.LoginRequest;
-import com.swp391.superapp.bloodsupport.DTO.log.LoginResponse;
-import com.swp391.superapp.bloodsupport.service.AuthService;
+
+import com.swp391.blood.dto.log.LoginRequest;
+import com.swp391.blood.dto.log.LoginResponse;
+import com.swp391.blood.service.AuthService;
 import org.springframework.web.bind.annotation.RequestBody; // ✅ Đúng
 
 import org.springframework.beans.factory.annotation.Autowired;

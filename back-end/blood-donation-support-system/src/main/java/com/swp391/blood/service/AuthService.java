@@ -1,10 +1,11 @@
 package com.swp391.blood.service;
 
-import com.swp391.superapp.bloodsupport.DTO.log.LoginRequest;
-import com.swp391.superapp.bloodsupport.DTO.log.LoginResponse;
-import com.swp391.superapp.bloodsupport.entity.Account;
-import com.swp391.superapp.bloodsupport.repository.AccountRepository;
-import com.swp391.superapp.bloodsupport.util.JwtUtil;
+
+import com.swp391.blood.dto.log.LoginRequest;
+import com.swp391.blood.dto.log.LoginResponse;
+import com.swp391.blood.entity.Account;
+import com.swp391.blood.repository.AccountRepository;
+import com.swp391.blood.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
