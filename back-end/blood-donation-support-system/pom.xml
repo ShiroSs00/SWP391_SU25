@@ -41,6 +41,14 @@
             <version>9.3.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <version>3.5.0</version>
+        </dependency>
+
+
 
         <!-- Springdoc OpenAPI -->
         <dependency>
@@ -64,11 +72,11 @@
         </dependency>
 
 <!--        &lt;!&ndash; Spring Security &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-security</artifactId>-->
-<!--            <version>3.5.0</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <version>3.5.0</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api -->
         <dependency>
@@ -118,7 +126,21 @@
 
     <build>
         <plugins>
-            <!-- Plugin để repackage jar thành executable -->
+            <!-- Bật flag -parameters cho Java compiler -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
+            </plugin>
+
+            <!-- Plugin Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -133,5 +155,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>

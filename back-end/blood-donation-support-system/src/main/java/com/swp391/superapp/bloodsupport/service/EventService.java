@@ -5,7 +5,9 @@ import com.swp391.superapp.bloodsupport.entity.Account;
 import com.swp391.superapp.bloodsupport.entity.BloodDonationEvent;
 import com.swp391.superapp.bloodsupport.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
@@ -25,9 +27,11 @@ public  class EventService {
         bloodDonationEvent.setAccount(account);
         return eventRepository.save(bloodDonationEvent);
     }
-    public BloodDonationEvent updateEvent(int id, BloodDonationEvent updatedEvent) {
+    public BloodDonationEvent  updateEvent(int id, BloodDonationEvent updatedEvent) {
         BloodDonationEvent existingEvent = eventRepository.findById((long) id)
-                .orElseThrow(() -> new RuntimeException("Event not found with ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Event not found with ID: " + id
+                ));
 
         // Cập nhật các field
         existingEvent.setNameOfEvent(updatedEvent.getNameOfEvent());
@@ -41,7 +45,6 @@ public  class EventService {
 
         return eventRepository.save(existingEvent);
     }
-
 
 
     public List<BloodDonationEvent> getAllEvent(){

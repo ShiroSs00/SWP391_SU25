@@ -19,7 +19,7 @@ public class DonationRegistrationAPI {
     @Autowired
     private DonationRegistrationService donationRegistrationService;
 
-    @GetMapping("/api/donation/")
+    @GetMapping("/api/donation")
     public ResponseEntity<List<DonationRegistration>> getAllDonationRegistration() {
         List<DonationRegistration> registrations = donationRegistrationService.getAllDonationRegistrations();
         return ResponseEntity.ok(registrations);
