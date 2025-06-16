@@ -6,7 +6,7 @@
  * Change Log:
  * [02-06-2025] - Created by: AnNTV
  */
-package src.main.java.com.swp391.bloodcare.entity;
+package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
 

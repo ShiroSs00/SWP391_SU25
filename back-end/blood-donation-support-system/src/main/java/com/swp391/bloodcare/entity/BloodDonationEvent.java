@@ -1,4 +1,4 @@
-package src.main.java.com.swp391.bloodcare.entity;
+package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
 
@@ -51,6 +51,13 @@ public class BloodDonationEvent {
     public BloodDonationEvent() {
     }
 
+    public List<BloodDonationHistory> getBloodDonationHistoryList() {
+        return bloodDonationHistoryList;
+    }
+
+    public void setBloodDonationHistoryList(List<BloodDonationHistory> bloodDonationHistoryList) {
+        this.bloodDonationHistoryList = bloodDonationHistoryList;
+    }
 
     public List<DonationRegistration> getDonationRegistrations() {
         return donationRegistrations;

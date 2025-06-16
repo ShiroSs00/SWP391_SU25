@@ -1,4 +1,4 @@
-package src.main.java.com.swp391.bloodcare.entity;
+package com.swp391.bloodcare.entity;
 
 
 import jakarta.persistence.Entity;
