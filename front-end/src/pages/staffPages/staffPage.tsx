@@ -1,32 +1,25 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import StaffFeatureMenu from './StaffFeatureMenu';
-import StaffHeader from './StaffHeader';
-import { AdviceForMembersPage, SearchBloodRequestByDistancePage, BloodDonationInfoPage, BloodDonationOverviewPage } from './index';
+import { AdviceForMembersPage, SearchBloodRequestByDistancePage, BloodDonationInfoPage, BloodDonationOverviewPage, BloodOrderTable } from './index';
 
-const StaffPage: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+interface StaffPageProps {
+  isSidebarOpen: boolean;
+}
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
+const StaffPage: React.FC<StaffPageProps> = ({ isSidebarOpen }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <StaffHeader isSidebarOpen={isSidebarOpen} onToggleSidebar={toggleSidebar} />
-      <div className="flex pt-16">
-        <StaffFeatureMenu isOpen={isSidebarOpen} />
-        <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'} p-8`}>
-          <div className="relative z-10">
-            <Routes>
-              <Route path="/" element={<BloodDonationOverviewPage />} />
-              <Route path="advice" element={<AdviceForMembersPage />} />
-              <Route path="search-blood-request" element={<SearchBloodRequestByDistancePage />} />
-              <Route path="blood-donation-info" element={<BloodDonationInfoPage />} />
-              <Route path="*" element={<Navigate to="/staff" replace />} />
-            </Routes>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      <StaffFeatureMenu isOpen={isSidebarOpen} />
+      <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'} p-8`}>
+        <Routes>
+          <Route path="/" element={<BloodDonationOverviewPage />} />
+          <Route path="advice" element={<AdviceForMembersPage />} />
+          <Route path="search-blood-request" element={<SearchBloodRequestByDistancePage />} />
+          <Route path="blood-donation-info" element={<BloodDonationInfoPage />} />
+          <Route path="donation-applications" element={<BloodOrderTable orders={[]} activeTab="donation" onStatusChange={() => {}} onNoteChange={() => {}} onViewDetail={() => {}} />} />
+          <Route path="*" element={<Navigate to="/staff" replace />} />
+        </Routes>
       </div>
     </div>
   );

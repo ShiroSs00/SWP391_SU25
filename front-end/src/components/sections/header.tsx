@@ -1,138 +1,169 @@
 import type React from "react";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Heart, User, LogIn } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, Heart, User, LogIn, LogOut, Bell } from "lucide-react";
 import { Button } from "./button.tsx";
+import { useAuth } from "../../context/AuthContext";
 
-export const Header: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+interface HeaderProps {
+  isSidebarOpen: boolean;
+  onToggleSidebar: () => void;
+  showToggleButton?: boolean;
+}
+
+export const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar, showToggleButton }) => {
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const navigation = [
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  // Navigation links for different roles
+  const userNavigation = [
     { name: "Home", href: "/" },
-    { name: "Blog", href: "/Blog" }, // Thêm mục Blog
+    { name: "Blog", href: "/Blog" },
     { name: "Need-blood", href: "/need-blood-donate" },
     { name: "Donation", href: "/donate" },
     { name: "Contact", href: "/contact" },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const staffNavigation = [
+    { name: "Tổng quan", href: "/staff" },
+    { name: "Quản lý đơn", href: "/staff/donation-applications" },
+    { name: "Thông tin hiến máu", href: "/staff/blood-donation-info" },
+    { name: "Gửi lời khuyên", href: "/staff/advice" },
+    { name: "Tìm kiếm yêu cầu", href: "/staff/search-blood-request" },
+  ];
+
+  const adminNavigation = [
+    { name: "Dashboard", href: "/admin" },
+    { name: "Quản lý người dùng", href: "/admin/users" }, // Example admin link
+    { name: "Quản lý sự kiện", href: "/admin/events" }, // Example admin link
+  ];
+
+  const currentNavigation = user?.role?.toLowerCase() === 'staff' 
+    ? staffNavigation
+    : user?.role?.toLowerCase() === 'admin'
+      ? adminNavigation
+      : userNavigation;
+
+  const isActive = (path: string) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path + '/'));
+
+  console.log("User Role:", user?.role?.toLowerCase());
+  console.log("Current Navigation:", currentNavigation);
 
   return (
-    
-      <header className="bg-white shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
+    <header className="bg-white shadow-lg sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-4">
+          {/* Left side - Toggle Button for Staff and Logo */}
+          <div className="flex items-center space-x-4">
+            {showToggleButton && (
+              <button
+                onClick={onToggleSidebar}
+                className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-md p-2"
+              >
+                {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            )}
+            <Link to={user?.role === 'STAFF' ? "/staff" : "/"} className="flex items-center space-x-2">
               <div className="bg-red-600 p-2 rounded-lg">
                 <Heart className="h-6 w-6 text-white" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">BloodCare</h1>
-                <p className="text-xs text-gray-500">Hệ thống hiến máu</p>
+                <p className="text-xs text-gray-500">
+                  {user?.role === 'STAFF' ? 'Staff Dashboard' : 'Hệ thống hiến máu'}
+                </p>
               </div>
             </Link>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex space-x-8">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`text-sm font-medium transition-colors duration-200 ${
-                    isActive(item.href)
-                      ? "text-red-600 border-b-2 border-red-600 pb-1"
-                      : "text-gray-700 hover:text-red-600"
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Desktop Auth Buttons */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Link to="/profile">
-                <Button variant="ghost" size="sm">
-                  <User className="h-4 w-4 mr-2" />
-                  Hồ sơ
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button variant="outline" size="sm">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Đăng nhập
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button size="sm">Đăng ký</Button>
-              </Link>
-            </div>
-
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-gray-700 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-md p-2"
-              >
-                {isMenuOpen ? (
-                  <X className="h-6 w-6" />
-                ) : (
-                  <Menu className="h-6 w-6" />
-                )}
-              </button>
-            </div>
           </div>
 
-          {/* Mobile Navigation */}
-          {isMenuOpen && (
-            <div className="md:hidden border-t border-gray-200 py-4">
-              <div className="flex flex-col space-y-4">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`text-base font-medium px-2 py-1 rounded-md transition-colors duration-200 ${
-                      isActive(item.href)
-                        ? "text-red-600 bg-red-50"
-                        : "text-gray-700 hover:text-red-600 hover:bg-gray-50"
-                    }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
+          {/* Desktop Navigation */}
+          <nav className="flex space-x-8 ml-auto">
+            {currentNavigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`text-sm font-medium transition-colors duration-200 ${
+                  isActive(item.href)
+                    ? "text-red-600 border-b-2 border-red-600 pb-1"
+                    : "text-gray-700 hover:text-red-600"
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
 
-                <div className="border-t border-gray-200 pt-4 space-y-2">
-                  <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
+          {/* Right side - User info and actions */}
+          <div className="flex items-center space-x-4 ml-auto">
+            {user ? (
+              <>
+                <Button variant="ghost" size="sm" className="relative">
+                  <Bell className="h-4 w-4 mr-2" />
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-600 rounded-full text-xs text-white flex items-center justify-center">
+                    3
+                  </span>
+                </Button>
+                <div className="relative">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex items-center"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    {user.username}
+                  </Button>
+                  <div className={`absolute right-0 top-full w-48 bg-white rounded-lg shadow-lg py-2 border border-gray-100 -mt-px ${isDropdownOpen ? 'block' : 'hidden'}`}>
+                    <Link to="/profile">
+                      <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center space-x-2">
+                        <User className="w-4 h-4" />
+                        <span>Hồ sơ</span>
+                      </button>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 text-left text-gray-700 hover:bg-red-50 hover:text-red-600 flex items-center space-x-2"
                     >
-                      <User className="h-4 w-4 mr-2" />
-                      Hồ sơ
-                    </Button>
-                  </Link>
-                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full">
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Đăng nhập
-                    </Button>
-                  </Link>
-                  <Link to="/register" onClick={() => setIsMenuOpen(false)}>
-                    <Button size="sm" className="w-full">
-                      Đăng ký
-                    </Button>
-                  </Link>
+                      <LogOut className="w-4 h-4" />
+                      <span>Đăng xuất</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+              </>
+            ) : (
+              <>
+                <Link to="/profile">
+                  <Button variant="ghost" size="sm">
+                    <User className="h-4 w-4 mr-2" />
+                    Hồ sơ
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="outline" size="sm">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Đăng nhập
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm">Đăng ký</Button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
-      </header>
-  
+      </div>
+    </header>
   );
 };
 

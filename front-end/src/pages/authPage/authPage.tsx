@@ -41,8 +41,9 @@ const AuthPage: React.FC = () => {
       login({
         username: account.username,
         email: account.email,
-        role: account.role
-      });
+        role: account.role,
+        fullName: account.fullName
+      }, "mock-token");
       navigate("/profile");
     } else {
       setError("Tên đăng nhập hoặc mật khẩu không đúng!");
