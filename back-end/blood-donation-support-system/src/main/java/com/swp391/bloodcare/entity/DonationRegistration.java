@@ -109,7 +109,7 @@ public class DonationRegistration {
 
     @Override
     public String toString() {
-        return "DonationRegistrationAPI{" +
+        return "DonationRegistrationController{" +
                 "registrationId=" + registrationId +
                 ", dateCreated=" + dateCreated +
                 ", status='" + status + '\'' +

@@ -3,9 +3,11 @@ package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.BloodDonationEvent;
+import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,14 +21,17 @@ public  class EventService {
 
     @Autowired
     private EventRepository eventRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
-    public BloodDonationEvent createEvent(Account account, BloodDonationEvent bloodDonationEvent) {
-        if (bloodDonationEvent == null) {
-            throw new IllegalArgumentException("Event must not be null");
-        }
-        bloodDonationEvent.setAccount(account);
-        return eventRepository.save(bloodDonationEvent);
+    public BloodDonationEvent createEventByUsername(String username, BloodDonationEvent event) {
+        Account account = accountRepository.findByUserName(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        event.setAccount(account);
+        return eventRepository.save(event);
     }
+
     public BloodDonationEvent  updateEvent(int id, BloodDonationEvent updatedEvent) {
         BloodDonationEvent existingEvent = eventRepository.findById((long) id)
                 .orElseThrow(() -> new ResponseStatusException(
