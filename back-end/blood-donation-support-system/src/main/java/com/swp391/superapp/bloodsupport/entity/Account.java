@@ -12,10 +12,10 @@ public class Account{
     @Column(name = "id" )
     private String accountId;
 
-    @Column(name = "username")
+    @Column(name = "username", unique = true, nullable = false)
     private String userName;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true, nullable = false)
     private String email;
 
     @Column(name ="password")
