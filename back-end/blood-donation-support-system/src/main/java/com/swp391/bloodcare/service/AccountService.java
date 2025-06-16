@@ -10,6 +10,7 @@ import com.swp391.bloodcare.repository.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -26,6 +27,7 @@ public class AccountService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Transactional
     public AccountRegistrationResponse<String> registerAccount(AccountRegistrationDTO accountRegistration) {
         try{
 

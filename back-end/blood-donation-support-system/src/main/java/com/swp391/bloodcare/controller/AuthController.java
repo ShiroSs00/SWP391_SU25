@@ -66,6 +66,7 @@ public class AuthController {
 
 
     //tạo tài khoản
+    @PostMapping("/register")
     public ResponseEntity<AccountRegistrationResponse<String>> registerAccount(@Valid @RequestBody AccountRegistrationDTO accountRegistrationDTO, BindingResult bindingResult) {
         //kiểm tra validation error
         if (bindingResult.hasErrors()) {
