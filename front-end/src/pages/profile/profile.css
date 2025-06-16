@@ -1,0 +1,103 @@
+/* styles/profile.css - Optional additional styles */
+
+/* Custom scrollbar for table */
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Smooth transitions */
+.profile-card-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-card-transition:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Animation for stats cards */
+@keyframes pulse-gentle {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.stats-card {
+    animation: pulse-gentle 3s ease-in-out infinite;
+}
+
+/* Custom gradient backgrounds */
+.bg-blood-gradient {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #f87171 100%);
+}
+
+.bg-achievement-gradient {
+    background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%);
+}
+
+/* Table row hover effect */
+.table-row-hover {
+    transition: all 0.2s ease-in-out;
+}
+
+.table-row-hover:hover {
+    background-color: #fef2f2;
+    transform: scale(1.01);
+}
+
+/* Badge animation */
+.status-badge {
+    transition: all 0.2s ease-in-out;
+}
+
+.status-badge:hover {
+    transform: scale(1.05);
+}
+
+/* Responsive text scaling */
+@media (max-width: 640px) {
+    .responsive-text-lg {
+        font-size: 1rem;
+    }
+
+    .responsive-text-xl {
+        font-size: 1.125rem;
+    }
+
+    .responsive-text-2xl {
+        font-size: 1.5rem;
+    }
+}
+
+/* Loading skeleton animation */
+@keyframes skeleton-loading {
+    0% {
+        background-position: -200px 0;
+    }
+    100% {
+        background-position: calc(200px + 100%) 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200px 100%;
+    animation: skeleton-loading 1.5s infinite;
+}

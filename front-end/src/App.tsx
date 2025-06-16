@@ -13,6 +13,9 @@ import Contact from "./pages/contactPage/contactPage";
 import AuthPage from "./pages/authPage/authPage.tsx";
 import Dashboard from "./pages/dashboard/dashboard";
 import StaffPage from "./pages/staffPages/staffPage.tsx";
+// import LoginPage from "./pages/LoginPage";
+// import RegisterPage from "./pages/RegisterPage";
+
 // Forms
 import DonorRegisterForm from "./forms/DonorRegister/DonorRegisterForm.tsx";
 import RequestBloodForm from "./forms/RequestBlood/RequestBloodForm.tsx";
