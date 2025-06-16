@@ -9,7 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+//import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,19 +19,19 @@ public class DonationRegistrationAPI {
     @Autowired
     private DonationRegistrationService donationRegistrationService;
 
-    @GetMapping("/api/donation/")
+    @GetMapping("/api/donation")
     public ResponseEntity<List<DonationRegistration>> getAllDonationRegistration() {
         List<DonationRegistration> registrations = donationRegistrationService.getAllDonationRegistrations();
         return ResponseEntity.ok(registrations);
     }
 
-    @PostMapping("/api/donation")
-    public ResponseEntity<DonationRegistration> createDonationRegistration(
-            @RequestBody DonationRegistration donationRegistration,
-            @AuthenticationPrincipal Account account) {
-        DonationRegistration savedRegistration = donationRegistrationService.createDonationRegistration(donationRegistration, account.getProfile());
-        return new ResponseEntity<>(savedRegistration, HttpStatus.CREATED);
-    }
+//    @PostMapping("/api/donation")
+//    public ResponseEntity<DonationRegistration> createDonationRegistration(
+//            @RequestBody DonationRegistration donationRegistration,
+//            @AuthenticationPrincipal Account account) {
+//        DonationRegistration savedRegistration = donationRegistrationService.createDonationRegistration(donationRegistration, account);
+//        return new ResponseEntity<>(savedRegistration, HttpStatus.CREATED);
+//    }
 
     @PutMapping("/api/donation/{id}")
     public ResponseEntity<DonationRegistration> updateDonationRegistration(
@@ -42,15 +42,17 @@ public class DonationRegistrationAPI {
         return ResponseEntity.ok(result);
     }
 
-    @DeleteMapping("/api/event/{id}")
-    public ResponseEntity<?> deleteEvent(@PathVariable int id) {
+    @DeleteMapping("/api/donation/{id}")
+    public ResponseEntity<?> deleteDonationRegistration(@PathVariable int id) {
         try {
-            donationRegistrationService.deleteDonationRegistration();
+            donationRegistrationService.deleteDonationRegistration(id);
             return ResponseEntity.noContent().build(); // 204 No Content
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found with id: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Donation registration not found with id: " + id);
         }
     }
+
 
 
 

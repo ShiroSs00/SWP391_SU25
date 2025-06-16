@@ -8,7 +8,6 @@ import java.util.List;
 
 @Service
 public class FeedbackService {
-    @Autowired
     private FeedbackService feedbackService ;
     public DonorFeedback createFeedback(DonorFeedback feedback) {
         return feedbackService.createFeedback(feedback);

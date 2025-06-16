@@ -8,11 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+//import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
 @RestController
 public class EventAPI {
     @Autowired
@@ -28,24 +29,42 @@ public class EventAPI {
         BloodDonationEvent createdEvent = eventService.createEvent(account, event);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
     }
-    @PutMapping("/api/event/{id}")
-    public ResponseEntity<BloodDonationEvent> updateEvent(
-            @PathVariable int id,
-            @RequestBody BloodDonationEvent updatedEvent
-    ) {
+@PutMapping("/api/event/{id}")
+public ResponseEntity<?> updateEvent(
+        @PathVariable("id") int id,
+        @RequestBody BloodDonationEvent updatedEvent
+) {
+    try {
         BloodDonationEvent result = eventService.updateEvent(id, updatedEvent);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(result); // 200 OK + object
+    } catch (EntityNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found with id: " + id);
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update failed: " + e.getMessage());
     }
+}
 
     @DeleteMapping("/api/event/{id}")
-    public ResponseEntity<?> deleteEvent(@PathVariable int id) {
+    public ResponseEntity<?> deleteEvent(@PathVariable("id") int id) {
         try {
             eventService.deleteEvent(id);
-            return ResponseEntity.noContent().build(); // 204 No Content
+
+            // Trả về JSON message thông báo thành công
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Event deleted successfully with id: " + id);
+            return ResponseEntity.ok(response); // 200 OK
+
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found with id: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", "Event not found with id: " + id));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Delete failed: " + e.getMessage()));
         }
     }
+
+
 
     @GetMapping("/api/event/by-date")
     public ResponseEntity<List<BloodDonationEvent>> getEventsByDateRange(

@@ -35,6 +35,7 @@ public class Notification {
     }
 
     public void setAccount(Account account) {
+  
         this.account = account;
     }
 
