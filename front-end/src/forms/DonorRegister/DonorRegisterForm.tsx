@@ -79,14 +79,33 @@ const DonorRegisterForm: React.FC = () => {
     setErrors(validationErrors);
 
     if (validationErrors.length === 0) {
-      setIsSubmitting(true);
-      setTimeout(() => {
+      try {
+        setIsSubmitting(true);
+        
+        // Gọi API đăng ký hiến máu
+        const response = await fetch('http://localhost:8080/api/donor-register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Có lỗi xảy ra khi đăng ký');
+        }
+
         setSuccess(true);
-        setIsSubmitting(false);
         setTimeout(() => {
           navigate('/');
         }, 2000);
-      }, 1000);
+      } catch (error) {
+        setErrors([{ field: 'general', message: error instanceof Error ? error.message : 'Có lỗi xảy ra khi đăng ký' }]);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -121,6 +140,11 @@ const DonorRegisterForm: React.FC = () => {
               </div>
           ) : (
               <>
+                {errors.find(e => e.field === 'general') && (
+                  <div className="donor-general-error">
+                    {errors.find(e => e.field === 'general')?.message}
+                  </div>
+                )}
                 <div className="donor-requirements-info">
                   <h3 className="donor-requirements-title">
                     <CheckCircle className="h-5 w-5" /> Yêu cầu hiến máu

@@ -3,6 +3,7 @@ export interface Account {
   password: string;
   email: string;
   role: 'admin' | 'staff' | 'user';
+  fullName: string;
 }
 
 export const mockAccounts: Account[] = [
@@ -10,18 +11,21 @@ export const mockAccounts: Account[] = [
     username: 'admin',
     password: 'admin123',
     email: 'admin@example.com',
-    role: 'admin'
+    role: 'admin',
+    fullName: 'Admin User'
   },
   {
     username: 'staff',
     password: 'staff123',
     email: 'staff@example.com',
-    role: 'staff'
+    role: 'staff',
+    fullName: 'Staff User'
   },
   {
     username: 'user',
     password: 'user123',
     email: 'user@example.com',
-    role: 'user'
+    role: 'user',
+    fullName: 'Regular User'
   }
 ]; 
