@@ -36,6 +36,7 @@ public class DonationRegistration {
     public DonationRegistration() {
     }
 
+
     public DonationRegistration(String status, Date dateCreated, int registrationId) {
         this.status = status;
         this.dateCreated = dateCreated;
