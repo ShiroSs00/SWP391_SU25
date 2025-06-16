@@ -1,7 +1,7 @@
 package com.swp391.bloodcare.repository;
 
 
-import com.swp391.blood.entity.Account;
+import com.swp391.bloodcare.entity.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

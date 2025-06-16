@@ -35,7 +35,7 @@ public class AuthService {
 
             }
 
-           Account> accountOtp = accountRepository.findByUserName(loginRequest.getUsername());
+           Optional<Account> accountOtp = accountRepository.findByUserName(loginRequest.getUsername());
 
 
             if(accountOtp.isEmpty()){
