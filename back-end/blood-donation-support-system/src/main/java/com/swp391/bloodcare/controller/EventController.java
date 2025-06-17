@@ -19,11 +19,13 @@ import java.util.*;
 public class EventController {
     @Autowired
     private EventService eventService;
+
     @GetMapping("/event")
     public ResponseEntity<List<BloodDonationEvent>> getEvent() {
        List<BloodDonationEvent> events = eventService.getAllEvent();
         return ResponseEntity.ok(events);
     }
+
     @PostMapping("/event")
     public ResponseEntity<BloodDonationEvent> addEvent(@RequestBody BloodDonationEvent event) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

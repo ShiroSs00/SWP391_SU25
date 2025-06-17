@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,7 +29,8 @@ public class DonationRegistrationController {
     public ResponseEntity<DonationRegistration> createDonationRegistration(
             @RequestBody DonationRegistration donationRegistration,
             @AuthenticationPrincipal Account account) {
-        DonationRegistration savedRegistration = donationRegistrationService.createDonationRegistration(donationRegistration, account);
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        DonationRegistration savedRegistration = donationRegistrationService.createDonationByUsername(username, donationRegistration);
         return new ResponseEntity<>(savedRegistration, HttpStatus.CREATED);
     }
 
@@ -45,7 +47,7 @@ public class DonationRegistrationController {
     public ResponseEntity<?> deleteDonationRegistration(@PathVariable int id) {
         try {
             donationRegistrationService.deleteDonationRegistration(id);
-            return ResponseEntity.noContent().build(); // 204 No Content
+            return ResponseEntity.ok("Successfully deleted donation registration with ID: " + id);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Donation registration not found with id: " + id);

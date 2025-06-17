@@ -1,11 +1,14 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.entity.Account;
+import com.swp391.bloodcare.entity.BloodDonationEvent;
 import com.swp391.bloodcare.entity.DonationRegistration;
 import com.swp391.bloodcare.entity.Profile;
+import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -13,7 +16,12 @@ import java.util.List;
 public class DonationRegistrationService {
     @Autowired
     private DonationRegistrationRepository donationRegistrationRepository;
-    public DonationRegistration createDonationRegistration(DonationRegistration donationRegistration, Account account) {
+    @Autowired
+    private AccountRepository accountRepository;
+    public DonationRegistration createDonationByUsername(String username, DonationRegistration donationRegistration) {
+        Account account = accountRepository.findByUserName(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
         donationRegistration.setAccount(account);
         return donationRegistrationRepository.save(donationRegistration);
     }

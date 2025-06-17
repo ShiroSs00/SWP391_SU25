@@ -7,7 +7,7 @@ import java.util.Date;
 @Entity
 public class DonationRegistration {
     @Column(name = "registration_id")
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
     private int registrationId;
     @Column(name = "date_created",nullable = false)
     private Date dateCreated;
