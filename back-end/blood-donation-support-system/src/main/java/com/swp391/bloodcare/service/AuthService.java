@@ -11,10 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.*;
 
 @Service
-public class AuthService {
+public class AuthService  {
 
     @Autowired
     private AccountRepository accountRepository;
@@ -83,6 +83,11 @@ public class AuthService {
             return false;
         }
     }
+
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAll();
+    }
+
 
 
 }
