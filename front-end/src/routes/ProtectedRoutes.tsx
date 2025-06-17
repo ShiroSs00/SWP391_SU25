@@ -53,6 +53,7 @@ const ProtectedRoutes: React.FC<ProtectedRoutesProps> = ({ isSidebarOpen }) => {
           </ProtectedRoute>
         }
       >
+        <Route path="blog-management" element={<BlogManagement />} />
         <Route path="advice-for-members" element={<AdviceForMembersPage />} />
         <Route path="donation-applications" element={<BloodDonationInfoPage />} />
       </Route>
