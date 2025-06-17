@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController("/api/healthcheck")
+@RestController
+@RequestMapping("/api/healthcheck")
 
 public class HealthCheckController {
     @Autowired
