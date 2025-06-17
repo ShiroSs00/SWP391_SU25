@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BloodOrder } from '../../types/types';
+import type { BloodOrder } from '../../types/types';
 
 const mockDonationInfo: BloodOrder[] = [
   {

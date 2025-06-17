@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { User, Hospital, ClipboardList, BarChart } from 'lucide-react';
-import { BloodOrderTable } from "./BloodOrderTable";
 import { BloodOrderModal } from "./BloodOrderModal";
 import type { BloodOrder } from "../../types/types";
+import { BloodOrderTable } from "./BloodOrderTable";
 
 // Dummy data for demonstration
 const mockOrders: BloodOrder[] = [
@@ -152,7 +152,7 @@ const BloodDonationOverviewPage: React.FC = () => {
 
       {/* Status cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {["Chờ duyệt", "Đã duyệt", "Từ chối", "Hoàn thành"].map((status) => (
+        {(["Chờ duyệt", "Đã duyệt", "Từ chối", "Hoàn thành"] as BloodOrder["status"][]).map((status) => (
           <div key={status} className="bg-white rounded-lg shadow-sm p-6 transition-transform duration-200 hover:transform hover:scale-105">
             <div className="flex items-center">
               <div className={`p-3 rounded-full ${getStatusColor(status)}`}>
@@ -192,4 +192,4 @@ const BloodDonationOverviewPage: React.FC = () => {
   );
 };
 
-export default BloodDonationOverviewPage; 
+export default BloodDonationOverviewPage;

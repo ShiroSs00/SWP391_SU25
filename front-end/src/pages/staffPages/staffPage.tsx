@@ -1,7 +1,12 @@
 import React from 'react';
+
 import { Routes, Route, Navigate } from 'react-router-dom';
 import StaffFeatureMenu from './StaffFeatureMenu';
-import { AdviceForMembersPage, SearchBloodRequestByDistancePage, BloodDonationInfoPage, BloodDonationOverviewPage, BloodOrderTable } from './index';
+import AdviceForMembersPage from './AdviceForMembersPage';
+import SearchBloodRequestByDistancePage from './SearchBloodRequestByDistancePage';
+import BloodDonationInfoPage from './BloodDonationInfoPage';
+import BloodDonationOverviewPage from './BloodDonationOverviewPage';
+import { BloodOrderTable } from './BloodOrderTable';
 
 interface StaffPageProps {
   isSidebarOpen: boolean;

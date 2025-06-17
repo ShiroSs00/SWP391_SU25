@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Heart, User, LogIn, LogOut, Bell } from "lucide-react";
 import { Button } from "./button.tsx";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../pages/authPage/AuthContext.tsx";
 
 interface HeaderProps {
   isSidebarOpen: boolean;
@@ -62,8 +62,8 @@ export const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar, 
 
   return (
     <header className="bg-white shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
+      <div className={`py-4 ${showToggleButton ? 'pl-4 pr-4' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
+        <div className="flex justify-between items-center">
           {/* Left side - Toggle Button for Staff and Logo */}
           <div className="flex items-center space-x-4">
             {showToggleButton && (
@@ -74,14 +74,14 @@ export const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar, 
                 {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
             )}
-            <Link to={user?.role === 'STAFF' ? "/staff" : "/"} className="flex items-center space-x-2">
+            <Link to={user?.role?.toLowerCase() === 'staff' ? "/staff" : user?.role?.toLowerCase() === 'admin' ? "/admin" : "/"} className="flex items-center space-x-2">
               <div className="bg-red-600 p-2 rounded-lg">
                 <Heart className="h-6 w-6 text-white" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">BloodCare</h1>
                 <p className="text-xs text-gray-500">
-                  {user?.role === 'STAFF' ? 'Staff Dashboard' : 'Hệ thống hiến máu'}
+                  {user?.role?.toLowerCase() === 'staff' ? 'Staff Dashboard' : user?.role?.toLowerCase() === 'admin' ? 'Admin Dashboard' : 'Hệ thống hiến máu'}
                 </p>
               </div>
             </Link>
@@ -143,12 +143,13 @@ export const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar, 
               </>
             ) : (
               <>
-                <Link to="/profile">
+                {/* Ẩn nút Hồ sơ khi chưa đăng nhập */}
+                {/* <Link to="/profile">
                   <Button variant="ghost" size="sm">
                     <User className="h-4 w-4 mr-2" />
                     Hồ sơ
                   </Button>
-                </Link>
+                </Link> */}
                 <Link to="/login">
                   <Button variant="outline" size="sm">
                     <LogIn className="h-4 w-4 mr-2" />

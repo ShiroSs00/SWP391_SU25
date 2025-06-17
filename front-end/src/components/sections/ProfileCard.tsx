@@ -1,10 +1,10 @@
 // components/ProfileCard.tsx
 import React from 'react';
 import { User, Mail, Phone, Calendar, MapPin, Droplet, Award, Heart } from 'lucide-react';
-import type {Profile} from "../../types/types.ts";
+import type {UserProfile} from "../../types/types.ts";
 
 interface ProfileCardProps {
-    profile: Profile;
+    profile: UserProfile;
 }
 
 const ProfileCard: React.FC<ProfileCardProps> = ({ profile }) => {
@@ -126,7 +126,9 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile }) => {
                             </div>
                             <div>
                                 <div className="text-sm text-gray-500">Địa chỉ</div>
-                                <div className="font-medium text-gray-800">{profile.address}</div>
+                                <div className="font-medium text-gray-800">
+                                    {`${profile.address.street}, ${profile.address.ward ? profile.address.ward + ', ' : ''}${profile.address.district}, ${profile.address.city}, ${profile.address.province}`}
+                                </div>
                             </div>
                         </div>
                     </div>

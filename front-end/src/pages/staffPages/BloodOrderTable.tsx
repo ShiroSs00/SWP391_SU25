@@ -143,3 +143,4 @@ export const BloodOrderTable: React.FC<BloodOrderTableProps> = ({
     </div>
   );
 };
+export default BloodOrderTable;

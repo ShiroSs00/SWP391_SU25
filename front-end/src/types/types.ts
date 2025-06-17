@@ -1,34 +1,18 @@
-
 // Blood Types and Compatibility
 export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
 
 export type BloodComponent = 'whole_blood' | 'red_blood_cells' | 'plasma' | 'platelets';
+export type UserRole = 'admin' | 'staff' | 'member' | 'guest';
 
 export interface BloodCompatibility {
     donor: BloodType[];
     recipient: BloodType[];
 }
 
-// User Types
-export interface User {
-    id: string;
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    phone: string;
-    dateOfBirth: Date;
-    gender: 'male' | 'female' | 'other';
-    bloodType: BloodType;
-    address: Address;
-    role: 'donor' | 'recipient' | 'admin' | 'medical_staff';
-    isVerified: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
+// Address Type
 export interface Address {
     street: string;
+    ward?: string;
     city: string;
     district: string;
     province: string;
@@ -84,7 +68,7 @@ export interface BloodRequest {
     requestDate: Date;
     requiredDate: Date;
     description: string;
-    status: 'pending' | 'partially_fulfilled' | 'fulfilled' | 'cancelled' | 'expired';
+    status: RequestStatus;
     donations: DonationAppointment[];
     createdAt: Date;
     updatedAt: Date;
@@ -175,17 +159,29 @@ export interface OperatingHours {
 
 // Dashboard & Reports
 export interface DashboardStats {
-    totalDonors: number;
-    activeDonors: number;
-    totalDonations: number;
-    monthlyDonations: number;
-    bloodInventory: BloodInventoryStats[];
-    pendingRequests: number;
-    urgentRequests: number;
-    upcomingAppointments: number;
+    userStats: {
+        totalDonors: number;
+        activeDonors: number;
+        newRegistrations: number;
+    };
+
+    donationStats: {
+        totalDonations: number;
+        monthlyDonations: number;
+        upcomingEvents: number;
+        completedEvents: number;
+    };
+
+    requestStats: {
+        pendingRequests: number;
+        urgentRequests: number;
+        fulfilledRequests: number;
+    };
+
+    bloodInventory: BloodInventoryItem[];
 }
 
-export interface BloodInventoryStats {
+export interface BloodInventoryItem {
     bloodType: BloodType;
     component: BloodComponent;
     unitsAvailable: number;
@@ -197,37 +193,43 @@ export interface BloodInventoryStats {
 export interface SearchFilters {
     bloodType?: BloodType;
     component?: BloodComponent;
-    location?: {
-        lat: number;
-        lng: number;
-        radius: number; // in kilometers
+    location?: string;
+    urgency?: UrgencyLevel;
+    status?: RequestStatus | EventStatus | DonationStatus;
+    dateRange?: {
+        from: Date;
+        to: Date;
     };
-    urgency?: 'low' | 'medium' | 'high' | 'critical';
-    availability?: {
-        fromDate: Date;
-        toDate: Date;
-    };
+    userId?: string;
 }
 
-export interface SearchResult {
-    donors?: DonorProfile[];
-    requests?: BloodRequest[];
-    inventory?: BloodInventory[];
-    distance?: number;
-}
-
-// Notification Types
-export interface Notification {
-    id: string;
-    userId: string;
-    type: 'reminder' | 'request' | 'appointment' | 'system' | 'emergency';
-    title: string;
+export interface ApiResponse<T> {
+    success: boolean;
+    data?: T;
     message: string;
-    isRead: boolean;
-    priority: 'low' | 'medium' | 'high';
-    actionUrl?: string;
-    createdAt: Date;
-    expiresAt?: Date;
+    errors?: Record<string, string[]>;
+}
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+export interface BloodOrder {
+  id: number;
+  user: string;
+  type: "Hiến máu" | "Nhận máu";
+  date: string;
+  status: "Chờ duyệt" | "Đã duyệt" | "Từ chối" | "Hoàn thành";
+  bloodType: string;
+  component?: string;
+  volume?: number;
+  hospital?: string; // Made optional to match usage
+  urgency?: boolean; // Changed to boolean to match table logic
+  note?: string; // Made optional to match usage
 }
 
 // Form Types
@@ -275,17 +277,12 @@ export interface BloodRequestForm {
     };
 }
 
-// API Response Types
-
-// Base Types
-export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
-export type BloodComponent = 'whole_blood' | 'red_blood_cells' | 'plasma' | 'platelets';
-export type UserRole = 'member' | 'admin' | 'medical_staff' | 'guest';
+// Base Types (moved up for clarity and consistency)
 export type Gender = 'male' | 'female' | 'other';
 export type UrgencyLevel = 'low' | 'medium' | 'high' | 'critical';
 export type RequestStatus = 'pending' | 'approved' | 'fulfilled' | 'cancelled';
 export type EventStatus = 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-export type DonationStatus = 'completed' | 'scheduled' | 'cancelled';
+export type DonationStatus = 'completed' | 'scheduled' | 'cancelled' | 'pending' | 'approved' | 'rejected';
 
 // Base Entity với timestamps
 export interface BaseEntity {
@@ -298,21 +295,21 @@ export interface Account {
     accountId: string; // UUID Primary Key
     username: string;
     email: string;
-    password?: string; // Optional for display
+    password: string; // Made non-optional for consistency with User
     isActive: boolean;
     role: UserRole;
 }
 
-// Profile Entity - Thông tin cá nhân
-export interface Profile {
+// User Profile Entity - Thông tin cá nhân
+export interface UserProfile {
     profileId: number; // INT Primary Key
     accountId: string; // UUID Foreign Key
     name: string;
     phone: string;
     email?: string; // Optional for display
-    address: string;
+    address: Address; // Changed to Address type
     dob: Date | string;
-    gender: Gender | boolean; // Support both formats
+    gender: Gender; // Changed to Gender type
     numberOfBloodDonation: number;
     achievementName?: string;
     achievement?: number; // Achievement score
@@ -321,23 +318,23 @@ export interface Profile {
     role : UserRole; // Role for easy access
 }
 
-// User - Kết hợp Account + Profile (hợp lý vì thường dùng chung)
+// User - Kết hợp Account + UserProfile (hợp lý vì thường dùng chung)
 export interface User extends BaseEntity {
     // Account info
     accountId: string;
     username: string;
     email: string;
-    password?: string;
+    password: string; // Made non-optional
     isActive?: boolean;
     role: UserRole;
 
-    // Profile info
-    profileId?: number;
+    // Profile info (copied from UserProfile, ensure consistency)
+    profileId: number;
     name: string;
     phone: string;
-    address: string;
+    address: Address;
     dob: Date | string;
-    gender: Gender | boolean;
+    gender: Gender;
     numberOfBloodDonation: number;
     achievementName?: string;
     achievement?: number;
@@ -372,24 +369,6 @@ export interface Blood {
     bloodTypeId?: number;
     expirationDate?: Date;
     location?: string;
-}
-
-// BloodRequest Entity - Giữ riêng vì có business logic riêng
-export interface BloodRequest extends BaseEntity {
-    idBloodRequest: number; // INT Primary Key
-    accountId: string; // UUID Foreign Key
-    hospitalId: string; // VARCHAR Foreign Key
-    requestedDate: Date;
-    bloodCode: number; // Foreign Key
-    urgency: UrgencyLevel;
-    status: RequestStatus;
-    volume: number;
-    quantity: number;
-
-    // Populated fields (optional)
-    requester?: User;
-    hospital?: Hospital;
-    bloodUnit?: Blood;
 }
 
 // BloodDonationEvent Entity - Giữ riêng vì quản lý event phức tạp
@@ -480,7 +459,7 @@ export interface RoleInSystem {
     description: string;
 }
 
-// Achievement Entity - Giữ riêng vì gamification logic
+// Achievement Entity - Giữ riêng vì có thể dùng độc lập
 export interface Achievement {
     achievementName: string; // VARCHAR Primary Key
     description: string;
@@ -488,7 +467,7 @@ export interface Achievement {
     criteria?: string;
 }
 
-// Dashboard Stats - Kết hợp stats vì thường dùng chung
+// Dashboard & Reports
 export interface DashboardStats {
     userStats: {
         totalDonors: number;
@@ -520,7 +499,6 @@ export interface BloodInventoryItem {
     status: 'adequate' | 'low' | 'critical' | 'expired';
 }
 
-// Search & Filter - Giữ đơn giản
 export interface SearchFilters {
     bloodType?: BloodType;
     component?: BloodComponent;
@@ -534,36 +512,6 @@ export interface SearchFilters {
     userId?: string;
 }
 
-// API Response Types - Cần thiết cho API
-export interface ApiResponse<T> {
-    success: boolean;
-    data?: T;
-    message: string;
-    errors?: Record<string, string[]>;
-}
-
-export interface PaginatedResponse<T> {
-    data: T[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-}
-
-export interface BloodOrder {
-  id: number;
-  user: string;
-  type: "Hiến máu" | "Nhận máu";
-  date: string;
-  status: "Chờ duyệt" | "Đã duyệt" | "Từ chối" | "Hoàn thành";
-  bloodType: string;
-  component?: string;
-  volume?: number;
-  hospital?: string; // Made optional to match usage
-  urgency?: boolean; // Changed to boolean to match table logic
-  note?: string; // Made optional to match usage
-
-// DTOs - Chỉ những cái thực sự cần
 export interface CreateUserDto {
     username: string;
     email: string;
@@ -626,8 +574,8 @@ export interface FeedbackDto {
 
 // Utility Types - Hữu ích cho development
 export type UserWithoutPassword = Omit<User, 'password'>;
-export type PublicProfile = Pick<Profile, 'name' | 'numberOfBloodDonation' | 'achievementName' | 'bloodCode'>;
-export type BloodRequestSummary = Pick<BloodRequest, 'idBloodRequest' | 'urgency' | 'status' | 'volume' | 'requestedDate'>;
+export type PublicProfile = Pick<UserProfile, 'name' | 'numberOfBloodDonation' | 'achievementName' | 'bloodCode'>;
+export type BloodRequestSummary = Pick<BloodRequest, 'id' | 'urgencyLevel' | 'status' | 'unitsRequired' | 'requestDate'>;
 
 // Blood Compatibility Logic - Business logic
 export interface BloodCompatibilityRules {

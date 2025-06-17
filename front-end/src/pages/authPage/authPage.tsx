@@ -1,57 +1,41 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { Button } from "../../components/sections/button";
-import { Lock, User } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../pages/authPage/AuthContext";
 import { mockAccounts } from "../../data/mockAccount";
 
-
 const AuthPage: React.FC = () => {
-  const location = useLocation();
-  const [isRegister, setIsRegister] = useState(
-    location.pathname === "/register"
-  );
-
+  const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState("");
-  const [fullname, setFullname] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [error, setError] = useState("");
+  const [fullname, setFullname] = useState("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   useEffect(() => {
     setIsRegister(location.pathname === "/register");
     setUsername("");
-    setFullname("");
-    setEmail("");
     setPassword("");
     setConfirm("");
-    setError("");
-
-  const [email, setEmail] = useState("");
-  const [fullname, setFullname] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setIsRegister(location.pathname === "/register");
-    setEmail("");
     setFullname("");
-    setPassword("");
-    setConfirm("");
-
+    setEmail("");
+    setError(null);
   }, [location.pathname]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    setError("");
+    setError(null);
 
     const account = mockAccounts.find(
-      acc => acc.username === username && acc.password === password
+      (acc) => acc.username === username && acc.password === password
     );
 
     if (account) {
@@ -59,33 +43,38 @@ const AuthPage: React.FC = () => {
         username: account.username,
         email: account.email,
         role: account.role,
-        fullName: account.fullName
+        fullName: account.fullName,
       }, "mock-token");
-      navigate("/profile");
+
+      if (account.role.toLowerCase() === "staff") {
+        navigate("/staff");
+      } else if (account.role.toLowerCase() === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } else {
       setError("Tên đăng nhập hoặc mật khẩu không đúng!");
     }
-=======
-    navigate("/")
   };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     if (password !== confirm) {
       setError("Mật khẩu xác nhận không khớp!");
       return;
     }
-    // Xử lý đăng ký ở đây
 
-
+    // Xử lý đăng ký ở đây, giả lập thành công
+    console.log("Đăng ký thành công:", { username, fullname, email });
+    // Sau khi đăng ký thành công, chuyển về trang đăng nhập
     setIsRegister(false);
     navigate("/login");
   };
 
   return (
-
-        
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-100 via-white to-cyan-100">
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl flex overflow-hidden border border-gray-100">
         {/* Left: Slogan & Logo */}
@@ -168,110 +157,13 @@ const AuthPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div>
-                <label className="block text-gray-700 mb-1 font-semibold">
-                  Tên đăng nhập
-                </label>
-                <div className="flex items-center border border-gray-300 rounded-lg px-3 focus-within:border-red-600 bg-gray-50">
-                  <User className="h-5 w-5 text-red-600 mr-2" />
-                  <input
-                    type="text"
-                    className="w-full py-2 outline-none bg-transparent text-gray-800 placeholder-gray-400"
-                    placeholder="Nhập tên đăng nhập"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-
-    <div className="min-h-screen flex bg-white">
-      {/* Bên trái: Nền đỏ, logo sát trên, slogan căn trái, giữa dọc */}
-      <div className="hidden md:flex w-1/2 relative overflow-hidden bg-red-600">
-        <div className="relative flex flex-col h-full w-full z-10">
-          {/* Logo sát trên cùng bên trái */}
-          <div className="pt-6 pl-8">
-            <img src="/logo512.png" alt="Logo" className="w-14 h-14" />
-          </div>
-          {/* Slogan giữa dọc, căn trái */}
-          <div className="flex-1 flex items-center">
-            <div className="pl-16 text-left w-full">
-              <div className="text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
-                Bắt đầu <br />
-                <span className="text-cyan-200">hiến máu</span>
-                <br />
-                cùng BloodCare
-              </div>
-              <div className="w-16 h-1 bg-yellow-400 my-6"></div>
-              <p className="text-lg text-gray-100 font-medium">
-                Kết nối cộng đồng, lan tỏa yêu thương và cứu sống nhiều người hơn!
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* Bên phải: Form căn giữa dọc, căn trái */}
-      <div className="flex flex-col justify-center w-full md:w-1/2 px-4">
-        <div className="w-full max-w-lg bg-white p-10 rounded-xl shadow-lg border border-gray-100 mx-auto">
-          <div className="flex justify-start mb-8 border-b border-gray-200">
-            <button
-              type="button"
-              className={`px-6 py-2 font-semibold transition border-b-2 ${
-                !isRegister
-                  ? "border-red-600 text-red-600"
-                  : "border-transparent text-gray-500 hover:text-red-600"
-              }`}
-              onClick={() => {
-                setIsRegister(false);
-                navigate("/login");
-              }}
-            >
-              Đăng nhập
-            </button>
-            <button
-              type="button"
-              className={`px-6 py-2 font-semibold transition border-b-2 ${
-                isRegister
-                  ? "border-red-600 text-red-600"
-                  : "border-transparent text-gray-500 hover:text-red-600"
-              }`}
-              onClick={() => {
-                setIsRegister(true);
-                navigate("/register");
-              }}
-            >
-              Đăng ký
-            </button>
-          </div>
-          <h2 className="text-2xl font-bold text-left text-red-600 mb-6">
-            {isRegister ? "Đăng ký BloodCare" : "Đăng nhập BloodCare"}
-          </h2>
-          <form
-            onSubmit={isRegister ? handleRegister : handleLogin}
-            className="space-y-6"
-          >
-            {isRegister && (
-              <div>
-                <label className="block text-gray-700 mb-1 font-semibold">
-                  Họ và tên
-                </label>
-                <div className="flex items-center border border-gray-300 rounded px-3 focus-within:border-red-600 bg-gray-50">
-                  <User className="h-5 w-5 text-red-600 mr-2" />
-                  <input
-                    type="text"
-                    className="w-full py-2 outline-none bg-transparent"
-                    placeholder="Nhập họ và tên"
-                    value={fullname}
-                    onChange={(e) => setFullname(e.target.value)}
-
-                    required
-                  />
-                </div>
-              </div>
-
               {isRegister && (
                 <div>
                   <label className="block text-gray-700 mb-1 font-semibold">
                     Email
                   </label>
                   <div className="flex items-center border border-gray-300 rounded-lg px-3 focus-within:border-red-600 bg-gray-50">
-                    <User className="h-5 w-5 text-red-600 mr-2" />
+                    <Mail className="h-5 w-5 text-red-600 mr-2" />
                     <input
                       type="email"
                       className="w-full py-2 outline-none bg-transparent text-gray-800 placeholder-gray-400"
@@ -285,115 +177,78 @@ const AuthPage: React.FC = () => {
               )}
               <div>
                 <label className="block text-gray-700 mb-1 font-semibold">
-                  Mật khẩu
+                  Tên đăng nhập
                 </label>
                 <div className="flex items-center border border-gray-300 rounded-lg px-3 focus-within:border-red-600 bg-gray-50">
-                  <Lock className="h-5 w-5 text-red-600 mr-2" />
+                  <User className="h-5 w-5 text-red-600 mr-2" />
                   <input
-                    type="password"
+                    type="text"
                     className="w-full py-2 outline-none bg-transparent text-gray-800 placeholder-gray-400"
-                    placeholder="Nhập mật khẩu"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-
-            )}
-            <div>
-              <label className="block text-gray-700 mb-1 font-semibold">
-                Email
-              </label>
-              <div className="flex items-center border border-gray-300 rounded px-3 focus-within:border-red-600 bg-gray-50">
-                <Mail className="h-5 w-5 text-red-600 mr-2" />
-                <input
-                  type="email"
-                  className="w-full py-2 outline-none bg-transparent"
-                  placeholder="Nhập email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-1 font-semibold">
-                Mật khẩu
-              </label>
-              <div className="flex items-center border border-gray-300 rounded px-3 focus-within:border-red-600 bg-gray-50">
-                <Lock className="h-5 w-5 text-red-600 mr-2" />
-                <input
-                  type="password"
-                  className="w-full py-2 outline-none bg-transparent"
-                  placeholder="Nhập mật khẩu"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            {isRegister && (
-              <div>
-                <label className="block text-gray-700 mb-1 font-semibold">
-                  Nhập lại mật khẩu
-                </label>
-                <div className="flex items-center border border-gray-300 rounded px-3 focus-within:border-red-600 bg-gray-50">
-                  <Lock className="h-5 w-5 text-red-600 mr-2" />
-                  <input
-                    type="password"
-                    className="w-full py-2 outline-none bg-transparent"
-                    placeholder="Nhập lại mật khẩu"
-                    value={confirm}
-                    onChange={(e) => setConfirm(e.target.value)}
+                    placeholder="Nhập tên đăng nhập"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required
                   />
                 </div>
               </div>
-
+              <div>
+                <label className="block text-gray-700 mb-1 font-semibold">
+                  Mật khẩu
+                </label>
+                <div className="relative flex items-center border border-gray-300 rounded-lg px-3 focus-within:border-red-600 bg-gray-50">
+                  <Lock className="h-5 w-5 text-red-600 mr-2" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="w-full py-2 outline-none bg-transparent text-gray-800 placeholder-gray-400 pr-10"
+                    placeholder="Nhập mật khẩu"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
               {isRegister && (
                 <div>
                   <label className="block text-gray-700 mb-1 font-semibold">
                     Nhập lại mật khẩu
                   </label>
-                  <div className="flex items-center border border-gray-300 rounded-lg px-3 focus-within:border-red-600 bg-gray-50">
+                  <div className="relative flex items-center border border-gray-300 rounded-lg px-3 focus-within:border-red-600 bg-gray-50">
                     <Lock className="h-5 w-5 text-red-600 mr-2" />
                     <input
-                      type="password"
-                      className="w-full py-2 outline-none bg-transparent text-gray-800 placeholder-gray-400"
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="w-full py-2 outline-none bg-transparent text-gray-800 placeholder-gray-400 pr-10"
                       placeholder="Nhập lại mật khẩu"
                       value={confirm}
                       onChange={(e) => setConfirm(e.target.value)}
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
                   </div>
                 </div>
               )}
               <Button
                 type="submit"
-                className="w-full bg-red-600 text-white font-bold py-2.5 rounded-lg shadow hover:bg-red-700 transition text-lg mt-2"
+                className="w-full bg-red-600 text-white font-bold py-2 rounded shadow hover:bg-red-700 transition"
               >
                 {isRegister ? "Đăng ký" : "Đăng nhập"}
               </Button>
-              {!isRegister && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Tài khoản mẫu để thử:</h3>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex justify-between items-center">
-                      <span>Admin:</span>
-                      <span className="font-mono">admin / admin123</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Staff:</span>
-                      <span className="font-mono">staff / staff123</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>User:</span>
-                      <span className="font-mono">user / user123</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <p className="text-center text-gray-500 mt-2">
+              <p className="text-left text-gray-500 mt-2">
                 {isRegister ? (
                   <>
-                    Đã có tài khoản?{' '}
+                    Đã có tài khoản?{" "}
                     <button
                       type="button"
                       className="text-red-600 hover:underline font-semibold"
@@ -407,7 +262,7 @@ const AuthPage: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    Chưa có tài khoản?{' '}
+                    Chưa có tài khoản?{" "}
                     <button
                       type="button"
                       className="text-red-600 hover:underline font-semibold"
@@ -423,47 +278,6 @@ const AuthPage: React.FC = () => {
               </p>
             </form>
           </div>
-=======
-            )}
-            <Button
-              type="submit"
-              className="w-full bg-red-600 text-white font-bold py-2 rounded shadow hover:bg-red-700 transition"
-            >
-              {isRegister ? "Đăng ký" : "Đăng nhập"}
-            </Button>
-            <p className="text-left text-gray-500 mt-2">
-              {isRegister ? (
-                <>
-                  Đã có tài khoản?{" "}
-                  <button
-                    type="button"
-                    className="text-red-600 hover:underline font-semibold"
-                    onClick={() => {
-                      setIsRegister(false);
-                      navigate("/login");
-                    }}
-                  >
-                    Đăng nhập ngay
-                  </button>
-                </>
-              ) : (
-                <>
-                  Chưa có tài khoản?{" "}
-                  <button
-                    type="button"
-                    className="text-red-600 hover:underline font-semibold"
-                    onClick={() => {
-                      setIsRegister(true);
-                      navigate("/register");
-                    }}
-                  >
-                    Đăng ký ngay
-                  </button>
-                </>
-              )}
-            </p>
-          </form>
-
         </div>
       </div>
     </div>

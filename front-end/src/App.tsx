@@ -2,35 +2,17 @@
 
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth } from "./pages/authPage/AuthContext.tsx";
 import { Header } from "./components/sections/header";
+import ProtectedRoutes from "./routes/ProtectedRoutes";
 
 // Pages
 import Home from "./pages/homePage/home.tsx";
-import Profile from "./pages/profilePage/profile.tsx";
 import Blog from "./pages/blogs/blogPage";
 import Contact from "./pages/contactPage/contactPage";
 import AuthPage from "./pages/authPage/authPage.tsx";
-import Dashboard from "./pages/dashboard/dashboard";
-import StaffPage from "./pages/staffPages/staffPage.tsx";
-// import LoginPage from "./pages/LoginPage";
-// import RegisterPage from "./pages/RegisterPage";
-
-// Forms
-import DonorRegisterForm from "./forms/DonorRegister/DonorRegisterForm.tsx";
-import RequestBloodForm from "./forms/RequestBlood/RequestBloodForm.tsx";
-// BloodTypes
 import BloodTypes from "./pages/booldTypes/bloodTypes";
-
-// Placeholder for AdminPage if it doesn't exist
-const AdminPage: React.FC = () => {
-  return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">Admin Dashboard (Chưa có nội dung)</h1>
-      <p>Đây là trang quản trị. Vui lòng phát triển nội dung tại đây.</p>
-    </div>
-  );
-};
+import StaffPage from "./pages/staffPages/staffPage";
 
 const AppContent: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -60,11 +42,14 @@ const AppContent: React.FC = () => {
           navigate(targetPath, { replace: true });
         }
       }
-      // Không chuyển hướng cho user thường
     } else {
       console.log("No user logged in. Checking public paths...");
-      const publicPaths = ['/', '/login', '/register', '/blog', '/blood-types', '/contact', '/dashboard'];
-      if (!publicPaths.includes(location.pathname)) {
+      console.log("Current user state (for guest):", user);
+      console.log("Current location pathname when checking public paths:", location.pathname);
+      const publicPaths = ['/', '/login', '/register', '/blog', '/blood-types', '/contact'];
+      console.log("Public paths array:", publicPaths);
+      console.log("Is current path included in public paths?:", publicPaths.includes(location.pathname.toLowerCase()));
+      if (!publicPaths.includes(location.pathname.toLowerCase())) {
         console.log("Current path is not public. Redirecting to /login.");
         navigate('/login', { replace: true });
       }
@@ -87,19 +72,16 @@ const AppContent: React.FC = () => {
         )}
         <div className={`flex-1 ${user?.role === 'STAFF' && isStaffRoute ? (isSidebarOpen ? 'ml-64' : 'ml-0') : ''} p-8`}>
           <Routes>
+            {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<AuthPage />} />
             <Route path="/register" element={<AuthPage />} />
-            <Route path="/donate" element={<DonorRegisterForm />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/need-blood-donate" element={<RequestBloodForm />} />
-
             <Route path="/blog" element={<Blog />} />
             <Route path="/blood-types" element={<BloodTypes />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/staff/*" element={<StaffPage isSidebarOpen={isSidebarOpen} />} />
-            <Route path="/admin" element={<AdminPage />} />
+
+            {/* Protected Routes */}
+            <Route path="/*" element={<ProtectedRoutes isSidebarOpen={isSidebarOpen} />} />
           </Routes>
         </div>
       </main>

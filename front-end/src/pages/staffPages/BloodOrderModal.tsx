@@ -270,3 +270,4 @@ export const BloodOrderModal: React.FC<Props> = ({ order, onClose, onSave }) => 
     </div>
   );
 };
+export default BloodOrderModal;

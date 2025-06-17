@@ -2,7 +2,7 @@ export interface Account {
   username: string;
   password: string;
   email: string;
-  role: 'admin' | 'staff' | 'user';
+  role: 'admin' | 'staff' | 'member';
   fullName: string;
 }
 
@@ -22,10 +22,10 @@ export const mockAccounts: Account[] = [
     fullName: 'Staff User'
   },
   {
-    username: 'user',
-    password: 'user123',
-    email: 'user@example.com',
-    role: 'user',
+    username: 'member',
+    password: 'member123',
+    email: 'member@example.com',
+    role: 'member',
     fullName: 'Regular User'
   }
 ]; 
