@@ -10,18 +10,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController("/api")
+@RestController("/api/healthcheck")
 
 public class HealthCheckController {
     @Autowired
     private HealthCheckService healthCheckService;
-    @GetMapping("/healthcheck")
+    @GetMapping("/getall")
     public ResponseEntity<List<HealthCheck>> getAllHealthCheck() {
         List<HealthCheck> healthChecks = healthCheckService.getAllHealthChecks();
         return ResponseEntity.ok(healthChecks);
     }
 
-    @PutMapping("/healthcheck/{donationRegistrationId}")
+    @PutMapping("update/{donationRegistrationId}")
     public ResponseEntity<HealthCheck> updateHealthCheck(
             @PathVariable int donationRegistrationId,
             @RequestBody HealthCheck updatedHealthCheck) {

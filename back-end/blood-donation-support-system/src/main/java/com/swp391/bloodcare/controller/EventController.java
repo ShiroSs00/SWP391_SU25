@@ -15,18 +15,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-@RestController("/api")
+@RestController("/api/event")
 public class EventController {
     @Autowired
     private EventService eventService;
 
-    @GetMapping("/event")
+    @GetMapping("/getall")
     public ResponseEntity<List<BloodDonationEvent>> getEvent() {
        List<BloodDonationEvent> events = eventService.getAllEvent();
         return ResponseEntity.ok(events);
     }
 
-    @PostMapping("/event")
+    @PostMapping("/create")
     public ResponseEntity<BloodDonationEvent> addEvent(@RequestBody BloodDonationEvent event) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -36,7 +36,7 @@ public class EventController {
     }
 
 
-    @PutMapping("/event/{id}")
+    @PutMapping("update/{id}")
     public ResponseEntity<?> updateEvent(
             @PathVariable("id") int id,
             @RequestBody BloodDonationEvent updatedEvent
@@ -51,7 +51,7 @@ public class EventController {
         }
     }
 
-    @DeleteMapping("/event/{id}")
+    @DeleteMapping("delete/{id}")
     public ResponseEntity<?> deleteEvent(@PathVariable("id") int id) {
         try {
             eventService.deleteEvent(id);
@@ -73,7 +73,7 @@ public class EventController {
 
 
 
-    @GetMapping("/event/by-date")
+    @GetMapping("filter/by-date")
     public ResponseEntity<List<BloodDonationEvent>> getEventsByDateRange(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date end

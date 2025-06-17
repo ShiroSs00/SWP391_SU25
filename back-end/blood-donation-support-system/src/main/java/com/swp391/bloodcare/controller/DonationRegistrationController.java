@@ -14,18 +14,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController("/api")
+@RestController("api/donation")
 public class DonationRegistrationController {
     @Autowired
     private DonationRegistrationService donationRegistrationService;
 
-    @GetMapping("/donation")
+    @GetMapping("/getall")
     public ResponseEntity<List<DonationRegistration>> getAllDonationRegistration() {
         List<DonationRegistration> registrations = donationRegistrationService.getAllDonationRegistrations();
         return ResponseEntity.ok(registrations);
     }
 
-    @PostMapping("/donation")
+    @PostMapping("/create")
     public ResponseEntity<DonationRegistration> createDonationRegistration(
             @RequestBody DonationRegistration donationRegistration,
             @AuthenticationPrincipal Account account) {
@@ -34,7 +34,7 @@ public class DonationRegistrationController {
         return new ResponseEntity<>(savedRegistration, HttpStatus.CREATED);
     }
 
-    @PutMapping("/donation/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<DonationRegistration> updateDonationRegistration(
             @PathVariable int id,
             @RequestBody DonationRegistration donationRegistration
@@ -43,7 +43,7 @@ public class DonationRegistrationController {
         return ResponseEntity.ok(result);
     }
 
-    @DeleteMapping("/donation/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteDonationRegistration(@PathVariable int id) {
         try {
             donationRegistrationService.deleteDonationRegistration(id);
