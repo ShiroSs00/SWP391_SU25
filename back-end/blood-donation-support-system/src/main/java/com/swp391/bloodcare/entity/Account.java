@@ -27,7 +27,7 @@ public class Account{
     @Column(name ="createion_date")
     private LocalDate creationDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_name")
     private Role role;
 

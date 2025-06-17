@@ -55,12 +55,12 @@ public class AuthService {
             }
 
             // kiểm tra password
-//            if(!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())){
-//                return new LoginResponse(null,"Wrong password", null, null);
-//            }
-            if(!loginRequest.getPassword().equals(account.getPassword())){
-                return new LoginResponse(null,"Password is incorrect", null, null);
+            if(!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())){
+                return new LoginResponse(null,"Wrong password", null, null);
             }
+//            if(!loginRequest.getPassword().equals(account.getPassword())){
+//                return new LoginResponse(null,"Password is incorrect", null, null);
+//            }
 
             //tạo jwt token
             String token = jwtUtil.generateToken(account.getUserName());
