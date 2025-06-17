@@ -22,9 +22,9 @@ public class Account{
     private String password;
 
     @Column(name ="is_active")
-    private boolean isActive;
+    private Boolean isActive;
 
-    @Column(name ="createion_date")
+    @Column(name ="creation_date")
     private LocalDate creationDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
