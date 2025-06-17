@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./pages/authPage/AuthContext.tsx";
 import { Header } from "./components/sections/header";
+import { Footer } from "./components/sections/footer";
 import ProtectedRoutes from "./routes/ProtectedRoutes";
 
 // Pages
@@ -85,6 +86,7 @@ const AppContent: React.FC = () => {
           </Routes>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };
