@@ -21,10 +21,6 @@ public class Blood {
     @Column(name ="blood_type")
     private BloodType bloodType;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name ="rh")
-    private RhFactor rh;
-
     @JoinColumn(name ="component")
     @ManyToOne()
     private Component component;
@@ -51,9 +47,7 @@ public class Blood {
         A, B, AB, O
     }
 
-    public enum RhFactor{
-        POSITIVE, NEGATIVE
-    }
+
 
     public enum BloodStatus {
         AVAILABLE, USED, EXPIRED
