@@ -54,7 +54,7 @@ public class AuthService  {
                 return new LoginResponse(null,"Account is not active", null, null);
             }
 
-            // kiểm tra password
+//             kiểm tra password
 //            if(!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())){
 //                return new LoginResponse(null,"Wrong password", null, null);
 //            }

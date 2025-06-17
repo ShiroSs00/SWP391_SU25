@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll() // ✅ login không cần token
                         .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/event/**").permitAll()
@@ -67,17 +68,24 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173", // ✅ cho phép FE dev local
-                "https://swp391-su25-1.onrender.com" // ✅ FE thật
+                "http://localhost:63342",
+                "https://swp391-su25-1.onrender.com"
         ));
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Content-Type", "Authorization", "X-Requested-With", "Origin", "Accept"
+        )); // ✅ KHÔNG để "*"
+
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
 }
