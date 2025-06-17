@@ -7,19 +7,19 @@ public class HealthCheck {
     @Column(name = "heath_check_id")
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int heathCheckId;
-    @Column(name = "weight")
+    @Column(name = "weight",columnDefinition = "DOUBLE DEFAULT 0")
     private double weight;
-    @Column(name = "temperate")
+    @Column(name = "temperate",columnDefinition = "DOUBLE DEFAULT 0")
     private double temperate;
-    @Column(name = "blood_pressure")
+    @Column(name = "blood_pressure",columnDefinition = "DOUBLE DEFAULT 0")
     private double bloodPressure;
-    @Column(name = "pluse")
+    @Column(name = "pluse", columnDefinition = "INT DEFAULT 0")
     private int pluse;
-    @Column(name = "hemogobin")
+    @Column(name = "hemogobin",columnDefinition = "DOUBLE DEFAULT 0")
     private double hemogobin;
-    @Column(name = "volume_to_take")
+    @Column(name = "volume_to_take", columnDefinition = "INT DEFAULT 0")
     private int volumeToTake;
-    @Column(name = "isFitToDonate")
+    @Column(name = "isFitToDonate",columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isFitToDonate;
     @Column(name = "note")
     private String note;
