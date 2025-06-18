@@ -23,7 +23,7 @@ public class ProfileResponseDTO {
     private boolean gender;
     private AddressDTO address;
     private int numberOfBloodDonation;
-    private Blood bloodType; //chưa ổn
+    private String bloodType; //chưa ổn -- cần xem lại
     private String achievementName;
     private LocalDate restDate;
     private LocalDate creationDate;
