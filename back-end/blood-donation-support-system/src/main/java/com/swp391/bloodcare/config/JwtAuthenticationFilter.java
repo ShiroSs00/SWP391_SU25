@@ -34,24 +34,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String token;
         final String username;
 
-        // Không có token hoặc không bắt đầu bằng Bearer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        token = authHeader.substring(7); // bỏ "Bearer "
-        username = jwtUtil.extractUsername(token);
+        token = authHeader.substring(7);
 
-        // Nếu user chưa được xác thực
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtUtil.validateToken(token, userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        try {
+            username = jwtUtil.extractUsername(token);
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (jwtUtil.validateToken(token, userDetails.getUsername())) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+
+        } catch (Exception e) {
+            // Ghi log hoặc phản hồi lỗi nếu cần
+            System.out.println("JWT Filter Exception: " + e.getMessage());
+            // Có thể response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT");
         }
 
         filterChain.doFilter(request, response);
