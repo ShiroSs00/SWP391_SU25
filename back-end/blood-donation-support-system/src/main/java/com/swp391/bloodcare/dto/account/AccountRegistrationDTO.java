@@ -24,7 +24,7 @@ public class AccountRegistrationDTO {
     private String email;
 
     @NotBlank(message = "Password không được để trống")
-    @Size(min = 8, message = "pas")
+    @Size(min = 8, message = "Mật khẩu phải có ít nhất 8 ký tự")
     private String password;
 
     @NotBlank(message = "Tên không được để trống")
@@ -43,4 +43,6 @@ public class AccountRegistrationDTO {
     @Valid
     @NotNull(message = "Địa chỉ không được để trống")
     private AddressDTO address;
+
+
 }
