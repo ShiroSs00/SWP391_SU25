@@ -22,7 +22,7 @@ const ProtectedRoutes: React.FC<ProtectedRoutesProps> = ({ isSidebarOpen }) => {
       <Route
         path="donate"
         element={
-          <ProtectedRoute allowedRoles={['member', 'admin', 'staff']}>
+          <ProtectedRoute allowedRoles={['MEMBER', 'ADMIN', 'STAFF']}>
             <DonorRegisterForm />
           </ProtectedRoute>
         }
@@ -30,7 +30,7 @@ const ProtectedRoutes: React.FC<ProtectedRoutesProps> = ({ isSidebarOpen }) => {
       <Route
         path="profile"
         element={
-          <ProtectedRoute allowedRoles={['member', 'admin', 'staff']}>
+          <ProtectedRoute allowedRoles={['MEMBER', 'ADMIN', 'STAFF']}>
             <ProfilePage />
           </ProtectedRoute>
         }
@@ -38,7 +38,7 @@ const ProtectedRoutes: React.FC<ProtectedRoutesProps> = ({ isSidebarOpen }) => {
       <Route
         path="need-blood-donate"
         element={
-          <ProtectedRoute allowedRoles={['member', 'admin', 'staff']}>
+          <ProtectedRoute allowedRoles={['MEMBER', 'ADMIN', 'STAFF']}>
             <RequestBloodForm />
           </ProtectedRoute>
         }
@@ -48,7 +48,7 @@ const ProtectedRoutes: React.FC<ProtectedRoutesProps> = ({ isSidebarOpen }) => {
       <Route
         path="staff/*"
         element={
-          <ProtectedRoute allowedRoles={['staff', 'admin']}>
+          <ProtectedRoute allowedRoles={['STAFF', 'ADMIN']}>
             <StaffPage isSidebarOpen={isSidebarOpen} />
           </ProtectedRoute>
         }
@@ -62,7 +62,7 @@ const ProtectedRoutes: React.FC<ProtectedRoutesProps> = ({ isSidebarOpen }) => {
       <Route
         path="dashboard"
         element={
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={['ADMIN']}>
             <Dashboard />
           </ProtectedRoute>
         }
@@ -70,7 +70,7 @@ const ProtectedRoutes: React.FC<ProtectedRoutesProps> = ({ isSidebarOpen }) => {
       <Route
         path="admin"
         element={
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminPage />
           </ProtectedRoute>
         }

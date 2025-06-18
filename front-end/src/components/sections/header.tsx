@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Heart, User, LogIn, LogOut, Bell } from "lucide-react";
 import { Button } from "./button.tsx";
 import { useAuth } from "../../pages/authPage/AuthContext.tsx";
+import axios from "axios";
+import api from "../../api/api.ts"; // Adjust the import path as necessary
 
 interface HeaderProps {
   isSidebarOpen: boolean;
@@ -18,13 +20,36 @@ export const Header: React.FC<HeaderProps> = ({ isSidebarOpen, onToggleSidebar, 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
+  try {
+    // Call logout API
+    await api.post('/auth/logout');
+
+    // Clear storage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Call context logout to update state
+    logout();
+    
+    // Close dropdown
+    setIsDropdownOpen(false);
+    
+    // Navigate to login
+    navigate('/login');
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      console.error('Logout error:', err.response?.data);
+    } else {
+      console.error('Unexpected error:', err);
     }
-  };
+    // Still perform logout even if API fails
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    logout();
+    setIsDropdownOpen(false);
+    navigate('/login');
+  }
+};
 
   // Navigation links for different roles
   const userNavigation = [
