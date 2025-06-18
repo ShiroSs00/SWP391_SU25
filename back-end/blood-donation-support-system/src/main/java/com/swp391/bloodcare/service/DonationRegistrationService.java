@@ -52,4 +52,8 @@ public class DonationRegistrationService {
     public List<DonationRegistration> getAllDonationRegistrations() {
         return donationRegistrationRepository.findAll();
     }
+
+    public DonationRegistration getDonationRegistrationById(long id) {
+        return donationRegistrationRepository.findById(id).orElse(null);
+    }
 }

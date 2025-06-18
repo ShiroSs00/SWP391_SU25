@@ -1,6 +1,8 @@
 package com.swp391.bloodcare.controller;
 
+import com.swp391.bloodcare.entity.DonationRegistration;
 import com.swp391.bloodcare.entity.HealthCheck;
+import com.swp391.bloodcare.service.DonationRegistrationService;
 import com.swp391.bloodcare.service.HealthCheckService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,8 @@ import java.util.List;
 public class HealthCheckController {
     @Autowired
     private HealthCheckService healthCheckService;
+    @Autowired
+    private DonationRegistrationService donationRegistrationService;
     @GetMapping("/getall")
     public ResponseEntity<List<HealthCheck>> getAllHealthCheck() {
         List<HealthCheck> healthChecks = healthCheckService.getAllHealthChecks();
@@ -34,4 +38,16 @@ public class HealthCheckController {
         }
     }
 
+    @PostMapping("/create/{id}")
+    public ResponseEntity<HealthCheck> createHealthCheck(
+            @PathVariable int donationRegistrationId,
+            @RequestBody HealthCheck healthCheck) {
+        try {
+            DonationRegistration donationRegistration = donationRegistrationService.getDonationRegistrationById(donationRegistrationId);
+            HealthCheck create = healthCheckService.createHealthCheck(healthCheck, donationRegistration);
+            return ResponseEntity.ok(create);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
 }

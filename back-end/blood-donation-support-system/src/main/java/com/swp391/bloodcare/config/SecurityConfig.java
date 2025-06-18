@@ -50,8 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll() // ✅ login không cần token
                         .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/event/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/event/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
