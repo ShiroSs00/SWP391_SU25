@@ -20,6 +20,7 @@ public class HealthCheckController {
     private HealthCheckService healthCheckService;
     @Autowired
     private DonationRegistrationService donationRegistrationService;
+
     @GetMapping("/getall")
     public ResponseEntity<List<HealthCheck>> getAllHealthCheck() {
         List<HealthCheck> healthChecks = healthCheckService.getAllHealthChecks();

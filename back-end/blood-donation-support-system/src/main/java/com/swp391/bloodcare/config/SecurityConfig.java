@@ -69,23 +69,22 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:63342",
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:*",
                 "https://swp391-su25-1.onrender.com"
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
         configuration.setAllowedHeaders(Arrays.asList(
                 "Content-Type", "Authorization", "X-Requested-With", "Origin", "Accept"
-        )); // ✅ KHÔNG để "*"
-
+        ));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
 
 }
