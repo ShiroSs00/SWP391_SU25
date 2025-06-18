@@ -36,7 +36,14 @@ export interface DonorProfile {
     isActive: boolean;
     donationHistory: DonationRecord[];
 }
-
+export interface DonationFormData {
+  registrationId: string;    // UUID
+  accountId: string;         // UUID NOT NULL
+  component: string;         // VARCHAR NOT NULL
+  eventId: number;          // INT
+  dateCreated: string;      // DATE
+  status: 'pending' | 'approved' | 'rejected';  // ENUM
+}
 export interface EmergencyContact {
     name: string;
     relationship: string;

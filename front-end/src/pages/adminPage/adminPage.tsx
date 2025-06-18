@@ -5,6 +5,7 @@ import UserManagement from './components/UserManagement';
 import BloodInventory from './components/BloodInventory';
 import DonationManagement from './components/DonationManagement';
 import RequestManagement from './components/RequestManagement';
+import EventsPage from './components/eventManagement';
 
 // Admin Page component for managing various administrative sections.
 const AdminPage: React.FC = () => {
@@ -21,6 +22,7 @@ const AdminPage: React.FC = () => {
     { path: '/admin/blood-inventory', label: 'Quản lý máu', icon: '🩸' },
     { path: '/admin/donations', label: 'Quản lý hiến máu', icon: '💉' },
     { path: '/admin/requests', label: 'Quản lý yêu cầu', icon: '📝' },
+    { path: '/admin/events', label: 'Quản lý sự kiện', icon: '📅' },
   ];
 
   return (
@@ -66,6 +68,8 @@ const AdminPage: React.FC = () => {
             <Route path="/blood-inventory" element={<BloodInventory />} />
             <Route path="/donations" element={<DonationManagement />} />
             <Route path="/requests" element={<RequestManagement />} />
+            <Route path="/events" element={<EventsPage />} />
+            {/* Add more routes as needed */}
           </Routes>
         </div>
       </div>

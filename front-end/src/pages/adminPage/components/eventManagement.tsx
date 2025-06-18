@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Users, Clock, Edit, Trash2, Plus } from 'lucide-react';
-import api from '../../api/api';
+import api from '../../../api/api'; // Adjust the import path as necessary
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 interface Event {
   id: string;
