@@ -47,15 +47,24 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
+
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll() // ✅ login không cần token
-                        .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/event/**").hasRole("STAFF")
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/donation/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // Ưu tiên mở quyền donation trước tất cả
+                        .requestMatchers("/api/donation/**").permitAll()
+
+                        // Cho phép GET toàn bộ api
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+
+                        // Sau đó mới tới hạn chế các method PUT/POST
+                        .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/event/**").hasRole("STAFF")
+                        .requestMatchers(HttpMethod.POST, "/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
