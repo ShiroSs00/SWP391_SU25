@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 public class HealthCheck {
-    @Column(name = "heath_check_id")
+    @Column(name = "health_check_id")
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int heathCheckId;
     @Column(name = "weight",columnDefinition = "DOUBLE DEFAULT 0")
