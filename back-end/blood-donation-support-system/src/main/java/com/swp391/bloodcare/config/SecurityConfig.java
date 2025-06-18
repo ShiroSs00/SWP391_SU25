@@ -51,6 +51,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll() // ✅ login không cần token
                         .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/event/**").hasRole("STAFF")
+                        .requestMatchers(HttpMethod.OPTIONS, "/api/donation/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                         .anyRequest().authenticated()
                 )
