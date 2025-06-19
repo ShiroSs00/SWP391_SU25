@@ -26,8 +26,8 @@ public class Profile {
     @Column(name = "profile_id")
     private int profileId;
 
-    @JoinColumn(name = "account_id")
     @OneToOne
+    @JoinColumn(name = "account_id")
     private Account accountId;
 
     @Column(name ="name")

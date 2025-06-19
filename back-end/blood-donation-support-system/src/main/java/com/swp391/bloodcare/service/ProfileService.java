@@ -11,6 +11,8 @@ import com.swp391.bloodcare.repository.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 /*
 Các chức năng sử lý trong ProfileService:
 - Lấy profile theo AccountId
-- Lấy profile theo username
+- Lấy profile theo username - token
 - Tìm kiếm user dành cho staff/admin
  */
 @Service
@@ -33,6 +35,7 @@ public class ProfileService {
     @Autowired
     private ProfileRepository profileRepository;
 
+    // Lấy account theo AccountId
     public ApiResponse<ProfileResponseDTO> getProfileByAccountId(String accountId){
         try{
             Optional<Account> accountOpt = accountRepository.findById(accountId);
@@ -61,22 +64,30 @@ public class ProfileService {
 
 
 
-    //Lấy profile cho username
-    public ApiResponse<ProfileResponseDTO> getProfileByUsername(String username){
+    //Lấy profile cho username -token
+    public ApiResponse<ProfileResponseDTO> getProfileFromToken(){
         try{
+           Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+           if(auth == null || !auth.isAuthenticated()){
+               return new ApiResponse<>(false,"Người dùng chưa đăng nhập", null);
+           }
+           String username = auth.getName();
+
+           //Tìm tài khoản theo
             Optional<Account> accountOpt = accountRepository.findByUserName(username);
-            if(!accountOpt.isPresent()) {
+            if (!accountOpt.isPresent()) {
                 return new ApiResponse<>(false, "Không tìm thấy tài khoản", null);
             }
-                Account account = accountOpt.get();
-                Profile profile = account.getProfile();
-                if(profile == null){
-                    return new ApiResponse<>(false,"Không tìm thấy thông tin cá nhân",null);
-                }
-                ProfileResponseDTO prd = mapToProfileResponseDTO(account, profile);
-                return new ApiResponse<>(true,"Lấy thông tin profile thành công",prd);
 
+            Account account = accountOpt.get();
+            Profile profile = account.getProfile();
 
+            if (profile == null) {
+                return new ApiResponse<>(false, "Không tìm thấy thông tin cá nhân", null);
+            }
+
+            ProfileResponseDTO prd = mapToProfileResponseDTO(account, profile);
+            return new ApiResponse<>(true, "Lấy thông tin profile thành công", prd);
         }catch (Exception e){
             return new ApiResponse<>(false,"Có lỗi xảy ra: " + e.getMessage(), null);
         }

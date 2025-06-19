@@ -50,7 +50,7 @@ public class Account{
     @OneToMany(mappedBy ="account")
     private List<Notification> notifications;
 
-    @OneToOne
+    @OneToOne(mappedBy = "accountId")
     private Profile profile;
 
     public Profile getProfile() {

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,15 +24,12 @@ public class ProfileController {
     private ProfileService profileService;
 
 
-    // cần sửa lại thành token
-    public ResponseEntity<ApiResponse<ProfileResponseDTO>> getUserProfile(Authentication authentication) {
-        String username = authentication.getName();
-        ApiResponse<ProfileResponseDTO> response = profileService.getProfileByUsername(username);
-
-        return response.isSuccess()?ResponseEntity.ok(response):ResponseEntity.badRequest().body(response);
+    @GetMapping("/profile")
+    public ApiResponse<ProfileResponseDTO> getUserProfile() {
+       return profileService.getProfileFromToken();
     }
 
-    @GetMapping("/admin/profile/{accountId}")
+    @GetMapping("/admin/profiles/{accountId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ProfileResponseDTO>> getProfileByAccountId(@PathVariable String accountId) {
 
@@ -69,6 +67,8 @@ public class ProfileController {
 
 
     //Lấy tất cả Account cho Admin
+    @GetMapping("/admin/accounts")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<PageResponse<AccountSearchDTO>>> getAllAccounts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,

@@ -28,24 +28,31 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filerChain(HttpSecurity http) throws Exception {
+//        http.csrf(csrf -> csrf.disable())
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(
+//                                "/v3/api-docs/**",
+//                                "/swagger-ui/**",
+//                                "/swagger-ui.html",
+//                                "/swagger-resources/**",
+//                                "/webjars/**"
+//                        ).permitAll()
+//                        .requestMatchers("/api/auth/**").permitAll()
+//                        .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/event").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/event").hasRole("ADMIN")
+//
+//                        .anyRequest().authenticated()
+//
+//
+//                ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);;
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/swagger-resources/**",
-                                "/webjars/**"
-                        ).permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/event").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/event").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-
-
-                ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);;
+                        .anyRequest().permitAll() // Cho phép truy cập mọi URL
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
