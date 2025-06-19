@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class Notification {
     @Id
     @Column(name = "notification_id")
-    private int notificationId;
+    private String notificationId;
 
     @JoinColumn(name ="account_id")
     @ManyToOne
@@ -22,11 +22,11 @@ public class Notification {
     @Column(name ="img")
     private String img;
 
-    public int getNotificationId() {
+    public String getNotificationId() {
         return notificationId;
     }
 
-    public void setNotificationId(int notificationId) {
+    public void setNotificationId(String notificationId) {
         this.notificationId = notificationId;
     }
 

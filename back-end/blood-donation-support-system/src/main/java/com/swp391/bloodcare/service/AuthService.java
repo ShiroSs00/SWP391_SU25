@@ -48,10 +48,14 @@ public class AuthService {
                 return new LoginResponse(null, "Account is not active", null, null);
             }
 
-            // ✅ Kiểm tra mật khẩu bằng PasswordEncoder
-            if (!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())) {
-                return new LoginResponse(null, "Password is incorrect", null, null);
+            // kiểm tra password
+            if(!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())){
+                return new LoginResponse(null,"Wrong password", null, null);
+
             }
+//            if(!loginRequest.getPassword().equals(account.getPassword())){
+//                return new LoginResponse(null,"Password is incorrect", null, null);
+//            }
 
             // ✅ Sinh JWT token nếu đúng mật khẩu
             String token = jwtUtil.generateToken(account.getUserName());

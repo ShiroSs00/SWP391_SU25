@@ -5,8 +5,10 @@ import com.swp391.bloodcare.dto.account.AccountRegistrationResponse;
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.Address;
 import com.swp391.bloodcare.entity.Profile;
+import com.swp391.bloodcare.entity.Role;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
+import com.swp391.bloodcare.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,9 @@ public class AccountService {
     private ProfileRepository profileRepository;
 
     @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -39,6 +44,8 @@ public class AccountService {
                 return new AccountRegistrationResponse<>(false,"Email đã tồn tại",null);
             }
 
+
+
             Account account = new Account();
             account.setAccountId(UUID.randomUUID().toString());
             account.setUserName(accountRegistration.getUsername());
@@ -47,11 +54,19 @@ public class AccountService {
             account.setActive(true);
             account.setCreationDate(LocalDate.now());
 
+
+            //set role
+            Role role = roleRepository.findByRole("MEMBER")
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy role mặc định"));
+            account.setRole(role);
+
+
+
             Account savedAccount = accountRepository.save(account);
 
             //tạo profile
             Profile profile = new Profile();
-            profile.setAccountId(savedAccount);
+            profile.setAccount(savedAccount);
             profile.setName(accountRegistration.getName());
             profile.setPhone(accountRegistration.getPhone());
             profile.setDob(accountRegistration.getDob());
@@ -64,6 +79,7 @@ public class AccountService {
             address.setWard(accountRegistration.getAddress().getWard());
             address.setStreet(accountRegistration.getAddress().getStreet());
 
+            profile.setAddress(address);
             profile.setNumberOfBloodDonation(0);
 
             //chưa hoàn thiện -- này là ngày nghỉ ngơi

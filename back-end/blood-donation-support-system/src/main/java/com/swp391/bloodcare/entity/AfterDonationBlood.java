@@ -5,8 +5,8 @@ import jakarta.persistence.*;
 @Entity
 public class AfterDonationBlood {
     @Column(name = "after_donation_id")
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idAfterDonation;
+    @Id
+    private String idAfterDonation;
     @Column(name = "infectious_diseases_checked")
     private Boolean infectiousDiseasesChecked;
     @Column(name = "is_blood_usable")
@@ -50,11 +50,11 @@ public class AfterDonationBlood {
         this.blood = blood;
     }
 
-    public int getIdAfterDonation() {
+    public String getIdAfterDonation() {
         return idAfterDonation;
     }
 
-    public void setIdAfterDonation(int idAfterDonation) {
+    public void setIdAfterDonation(String idAfterDonation) {
         this.idAfterDonation = idAfterDonation;
     }
 

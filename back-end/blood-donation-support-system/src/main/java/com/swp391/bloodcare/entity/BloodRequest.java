@@ -9,7 +9,7 @@ import java.time.LocalDate;
 public class BloodRequest {
     @Id
     @Column(name = "id_blood_request")
-    private int idBloodRequest;
+    private String idBloodRequest;
 
 
     @ManyToOne()
@@ -34,10 +34,10 @@ public class BloodRequest {
     private String status;
 
     @Column(name ="volumn")
-    private int volumn;
+    private long volumn;
 
     @Column(name ="quantity")
-    private int quatity;
+    private long quatity;
 
     @Column(name ="request_Creation_date")
     private LocalDate requestCreationDate;
@@ -47,7 +47,7 @@ public class BloodRequest {
     public BloodRequest() {
     }
 
-    public BloodRequest(int idBloodRequest, Account account, Hospital hospitalId, LocalDate requestDate, Blood bloodCode, boolean urgency, String status, int volumn, int quatity) {
+    public BloodRequest(String idBloodRequest, Account account, Hospital hospitalId, LocalDate requestDate, Blood bloodCode, boolean urgency, String status, long volumn, long quatity) {
         this.idBloodRequest = idBloodRequest;
         this.account = account;
         this.hospitalId = hospitalId;
@@ -59,11 +59,11 @@ public class BloodRequest {
         this.quatity = quatity;
     }
 
-    public int getIdBloodRequest() {
+    public String getIdBloodRequest() {
         return idBloodRequest;
     }
 
-    public void setIdBloodRequest(int idBloodRequest) {
+    public void setIdBloodRequest(String idBloodRequest) {
         this.idBloodRequest = idBloodRequest;
     }
 
@@ -115,19 +115,19 @@ public class BloodRequest {
         this.status = status;
     }
 
-    public int getVolumn() {
+    public long getVolumn() {
         return volumn;
     }
 
-    public void setVolumn(int volumn) {
+    public void setVolumn(long volumn) {
         this.volumn = volumn;
     }
 
-    public int getQuatity() {
+    public long getQuatity() {
         return quatity;
     }
 
-    public void setQuatity(int quatity) {
+    public void setQuatity(long quatity) {
         this.quatity = quatity;
     }
 

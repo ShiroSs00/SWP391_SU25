@@ -29,7 +29,7 @@ public class HealthCheckController {
 
     @PutMapping("update/{donationRegistrationId}")
     public ResponseEntity<HealthCheck> updateHealthCheck(
-            @PathVariable int donationRegistrationId,
+            @PathVariable String donationRegistrationId,
             @RequestBody HealthCheck updatedHealthCheck) {
         try {
             HealthCheck updated = healthCheckService.updateHealthCheckByDonationRegistrationId(donationRegistrationId, updatedHealthCheck);
@@ -41,7 +41,7 @@ public class HealthCheckController {
 
     @PostMapping("/create/{id}")
     public ResponseEntity<HealthCheck> createHealthCheck(
-            @PathVariable int donationRegistrationId,
+            @PathVariable String donationRegistrationId,
             @RequestBody HealthCheck healthCheck) {
         try {
             DonationRegistration donationRegistration = donationRegistrationService.getDonationRegistrationById(donationRegistrationId);

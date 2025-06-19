@@ -27,7 +27,7 @@ public class Account{
     @Column(name ="creation_date")
     private LocalDate creationDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_name")
     private Role role;
 
@@ -50,11 +50,63 @@ public class Account{
     @OneToMany(mappedBy ="account")
     private List<Notification> notifications;
 
-    @OneToOne
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL)
     private Profile profile;
 
     public Profile getProfile() {
         return profile;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    public List<BloodRequest> getBloodRequests() {
+        return bloodRequests;
+    }
+
+    public void setBloodRequests(List<BloodRequest> bloodRequests) {
+        this.bloodRequests = bloodRequests;
+    }
+
+    public List<Blog> getBlogs() {
+        return blogs;
+    }
+
+    public void setBlogs(List<Blog> blogs) {
+        this.blogs = blogs;
+    }
+
+    public List<DonationRegistration> getDonationRegistrations() {
+        return donationRegistrations;
+    }
+
+    public void setDonationRegistrations(List<DonationRegistration> donationRegistrations) {
+        this.donationRegistrations = donationRegistrations;
+    }
+
+    public BloodDonationHistory getBloodDonationHistory() {
+        return bloodDonationHistory;
+    }
+
+    public void setBloodDonationHistory(BloodDonationHistory bloodDonationHistory) {
+        this.bloodDonationHistory = bloodDonationHistory;
+    }
+
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(List<Notification> notifications) {
+        this.notifications = notifications;
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
     }
 
     public Account() {

@@ -5,21 +5,21 @@ import jakarta.persistence.*;
 @Entity
 public class HealthCheck {
     @Column(name = "health_check_id")
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int heathCheckId;
-    @Column(name = "weight",columnDefinition = "DOUBLE DEFAULT 0")
+    @Id
+    private String heathCheckId;
+    @Column(name = "weight")
     private double weight;
-    @Column(name = "temperate",columnDefinition = "DOUBLE DEFAULT 0")
+    @Column(name = "temperate")
     private double temperate;
-    @Column(name = "blood_pressure",columnDefinition = "DOUBLE DEFAULT 0")
+    @Column(name = "blood_pressure")
     private double bloodPressure;
-    @Column(name = "pluse", columnDefinition = "INT DEFAULT 0")
-    private int pluse;
-    @Column(name = "hemogobin",columnDefinition = "DOUBLE DEFAULT 0")
+    @Column(name = "pluse")
+    private long pluse;
+    @Column(name = "hemogobin")
     private double hemogobin;
-    @Column(name = "volume_to_take", columnDefinition = "INT DEFAULT 0")
-    private int volumeToTake;
-    @Column(name = "isFitToDonate",columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(name = "volume_to_take")
+    private long volumeToTake;
+    @Column(name = "isFitToDonate")
     private boolean isFitToDonate;
     @Column(name = "note")
     private String note;
@@ -33,7 +33,7 @@ public class HealthCheck {
     public HealthCheck() {
     }
 
-    public HealthCheck(double weight, double temperate, double bloodPressure, int pluse, double hemogobin, int volumeToTake, boolean isFitToDonate, String note) {
+    public HealthCheck(double weight, double temperate, double bloodPressure, long pluse, double hemogobin, long volumeToTake, boolean isFitToDonate, String note) {
         this.weight = weight;
         this.temperate = temperate;
         this.bloodPressure = bloodPressure;
@@ -60,11 +60,11 @@ public class HealthCheck {
         this.afterDonationBlood = afterDonationBlood;
     }
 
-    public int getHeathCheckId() {
+    public String getHeathCheckId() {
         return heathCheckId;
     }
 
-    public void setHeathCheckId(int heathCheckId) {
+    public void setHeathCheckId(String heathCheckId) {
         this.heathCheckId = heathCheckId;
     }
 
@@ -93,11 +93,11 @@ public class HealthCheck {
         this.bloodPressure = bloodPressure;
     }
 
-    public int getPluse() {
+    public long getPluse() {
         return pluse;
     }
 
-    public void setPluse(int pluse) {
+    public void setPluse(long pluse) {
         this.pluse = pluse;
     }
 
@@ -109,11 +109,11 @@ public class HealthCheck {
         this.hemogobin = hemogobin;
     }
 
-    public int getVolumeToTake() {
+    public long getVolumeToTake() {
         return volumeToTake;
     }
 
-    public void setVolumeToTake(int volumeToTake) {
+    public void setVolumeToTake(long volumeToTake) {
         this.volumeToTake = volumeToTake;
     }
 
