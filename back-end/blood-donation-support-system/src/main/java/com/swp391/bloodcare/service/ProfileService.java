@@ -173,6 +173,7 @@ public class ProfileService {
             Blood blood = profile.getBloodCode();
             String bloodTypeStr = blood.getBloodType().toString()+(blood.getRh() == Blood.RhFactor.POSITIVE ? "+" : "-");
             prd.setBloodType(bloodTypeStr);
+
         }
 
         //Achievment

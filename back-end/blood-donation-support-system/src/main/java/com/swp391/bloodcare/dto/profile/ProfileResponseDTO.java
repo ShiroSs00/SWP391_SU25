@@ -1,7 +1,6 @@
 package com.swp391.bloodcare.dto.profile;
 
 import com.swp391.bloodcare.dto.AddressDTO;
-import com.swp391.bloodcare.entity.Blood;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
