@@ -22,12 +22,12 @@ public class Account{
     private String password;
 
     @Column(name ="is_active")
-    private boolean isActive;
+    private Boolean isActive;
 
-    @Column(name ="createion_date")
+    @Column(name ="creation_date")
     private LocalDate creationDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_name")
     private Role role;
 
@@ -50,7 +50,7 @@ public class Account{
     @OneToMany(mappedBy ="account")
     private List<Notification> notifications;
 
-    @OneToOne
+    @OneToOne(mappedBy = "accountId")
     private Profile profile;
 
     public Profile getProfile() {

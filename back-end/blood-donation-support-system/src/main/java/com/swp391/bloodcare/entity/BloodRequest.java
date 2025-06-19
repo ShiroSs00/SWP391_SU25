@@ -20,7 +20,7 @@ public class BloodRequest {
     @JoinColumn(name = "hospital_id")
     private Hospital hospitalId;
 
-    @Column(name ="request_date")
+    @Column(name ="request_date") //ngày mong muốn
     private LocalDate requestDate;
 
     @ManyToOne()
@@ -39,7 +39,7 @@ public class BloodRequest {
     @Column(name ="quantity")
     private int quatity;
 
-    @Column(name ="request_Creation_date")
+    @Column(name ="request_Creation_date") // ngày tạo đơn
     private LocalDate requestCreationDate;
 
 

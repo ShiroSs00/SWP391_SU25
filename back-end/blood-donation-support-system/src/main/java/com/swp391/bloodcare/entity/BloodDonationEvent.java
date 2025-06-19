@@ -10,29 +10,29 @@ import java.util.List;
 
 @Entity
 public class BloodDonationEvent {
+    @Id
     @Column(name = "event_id")
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private int eventId;
-    @Column(name = "name_of_event", nullable = false)
+    @Column(name = "name_of_event")
     private String nameOfEvent;
-    @Column(name = "creation_date",nullable = false)
+    @Column(name = "creation_date")
     private Date creationDate;
-    @Column(name = "start_date",nullable = false)
+    @Column(name = "start_date")
     private Date startDate;
-    @Column(name = "end_date",nullable = false)
+    @Column(name = "end_date")
     private Date endDate;
-    @Column(name = "expected_blood_volume", nullable = false)
+    @Column(name = "expected_blood_volume")
     private int expectedBloodVolume;
     @Column(name ="actual_volume")
     private int actualVolume;
-    @Column (name = "location",nullable = false)
+    @Column (name = "location")
     private String location;
     @Column(name = "status")
     private String status;
 
     @OneToMany
     private List<BloodDonationHistory> bloodDonationHistoryList = new ArrayList<>();
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "account_id_create")
     private Account account;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
@@ -51,6 +51,13 @@ public class BloodDonationEvent {
     public BloodDonationEvent() {
     }
 
+    public List<BloodDonationHistory> getBloodDonationHistoryList() {
+        return bloodDonationHistoryList;
+    }
+
+    public void setBloodDonationHistoryList(List<BloodDonationHistory> bloodDonationHistoryList) {
+        this.bloodDonationHistoryList = bloodDonationHistoryList;
+    }
 
     public List<DonationRegistration> getDonationRegistrations() {
         return donationRegistrations;
