@@ -58,9 +58,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
 
                         // Sau đó mới tới hạn chế các method PUT/POST
+                        .requestMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/event/**").hasRole("STAFF")
                         .requestMatchers(HttpMethod.POST, "/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/event/**").hasRole("STAFF")
+
 
                         .anyRequest().authenticated()
                 )

@@ -1,6 +1,6 @@
 package com.swp391.bloodcare.service;
 
-
+import com.swp391.bloodcare.dto.BloodDonationEventDTO;
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.BloodDonationEvent;
 import com.swp391.bloodcare.repository.AccountRepository;
@@ -11,60 +11,96 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
-import java.util.List;
-
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public  class EventService {
+public class EventService {
 
     @Autowired
     private EventRepository eventRepository;
+
     @Autowired
     private AccountRepository accountRepository;
 
-    public BloodDonationEvent createEventByUsername(String username, BloodDonationEvent event) {
+    public BloodDonationEventDTO createEventByUsername(String username, BloodDonationEventDTO eventDTO) {
         Account account = accountRepository.findByUserName(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        String eventId;
+        do {
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            int randomCode = new Random().nextInt(1000);
+            String randomPart = String.format("%03d", randomCode);
+            eventId = "EV-" + timestamp + "-" + randomPart;
+        } while (eventRepository.existsByEventId(eventId));
+
+        BloodDonationEvent event = new BloodDonationEvent();
+        event.setEventId(eventId);
         event.setAccount(account);
-        return eventRepository.save(event);
+        event.setCreationDate(new Date());
+        event.setNameOfEvent(eventDTO.getNameOfEvent());
+        event.setStartDate(eventDTO.getStartDate());
+        event.setEndDate(eventDTO.getEndDate());
+        event.setExpectedBloodVolume(eventDTO.getExpectedBloodVolume());
+        event.setActualVolume(eventDTO.getActualVolume());
+        event.setLocation(eventDTO.getLocation());
+        event.setStatus(eventDTO.getStatus());
+
+        return toDTO(eventRepository.save(event));
     }
 
-    public BloodDonationEvent  updateEvent(int id, BloodDonationEvent updatedEvent) {
-        BloodDonationEvent existingEvent = eventRepository.findById((long) id)
+    public BloodDonationEventDTO updateEvent(String id, BloodDonationEventDTO eventDTO) {
+        BloodDonationEvent existingEvent = eventRepository.findByEventId(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Event not found with ID: " + id
                 ));
 
-        // Cập nhật các field
-        existingEvent.setNameOfEvent(updatedEvent.getNameOfEvent());
-        existingEvent.setCreationDate(updatedEvent.getCreationDate());
-        existingEvent.setStartDate(updatedEvent.getStartDate());
-        existingEvent.setEndDate(updatedEvent.getEndDate());
-        existingEvent.setExpectedBloodVolume(updatedEvent.getExpectedBloodVolume());
-        existingEvent.setActualVolume(updatedEvent.getActualVolume());
-        existingEvent.setLocation(updatedEvent.getLocation());
-        existingEvent.setStatus(updatedEvent.getStatus());
+        existingEvent.setNameOfEvent(eventDTO.getNameOfEvent());
+        existingEvent.setStartDate(eventDTO.getStartDate());
+        existingEvent.setEndDate(eventDTO.getEndDate());
+        existingEvent.setExpectedBloodVolume(eventDTO.getExpectedBloodVolume());
+        existingEvent.setActualVolume(eventDTO.getActualVolume());
+        existingEvent.setLocation(eventDTO.getLocation());
+        existingEvent.setStatus(eventDTO.getStatus());
 
-        return eventRepository.save(existingEvent);
+        return toDTO(eventRepository.save(existingEvent));
     }
 
+    public List<BloodDonationEventDTO> getAllEvent() {
+        return eventRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 
-    public List<BloodDonationEvent> getAllEvent(){
-        return eventRepository.findAll();
+    public List<BloodDonationEventDTO> getEventByDate(Date startTime, Date endTime) {
+        return eventRepository.findByCreationDateBetween(startTime, endTime)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
-    public List<BloodDonationEvent> getEventByDate(Date startTime, Date endTime){
-       return eventRepository.findByCreationDateBetween(startTime, endTime);
-    }
-    public void deleteEvent(int id) {
-        BloodDonationEvent event = eventRepository.findById((long) id)
+
+    public void deleteEvent(String id) {
+        BloodDonationEvent event = eventRepository.findByEventId(id)
                 .orElseThrow(() -> new RuntimeException("Event not found with ID: " + id));
-
         eventRepository.delete(event);
     }
 
-
-
+    private BloodDonationEventDTO toDTO(BloodDonationEvent event) {
+        BloodDonationEventDTO dto = new BloodDonationEventDTO();
+        dto.setEventId(event.getEventId());
+        dto.setNameOfEvent(event.getNameOfEvent());
+        dto.setCreationDate(event.getCreationDate());
+        dto.setStartDate(event.getStartDate());
+        dto.setEndDate(event.getEndDate());
+        dto.setExpectedBloodVolume(event.getExpectedBloodVolume());
+        dto.setActualVolume(event.getActualVolume());
+        dto.setLocation(event.getLocation());
+        dto.setStatus(event.getStatus());
+        dto.setAccountId(event.getAccount().getAccountId());
+        return dto;
+    }
 }

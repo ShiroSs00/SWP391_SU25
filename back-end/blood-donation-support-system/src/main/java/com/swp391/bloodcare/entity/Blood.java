@@ -15,7 +15,7 @@ import jakarta.persistence.*;
 public class Blood {
     @Id
     @Column(name ="blood_code")
-    private int bloodCode;
+    private String bloodCode;
 
     @Enumerated(EnumType.STRING)
     @Column(name ="blood_type")
@@ -33,10 +33,10 @@ public class Blood {
     private boolean isRareBood;
 
     @Column(name ="volumn")
-    private int volumn;
+    private long volumn;
 
     @Column(name ="quantity")
-    private int quantity;
+    private long quantity;
 
     @Column(name ="blood_match")
     private String bloodMatch;

@@ -27,7 +27,7 @@ public class AfterDonationService {
         return afterDonationRepository.findAll();
     }
     public AfterDonationBlood getAfterDonationByHealthCheck(HealthCheck healthCheck) {
-        return afterDonationRepository.getReferenceById((long)healthCheck.getHeathCheckId());
+        return null;
     }
 
 }

@@ -66,7 +66,7 @@ public class AccountService {
 
             //tạo profile
             Profile profile = new Profile();
-            profile.setAccountId(savedAccount);
+            profile.setAccount(savedAccount);
             profile.setName(accountRegistration.getName());
             profile.setPhone(accountRegistration.getPhone());
             profile.setDob(accountRegistration.getDob());

@@ -8,7 +8,7 @@ import java.util.Date;
 public class DonationRegistration {
     @Column(name = "registration_id")
     @Id
-    private int registrationId;
+    private String registrationId;
     @Column(name = "date_created",nullable = false)
     private Date dateCreated;
     @Column(name = "status",nullable = false)
@@ -37,7 +37,7 @@ public class DonationRegistration {
     }
 
 
-    public DonationRegistration(String status, Date dateCreated, int registrationId) {
+    public DonationRegistration(String status, Date dateCreated, String registrationId) {
         this.status = status;
         this.dateCreated = dateCreated;
         this.registrationId = registrationId;
@@ -75,11 +75,11 @@ public class DonationRegistration {
         this.donorFeedback = donorFeedback;
     }
 
-    public int getRegistrationId() {
+    public String getRegistrationId() {
         return registrationId;
     }
 
-    public void setRegistrationId(int registrationId) {
+    public void setRegistrationId(String registrationId) {
         this.registrationId = registrationId;
     }
 

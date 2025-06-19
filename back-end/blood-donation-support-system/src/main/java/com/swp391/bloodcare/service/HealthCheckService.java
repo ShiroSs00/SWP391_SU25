@@ -21,7 +21,7 @@ public class HealthCheckService {
         return healthCheckRepository.save(healthCheck);
     }
 
-    public HealthCheck updateHealthCheckByDonationRegistrationId(int donationRegistrationId, HealthCheck updatedData) {
+    public HealthCheck updateHealthCheckByDonationRegistrationId(String donationRegistrationId, HealthCheck updatedData) {
         HealthCheck existing = healthCheckRepository.findByDonationRegistration_RegistrationId(donationRegistrationId)
                 .orElseThrow(() -> new EntityNotFoundException("HealthCheck not found for donation registration id: " + donationRegistrationId));
 
@@ -48,8 +48,8 @@ public class HealthCheckService {
     public List<HealthCheck> getAllHealthChecks() {
         return healthCheckRepository.findAll();
     }
-    public HealthCheck getHealthCheckByRegistration(DonationRegistration donationRegistration) {
-        return healthCheckRepository.getReferenceById((long)donationRegistration.getRegistrationId());
-    }
+//    public HealthCheck getHealthCheckByRegistration(DonationRegistration donationRegistration) {
+//        return healthCheckRepository.getReferenceById(donationRegistration.getRegistrationId());
+//    }
 
 }

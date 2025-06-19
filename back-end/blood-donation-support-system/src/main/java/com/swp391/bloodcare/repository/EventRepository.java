@@ -13,4 +13,8 @@ import java.util.Optional;
 public interface EventRepository extends JpaRepository<BloodDonationEvent, Long> {
 
     List<BloodDonationEvent> findByCreationDateBetween(Date creationDateAfter, Date creationDateBefore);
+
+    Optional<BloodDonationEvent> findByEventId(String eventId);
+    boolean existsByEventId(String eventId);
+
 }
