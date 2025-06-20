@@ -25,9 +25,10 @@ public class Profile {
     @Column(name = "profile_id")
     private String profileId;
 
-    @JoinColumn(name = "account_id")
     @OneToOne
-    private Account account;
+    @JoinColumn(name = "account_id")
+    private Account accountId;
+
 
     @Column(name ="name")
     private String name;

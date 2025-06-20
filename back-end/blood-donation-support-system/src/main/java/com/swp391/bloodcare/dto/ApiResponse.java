@@ -1,4 +1,4 @@
-package com.swp391.bloodcare.dto.account;
+package com.swp391.bloodcare.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountRegistrationResponse<T> {
+public class ApiResponse<T> {
     private boolean success;
     private String message;
     private T data;

@@ -12,6 +12,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/*
+Các chức năng xử lý trong AuthService:
+- Login/Logout
+- Tìm kiếm tất cả Account
+ */
 @Service
 public class AuthService {
 

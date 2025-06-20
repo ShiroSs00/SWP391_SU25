@@ -2,7 +2,7 @@ package com.swp391.bloodcare.controller;
 
 
 import com.swp391.bloodcare.dto.account.AccountRegistrationDTO;
-import com.swp391.bloodcare.dto.account.AccountRegistrationResponse;
+import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.log.LoginRequest;
 import com.swp391.bloodcare.dto.log.LoginResponse;
 import com.swp391.bloodcare.service.AccountService;
@@ -67,7 +67,7 @@ public class AuthController {
 
     //tạo tài khoản
     @PostMapping("/register")
-    public ResponseEntity<AccountRegistrationResponse<String>> registerAccount(@Valid @RequestBody AccountRegistrationDTO accountRegistrationDTO, BindingResult bindingResult) {
+    public ResponseEntity<ApiResponse<String>> registerAccount(@Valid @RequestBody AccountRegistrationDTO accountRegistrationDTO, BindingResult bindingResult) {
         //kiểm tra validation error
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldErrors()
@@ -75,11 +75,11 @@ public class AuthController {
                     .map(error -> error.getDefaultMessage())
                     .collect(Collectors.joining(", "));
 
-            AccountRegistrationResponse<String> response = new AccountRegistrationResponse<>(false, errorMessage, null);
+            ApiResponse<String> response = new ApiResponse<>(false, errorMessage, null);
             return ResponseEntity.badRequest().body(response);
         }
 
-        AccountRegistrationResponse<String> response = accountService.registerAccount(accountRegistrationDTO);
+        ApiResponse<String> response = accountService.registerAccount(accountRegistrationDTO);
 
         if(response.isSuccess()){
             return ResponseEntity.ok(response);

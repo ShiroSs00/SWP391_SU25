@@ -5,8 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -44,8 +43,12 @@ public class JwtUtil {
     }
 
     public Claims extractAllClaims(String token){
-        return Jwts.parser().setSigningKey(getSigningKey())
-                .build().parseClaimsJws(token).getBody();
+        return Jwts.parser()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
     }
 
     public <T> T extractClaim(String token, Function<Claims,T> claimsResolver){
