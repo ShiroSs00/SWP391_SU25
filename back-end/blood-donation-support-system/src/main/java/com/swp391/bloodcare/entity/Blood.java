@@ -42,7 +42,7 @@ public class Blood {
     public Blood() {
     }
 
-    public Blood(int bloodCode, BloodType bloodType, RhFactor rh, Component component, boolean isRareBood, int volumn, String bloodMatch) {
+    public Blood(String bloodCode, BloodType bloodType, RhFactor rh, Component component, boolean isRareBood, int volumn, String bloodMatch) {
         this.bloodCode = bloodCode;
         this.bloodType = bloodType;
         this.rh = rh;
@@ -52,11 +52,11 @@ public class Blood {
         this.bloodMatch = bloodMatch;
     }
 
-    public int getBloodCode() {
+    public String getBloodCode() {
         return bloodCode;
     }
 
-    public void setBloodCode(int bloodCode) {
+    public void setBloodCode(String bloodCode) {
         this.bloodCode = bloodCode;
     }
 
