@@ -12,7 +12,7 @@ import java.util.List;
 public class BloodDonationEvent {
     @Id
     @Column(name = "event_id")
-    private int eventId;
+    private String  eventId;
     @Column(name = "name_of_event")
     private String nameOfEvent;
     @Column(name = "creation_date")
@@ -22,21 +22,24 @@ public class BloodDonationEvent {
     @Column(name = "end_date")
     private Date endDate;
     @Column(name = "expected_blood_volume")
-    private int expectedBloodVolume;
+    private long expectedBloodVolume;
     @Column(name ="actual_volume")
-    private int actualVolume;
+    private long actualVolume;
     @Column (name = "location")
     private String location;
     @Column(name = "status")
     private String status;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
     private List<BloodDonationHistory> bloodDonationHistoryList = new ArrayList<>();
+
     @ManyToOne
     @JoinColumn(name = "account_id_create")
     private Account account;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
     private List<DonationRegistration> donationRegistrations = new ArrayList<>();
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
     private List<BloodDonationHistory> bloodDonationHistories = new ArrayList<>();
 
@@ -76,7 +79,7 @@ public class BloodDonationEvent {
     }
 
 
-    public BloodDonationEvent(String nameOfEvent, Date creationDate, Date startDate, Date endDate, int expectedBloodVolume, int actualVolume, String location, String status) {
+    public BloodDonationEvent(String nameOfEvent, Date creationDate, Date startDate, Date endDate, long expectedBloodVolume, long actualVolume, String location, String status) {
         this.nameOfEvent = nameOfEvent;
         this.creationDate = creationDate;
         this.startDate = startDate;
@@ -89,11 +92,11 @@ public class BloodDonationEvent {
 
 
 
-    public int getEventId() {
+    public String getEventId() {
         return eventId;
     }
 
-    public void setEventId(int eventId) {
+    public void setEventId(String eventId) {
         this.eventId = eventId;
     }
 
@@ -129,19 +132,19 @@ public class BloodDonationEvent {
         this.endDate = endDate;
     }
 
-    public int getExpectedBloodVolume() {
+    public long getExpectedBloodVolume() {
         return expectedBloodVolume;
     }
 
-    public void setExpectedBloodVolume(int expectedBloodVolume) {
+    public void setExpectedBloodVolume(long expectedBloodVolume) {
         this.expectedBloodVolume = expectedBloodVolume;
     }
 
-    public int getActualVolume() {
+    public long getActualVolume() {
         return actualVolume;
     }
 
-    public void setActualVolume(int actualVolume) {
+    public void setActualVolume(long actualVolume) {
         this.actualVolume = actualVolume;
     }
 

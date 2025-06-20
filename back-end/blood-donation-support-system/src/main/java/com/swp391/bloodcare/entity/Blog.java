@@ -7,8 +7,8 @@ import java.util.Date;
 @Entity
 public class Blog {
     @Column(name = "blog_id")
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int blogId;
+    @Id
+    private String blogId;
     @Column(name = "content",nullable = false)
     private String content;
     @Column(name = "post_date",nullable = false)
@@ -40,11 +40,11 @@ public class Blog {
         this.account = account;
     }
 
-    public int getBlogId() {
+    public String getBlogId() {
         return blogId;
     }
 
-    public void setBlogId(int blogId) {
+    public void setBlogId(String blogId) {
         this.blogId = blogId;
     }
 

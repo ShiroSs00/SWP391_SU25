@@ -8,21 +8,22 @@ import java.util.Date;
 public class DonationRegistration {
     @Column(name = "registration_id")
     @Id
-    private int registrationId;
+    private String registrationId;
     @Column(name = "date_created",nullable = false)
     private Date dateCreated;
     @Column(name = "status",nullable = false)
     private String status;
+
     @ManyToOne
     @JoinColumn(name = "event_id")
     private BloodDonationEvent event;
-    @OneToOne
-    @JoinColumn(name = "healthy_id")
+
+    @OneToOne(mappedBy = "donationRegistration",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private HealthCheck healthCheck;
 
-    @OneToOne
-    @JoinColumn(name = "donor_feedback_id")
+    @OneToOne(mappedBy = "donationRegistration",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private DonorFeedback donorFeedback;
+
     @ManyToOne
     @JoinColumn(name = "component_id")
     private Component component;
@@ -37,7 +38,7 @@ public class DonationRegistration {
     }
 
 
-    public DonationRegistration(String status, Date dateCreated, int registrationId) {
+    public DonationRegistration(String status, Date dateCreated, String registrationId) {
         this.status = status;
         this.dateCreated = dateCreated;
         this.registrationId = registrationId;
@@ -75,11 +76,11 @@ public class DonationRegistration {
         this.donorFeedback = donorFeedback;
     }
 
-    public int getRegistrationId() {
+    public String getRegistrationId() {
         return registrationId;
     }
 
-    public void setRegistrationId(int registrationId) {
+    public void setRegistrationId(String registrationId) {
         this.registrationId = registrationId;
     }
 

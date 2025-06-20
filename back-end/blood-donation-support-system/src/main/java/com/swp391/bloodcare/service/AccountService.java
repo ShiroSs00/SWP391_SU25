@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -66,7 +67,7 @@ public class AccountService {
 
             //tạo profile
             Profile profile = new Profile();
-            profile.setAccountId(savedAccount);
+            profile.setAccount(savedAccount);
             profile.setName(accountRegistration.getName());
             profile.setPhone(accountRegistration.getPhone());
             profile.setDob(accountRegistration.getDob());
@@ -89,10 +90,11 @@ public class AccountService {
 
             return new ApiResponse<>(true,"Đăng ký tài khoản thành công!", savedAccount.getAccountId());
 
-
-
-        }catch(Exception e){
-            return new ApiResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
-        }
+        } catch (Exception e) {
+        // Bắt buộc rollback
+        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        return new AccountRegistrationResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
     }
+
+}
 }

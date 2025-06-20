@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface HealthCheckRepository extends JpaRepository<HealthCheck, Long> {
-    Optional<HealthCheck> findByDonationRegistration_RegistrationId(int registrationId);
+    Optional<HealthCheck> findByDonationRegistration_RegistrationId(String registrationId);
+
+    Optional<HealthCheck> findByHealthCheckId(String healthCheckId);
 }
