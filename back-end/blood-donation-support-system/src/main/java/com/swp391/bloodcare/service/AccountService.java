@@ -89,12 +89,11 @@ public class AccountService {
             profileRepository.save(profile);
 
             return new ApiResponse<>(true,"Đăng ký tài khoản thành công!", savedAccount.getAccountId());
-
         } catch (Exception e) {
         // Bắt buộc rollback
         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-        return new AccountRegistrationResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
-    }
+            return new ApiResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
+        }
 
 }
 }

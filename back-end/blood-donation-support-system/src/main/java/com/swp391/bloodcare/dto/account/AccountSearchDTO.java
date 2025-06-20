@@ -19,5 +19,5 @@ public class AccountSearchDTO {
     private LocalDate creationDate;
     private String roleName;
     private String hospitalName;
-    private int numberOfBloodDonation;
+    private long numberOfBloodDonation;
 }

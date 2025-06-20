@@ -27,7 +27,7 @@ public class Profile {
 
     @OneToOne
     @JoinColumn(name = "account_id")
-    private Account accountId;
+    private Account account;
 
 
     @Column(name ="name")

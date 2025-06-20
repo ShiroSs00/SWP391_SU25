@@ -157,7 +157,7 @@ public class ProfileService {
         prd.setUsername(account.getUserName());
         prd.setEmail(account.getEmail());
         prd.setCreationDate(account.getCreationDate());
-        prd.setActive(account.isActive());
+        prd.setIsActive(account.isActive());
 
         //Proflie info
         prd.setProfileId(profile.getProfileId());

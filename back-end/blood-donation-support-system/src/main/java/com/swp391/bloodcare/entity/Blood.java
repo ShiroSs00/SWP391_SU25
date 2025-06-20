@@ -45,7 +45,7 @@ public class Blood {
     public Blood() {
     }
 
-    public Blood(int bloodCode, BloodType bloodType, RhFactor rh, Component component, boolean isRareBood, int volumn, int quantity, String bloodMatch) {
+    public Blood(String bloodCode, BloodType bloodType, RhFactor rh, Component component, boolean isRareBood, long volumn, long quantity, String bloodMatch) {
         this.bloodCode = bloodCode;
         this.bloodType = bloodType;
         this.rh = rh;
@@ -56,11 +56,11 @@ public class Blood {
         this.bloodMatch = bloodMatch;
     }
 
-    public int getBloodCode() {
+    public String getBloodCode() {
         return bloodCode;
     }
 
-    public void setBloodCode(int bloodCode) {
+    public void setBloodCode(String bloodCode) {
         this.bloodCode = bloodCode;
     }
 
@@ -96,19 +96,19 @@ public class Blood {
         isRareBood = rareBood;
     }
 
-    public int getVolumn() {
+    public long getVolumn() {
         return volumn;
     }
 
-    public void setVolumn(int volumn) {
+    public void setVolumn(long volumn) {
         this.volumn = volumn;
     }
 
-    public int getQuantity() {
+    public long getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(long quantity) {
         this.quantity = quantity;
     }
 
