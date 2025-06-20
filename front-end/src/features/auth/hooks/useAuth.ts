@@ -1,71 +1,63 @@
-// useAuth.ts
+// src/useAuth.ts
 import { useState } from 'react';
-import { LoginFormData, AuthHookReturn } from './types/auth.types';
+import api from '../../../services/axios/api';
+import { type LoginFormData, type AuthResponse, type RegisterFormData } from '../types/auth.types';
 
-export const useAuth = (): AuthHookReturn => {
+export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
-  const login = async (data: LoginFormData): Promise<void> => {
+  const login = async (data: LoginFormData): Promise<AuthResponse> => {
     setIsLoading(true);
     setError('');
-
     try {
-      // Replace with your actual API endpoint
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Đăng nhập thất bại');
+      const res = await api.post<AuthResponse>('/auth/login', data);
+      const result = res.data;
+      localStorage.setItem('authToken', result.token || '');
+      return result;
+    } catch (err: unknown) {
+      let message = 'Lỗi không xác định';
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'response' in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      ) {
+        message = (err as { response: { data: { message: string } } }).response.data.message;
+      } else if (err instanceof Error) {
+        message = err.message;
       }
-
-      const result = await response.json();
-      
-      // Store token in localStorage or handle as needed
-      if (result.token) {
-        localStorage.setItem('authToken', result.token);
-      }
-
-      // You can also store user data
-      if (result.user) {
-        localStorage.setItem('userData', JSON.stringify(result.user));
-      }
-
-      console.log('Login successful:', result);
-      
-      // You might want to redirect or update global state here
-      // window.location.href = '/dashboard';
-      
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi đăng nhập');
+      setError(message);
+      return { success: false, message };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userData');
-    // Redirect to login page or update global state
+  const register = async (data: RegisterFormData): Promise<AuthResponse> => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const res = await api.post<AuthResponse>('/auth/register', data);
+      return res.data;
+    } catch (err: unknown) {
+      let message = 'Lỗi không xác định';
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'response' in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      ) {
+        message = (err as { response: { data: { message: string } } }).response.data.message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
+      return { success: false, message };
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const isAuthenticated = (): boolean => {
-    return !!localStorage.getItem('authToken');
-  };
-
-  return { 
-    login, 
-    isLoading, 
-    error,
-    // You can add more methods if needed
-    // logout,
-    // isAuthenticated
-  };
+  return { login, register, isLoading, error };
 };
