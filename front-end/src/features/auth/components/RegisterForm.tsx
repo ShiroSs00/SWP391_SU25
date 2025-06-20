@@ -56,20 +56,24 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, showToast, isLo
       return;
     }
     setError('');
-    const dataToSend = {
-      username: formData.username,
-      email: formData.email,
-      password: formData.password,
-      name: formData.name,
-      phone: formData.phone,
-      dob: new Date(formData.dob).toISOString(),
-      gender: formData.gender,
-      address: {
-        city: formData.address.city,
-        district: formData.address.district,
-        ward: formData.address.ward,
-        street: formData.address.street,
+    // Đảm bảo dob luôn là yyyy-dd-mm
+    let dobFormatted = formData.dob;
+    if (formData.dob) {
+      const parts = formData.dob.split('-');
+      if (parts.length === 3) {
+        // Nếu là yyyy-mm-dd hoặc yyyy-dd-mm, hoán đổi nếu cần
+        if (parseInt(parts[1], 10) > 12) {
+          // Đã đúng yyyy-dd-mm
+          dobFormatted = formData.dob;
+        } else {
+          // Đang là yyyy-mm-dd, chuyển sang yyyy-dd-mm
+          dobFormatted = `${parts[0]}-${parts[2]}-${parts[1]}`;
+        }
       }
+    }
+    const dataToSend = {
+      ...formData,
+      dob: dobFormatted,
     };
     console.log('Register payload:', dataToSend);
     const response = await onRegister(dataToSend);
@@ -150,13 +154,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, showToast, isLo
           <select
             id="dob-day"
             name="dob-day"
-            value={formData.dob ? String(new Date(formData.dob).getDate()).padStart(2, '0') : ''}
+            value={formData.dob ? formData.dob.split('-')[1] : ''}
             onChange={e => {
               const day = e.target.value.padStart(2, '0');
-              const date = formData.dob ? new Date(formData.dob) : new Date();
-              const month = String(date.getMonth() + 1).padStart(2, '0');
-              const year = String(date.getFullYear());
-              setFormData(f => ({ ...f, dob: `${year}-${month}-${day}` }));
+              const [year = '', _day = '', month = ''] = formData.dob.split('-');
+              setFormData(f => ({ ...f, dob: `${year || new Date().getFullYear()}-${day}-${month || '01'}` }));
             }}
             className="w-1/3 border border-gray-300 rounded-md px-2 py-2 text-base focus:ring-2 focus:ring-[#e53935] focus:border-[#e53935] transition-colors bg-gray-50 font-medium text-[#b71c1c]"
             disabled={isLoading}
@@ -170,13 +172,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, showToast, isLo
           <select
             id="dob-month"
             name="dob-month"
-            value={formData.dob ? String(new Date(formData.dob).getMonth() + 1).padStart(2, '0') : ''}
+            value={formData.dob ? formData.dob.split('-')[2] : ''}
             onChange={e => {
               const month = e.target.value.padStart(2, '0');
-              const date = formData.dob ? new Date(formData.dob) : new Date();
-              const day = String(date.getDate()).padStart(2, '0');
-              const year = String(date.getFullYear());
-              setFormData(f => ({ ...f, dob: `${year}-${month}-${day}` }));
+              const [year = '', day = '', _month = ''] = formData.dob.split('-');
+              setFormData(f => ({ ...f, dob: `${year || new Date().getFullYear()}-${day || '01'}-${month}` }));
             }}
             className="w-1/3 border border-gray-300 rounded-md px-2 py-2 text-base focus:ring-2 focus:ring-[#e53935] focus:border-[#e53935] transition-colors bg-gray-50 font-medium text-[#b71c1c]"
             disabled={isLoading}
@@ -190,13 +190,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, showToast, isLo
           <select
             id="dob-year"
             name="dob-year"
-            value={formData.dob ? String(new Date(formData.dob).getFullYear()) : ''}
+            value={formData.dob ? formData.dob.split('-')[0] : ''}
             onChange={e => {
               const year = e.target.value;
-              const date = formData.dob ? new Date(formData.dob) : new Date();
-              const month = String(date.getMonth() + 1).padStart(2, '0');
-              const day = String(date.getDate()).padStart(2, '0');
-              setFormData(f => ({ ...f, dob: `${year}-${month}-${day}` }));
+              const [_year = '', day = '', month = ''] = formData.dob.split('-');
+              setFormData(f => ({ ...f, dob: `${year}-${day || '01'}-${month || '01'}` }));
             }}
             className="w-1/3 border border-gray-300 rounded-md px-2 py-2 text-base focus:ring-2 focus:ring-[#e53935] focus:border-[#e53935] transition-colors bg-gray-50 font-medium text-[#b71c1c]"
             disabled={isLoading}
