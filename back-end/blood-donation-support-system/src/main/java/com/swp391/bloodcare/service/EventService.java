@@ -5,7 +5,6 @@ import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.BloodDonationEvent;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.EventRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -19,16 +18,16 @@ import java.util.stream.Collectors;
 @Service
 public class EventService {
 
-    @Autowired
-    private EventRepository eventRepository;
+    private final EventRepository eventRepository;
 
-    @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
-    public BloodDonationEventDTO createEventByUsername(String username, BloodDonationEventDTO eventDTO) {
-        Account account = accountRepository.findByUserName(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public EventService(EventRepository eventRepository, AccountRepository accountRepository) {
+        this.eventRepository = eventRepository;
+        this.accountRepository = accountRepository;
+    }
 
+    private String generateUniqueEventId() {
         String eventId;
         do {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -36,21 +35,35 @@ public class EventService {
             String randomPart = String.format("%03d", randomCode);
             eventId = "EV-" + timestamp + "-" + randomPart;
         } while (eventRepository.existsByEventId(eventId));
+        return eventId;
+    }
 
+    private BloodDonationEvent buildEventFromDTO(BloodDonationEventDTO dto, String eventId, Account account) {
         BloodDonationEvent event = new BloodDonationEvent();
         event.setEventId(eventId);
         event.setAccount(account);
         event.setCreationDate(new Date());
-        event.setNameOfEvent(eventDTO.getNameOfEvent());
-        event.setStartDate(eventDTO.getStartDate());
-        event.setEndDate(eventDTO.getEndDate());
-        event.setExpectedBloodVolume(eventDTO.getExpectedBloodVolume());
-        event.setActualVolume(eventDTO.getActualVolume());
-        event.setLocation(eventDTO.getLocation());
-        event.setStatus(eventDTO.getStatus());
+        event.setNameOfEvent(dto.getNameOfEvent());
+        event.setStartDate(dto.getStartDate());
+        event.setEndDate(dto.getEndDate());
+        event.setExpectedBloodVolume(dto.getExpectedBloodVolume());
+        event.setActualVolume(dto.getActualVolume());
+        event.setLocation(dto.getLocation());
+        event.setStatus(dto.getStatus());
+        return event;
+    }
+
+    public BloodDonationEventDTO createEventByUsername(String username, BloodDonationEventDTO eventDTO) {
+        Account account = accountRepository.findByUserName(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        String eventId = generateUniqueEventId();
+
+        BloodDonationEvent event = buildEventFromDTO(eventDTO, eventId, account);
 
         return toDTO(eventRepository.save(event));
     }
+
 
     public BloodDonationEventDTO updateEvent(String id, BloodDonationEventDTO eventDTO) {
         BloodDonationEvent existingEvent = eventRepository.findByEventId(id)
@@ -58,16 +71,37 @@ public class EventService {
                         HttpStatus.NOT_FOUND, "Event not found with ID: " + id
                 ));
 
-        existingEvent.setNameOfEvent(eventDTO.getNameOfEvent());
-        existingEvent.setStartDate(eventDTO.getStartDate());
-        existingEvent.setEndDate(eventDTO.getEndDate());
-        existingEvent.setExpectedBloodVolume(eventDTO.getExpectedBloodVolume());
-        existingEvent.setActualVolume(eventDTO.getActualVolume());
-        existingEvent.setLocation(eventDTO.getLocation());
-        existingEvent.setStatus(eventDTO.getStatus());
+        if (eventDTO.getNameOfEvent() != null && !eventDTO.getNameOfEvent().isBlank()) {
+            existingEvent.setNameOfEvent(eventDTO.getNameOfEvent());
+        }
+
+        if (eventDTO.getStartDate() != null) {
+            existingEvent.setStartDate(eventDTO.getStartDate());
+        }
+
+        if (eventDTO.getEndDate() != null) {
+            existingEvent.setEndDate(eventDTO.getEndDate());
+        }
+
+        if (eventDTO.getExpectedBloodVolume() != null) {
+            existingEvent.setExpectedBloodVolume(eventDTO.getExpectedBloodVolume());
+        }
+
+        if (eventDTO.getActualVolume() != null) {
+            existingEvent.setActualVolume(eventDTO.getActualVolume());
+        }
+
+        if (eventDTO.getLocation() != null && !eventDTO.getLocation().isBlank()) {
+            existingEvent.setLocation(eventDTO.getLocation());
+        }
+
+        if (eventDTO.getStatus() != null && !eventDTO.getStatus().isBlank()) {
+            existingEvent.setStatus(eventDTO.getStatus());
+        }
 
         return toDTO(eventRepository.save(existingEvent));
     }
+
 
     public List<BloodDonationEventDTO> getAllEvent() {
         return eventRepository.findAll()

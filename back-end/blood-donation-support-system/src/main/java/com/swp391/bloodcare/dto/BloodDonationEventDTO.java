@@ -8,8 +8,8 @@ public class BloodDonationEventDTO {
     private String nameOfEvent;
     private Date startDate;
     private Date endDate;
-    private long expectedBloodVolume;
-    private long actualVolume;
+    private Long expectedBloodVolume;
+    private Long actualVolume;
     private String location;
     private String status;
     private String eventId;
@@ -44,19 +44,19 @@ public class BloodDonationEventDTO {
         this.location = location;
     }
 
-    public long getActualVolume() {
+    public Long getActualVolume() {
         return actualVolume;
     }
 
-    public void setActualVolume(long actualVolume) {
+    public void setActualVolume(Long actualVolume) {
         this.actualVolume = actualVolume;
     }
 
-    public long getExpectedBloodVolume() {
+    public Long getExpectedBloodVolume() {
         return expectedBloodVolume;
     }
 
-    public void setExpectedBloodVolume(long expectedBloodVolume) {
+    public void setExpectedBloodVolume(Long expectedBloodVolume) {
         this.expectedBloodVolume = expectedBloodVolume;
     }
 

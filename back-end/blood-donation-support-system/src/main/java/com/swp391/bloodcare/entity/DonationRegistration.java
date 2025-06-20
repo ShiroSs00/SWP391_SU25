@@ -13,16 +13,17 @@ public class DonationRegistration {
     private Date dateCreated;
     @Column(name = "status",nullable = false)
     private String status;
+
     @ManyToOne
     @JoinColumn(name = "event_id")
     private BloodDonationEvent event;
-    @OneToOne
-    @JoinColumn(name = "healthy_id")
+
+    @OneToOne(mappedBy = "donationRegistration",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private HealthCheck healthCheck;
 
-    @OneToOne
-    @JoinColumn(name = "donor_feedback_id")
+    @OneToOne(mappedBy = "donationRegistration",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private DonorFeedback donorFeedback;
+
     @ManyToOne
     @JoinColumn(name = "component_id")
     private Component component;

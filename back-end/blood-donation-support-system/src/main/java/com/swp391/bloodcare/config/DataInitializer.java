@@ -84,5 +84,34 @@ public class DataInitializer {
         } else {
             System.out.println("ℹ️ Staff account already exists.");
         }
+        // Tạo role MEMBER nếu chưa có
+        if (!roleRepository.existsById("MEMBER")) {
+            Role memberRole = new Role();
+            memberRole.setRole("MEMBER");
+            memberRole.setDescription("Normal user role");
+            roleRepository.save(memberRole);
+        }
+
+// Tạo tài khoản member nếu chưa tồn tại
+        if (!accountRepository.existsByUserName("member")) {
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            int randomCode = ThreadLocalRandom.current().nextInt(1000);
+            String randomPart = String.format("%03d", randomCode);
+            String accountId = "AC-" + timestamp + "-" + randomPart;
+
+            Account member = new Account();
+            member.setAccountId(accountId);
+            member.setUserName("member");
+            member.setPassword(passwordEncoder.encode("12345678"));
+            member.setEmail("member@user.local");
+            member.setActive(true);
+            Role role = roleRepository.findById("MEMBER").orElseThrow();
+            member.setRole(role);
+            accountRepository.save(member);
+            System.out.println("✅ Member account created: member / 12345678");
+        } else {
+            System.out.println("ℹ️ Member account already exists.");
+        }
+
     }
 }
