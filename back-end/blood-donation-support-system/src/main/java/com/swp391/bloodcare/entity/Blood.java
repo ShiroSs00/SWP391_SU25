@@ -15,7 +15,7 @@ import jakarta.persistence.*;
 public class Blood {
     @Id
     @Column(name ="blood_code")
-    private int bloodCode;
+    private String bloodCode;
 
     @Enumerated(EnumType.STRING)
     @Column(name ="blood_type")
@@ -35,24 +35,20 @@ public class Blood {
     @Column(name ="volumn")
     private int volumn;
 
-    @Column(name ="quantity")
-    private int quantity;
-
     @Column(name ="blood_match")
     private String bloodMatch;
 
-  
+
     public Blood() {
     }
 
-    public Blood(int bloodCode, BloodType bloodType, RhFactor rh, Component component, boolean isRareBood, int volumn, int quantity, String bloodMatch) {
+    public Blood(int bloodCode, BloodType bloodType, RhFactor rh, Component component, boolean isRareBood, int volumn, String bloodMatch) {
         this.bloodCode = bloodCode;
         this.bloodType = bloodType;
         this.rh = rh;
         this.component = component;
         this.isRareBood = isRareBood;
         this.volumn = volumn;
-        this.quantity = quantity;
         this.bloodMatch = bloodMatch;
     }
 
@@ -102,14 +98,6 @@ public class Blood {
 
     public void setVolumn(int volumn) {
         this.volumn = volumn;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
     }
 
     public String getBloodMatch() {
