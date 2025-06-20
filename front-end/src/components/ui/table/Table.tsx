@@ -1,176 +1,287 @@
-import React from 'react';
-import { ChevronUp, ChevronDown, Search, Filter } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  ChevronUpIcon, 
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon
+} from '@heroicons/react/24/outline';
+import { cn } from '../../../utils/helpers';
+import Button from '../button/Button';
+import Input from '../input/Input';
+import Spinner from '../spinner/Spinner';
 
-export interface Column<T> {
-    key: keyof T | 'actions';
-    label: string;
-    sortable?: boolean;
-    render?: (value: any, row: T) => React.ReactNode;
-    width?: string;
+export interface TableColumn<T> {
+  key: keyof T | string;
+  label: string;
+  sortable?: boolean;
+  width?: string;
+  align?: 'left' | 'center' | 'right';
+  render?: (value: any, row: T, index: number) => React.ReactNode;
 }
 
 export interface TableProps<T> {
-    data: T[];
-    columns: Column<T>[];
-    loading?: boolean;
-    pagination?: {
-        currentPage: number;
-        totalPages: number;
-        onPageChange: (page: number) => void;
-    };
-    searchable?: boolean;
-    filterable?: boolean;
-    onSearch?: (query: string) => void;
-    onFilter?: () => void;
-    sortConfig?: {
-        key: keyof T;
-        direction: 'asc' | 'desc';
-    };
-    onSort?: (key: keyof T) => void;
-    emptyMessage?: string;
+  data: T[];
+  columns: TableColumn<T>[];
+  loading?: boolean;
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  sortConfig?: {
+    key: string;
+    direction: 'asc' | 'desc';
+  };
+  onSort?: (key: string, direction: 'asc' | 'desc') => void;
+  onRowClick?: (row: T, index: number) => void;
+  emptyMessage?: string;
+  className?: string;
+  rowClassName?: (row: T, index: number) => string;
+  headerClassName?: string;
+  bodyClassName?: string;
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    pageSize: number;
+    totalItems: number;
+    onPageChange: (page: number) => void;
+    onPageSizeChange: (size: number) => void;
+  };
 }
 
 function Table<T extends Record<string, any>>({
-                                                  data,
-                                                  columns,
-                                                  loading = false,
-                                                  pagination,
-                                                  searchable = false,
-                                                  filterable = false,
-                                                  onSearch,
-                                                  onFilter,
-                                                  sortConfig,
-                                                  onSort,
-                                                  emptyMessage = 'No data available'
-                                              }: TableProps<T>) {
-    const [searchQuery, setSearchQuery] = React.useState('');
+  data,
+  columns,
+  loading = false,
+  searchable = false,
+  searchPlaceholder = 'Tìm kiếm...',
+  sortConfig,
+  onSort,
+  onRowClick,
+  emptyMessage = 'Không có dữ liệu',
+  className = '',
+  rowClassName,
+  headerClassName = '',
+  bodyClassName = '',
+  pagination
+}: TableProps<T>) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredData, setFilteredData] = useState(data);
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const query = e.target.value;
-        setSearchQuery(query);
-        onSearch?.(query);
-    };
+  React.useEffect(() => {
+    if (!searchable || !searchTerm) {
+      setFilteredData(data);
+      return;
+    }
 
-    const renderSortIcon = (columnKey: keyof T) => {
-        if (!sortConfig || sortConfig.key !== columnKey) {
-            return <ChevronUp className="w-4 h-4 opacity-0 group-hover:opacity-50" />;
-        }
-
-        return sortConfig.direction === 'asc' ?
-            <ChevronUp className="w-4 h-4 text-red-600" /> :
-            <ChevronDown className="w-4 h-4 text-red-600" />;
-    };
-
-    return (
-        <div className="space-y-4">
-            {(searchable || filterable) && (
-                <div className="flex items-center gap-4">
-                    {searchable && (
-                        <div className="relative flex-1 max-w-md">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={searchQuery}
-                                onChange={handleSearch}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                            />
-                        </div>
-                    )}
-                    {filterable && (
-                        <button
-                            onClick={onFilter}
-                            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                        >
-                            <Filter className="w-4 h-4" />
-                            Filter
-                        </button>
-                    )}
-                </div>
-            )}
-
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            {columns.map((column) => (
-                                <th
-                                    key={String(column.key)}
-                                    className={`px-6 py-4 text-left text-sm font-semibold text-gray-900 ${
-                                        column.sortable ? 'cursor-pointer group hover:bg-gray-100 transition-colors duration-200' : ''
-                                    }`}
-                                    style={{ width: column.width }}
-                                    onClick={() => column.sortable && onSort?.(column.key as keyof T)}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {column.label}
-                                        {column.sortable && renderSortIcon(column.key as keyof T)}
-                                    </div>
-                                </th>
-                            ))}
-                        </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                        {loading ? (
-                            <tr>
-                                <td colSpan={columns.length} className="px-6 py-12 text-center">
-                                    <div className="flex items-center justify-center space-x-2">
-                                        <div className="w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-                                        <span className="text-gray-500">Loading...</span>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : data.length === 0 ? (
-                            <tr>
-                                <td colSpan={columns.length} className="px-6 py-12 text-center text-gray-500">
-                                    {emptyMessage}
-                                </td>
-                            </tr>
-                        ) : (
-                            data.map((row, index) => (
-                                <tr key={index} className="hover:bg-gray-50 transition-colors duration-200">
-                                    {columns.map((column) => (
-                                        <td key={String(column.key)} className="px-6 py-4 text-sm text-gray-900">
-                                            {column.render
-                                                ? column.render(row[column.key], row)
-                                                : String(row[column.key] || '-')
-                                            }
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))
-                        )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {pagination && (
-                    <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                        <p className="text-sm text-gray-700">
-                            Page {pagination.currentPage} of {pagination.totalPages}
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
-                                disabled={pagination.currentPage === 1}
-                                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                            >
-                                Previous
-                            </button>
-                            <button
-                                onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
-                                disabled={pagination.currentPage === pagination.totalPages}
-                                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                            >
-                                Next
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+    const filtered = data.filter(row =>
+      Object.values(row).some(value =>
+        String(value).toLowerCase().includes(searchTerm.toLowerCase())
+      )
     );
+    setFilteredData(filtered);
+  }, [data, searchTerm, searchable]);
+
+  const handleSort = (key: string) => {
+    if (!onSort) return;
+    
+    const direction = 
+      sortConfig?.key === key && sortConfig.direction === 'asc' 
+        ? 'desc' 
+        : 'asc';
+    
+    onSort(key, direction);
+  };
+
+  const getSortIcon = (columnKey: string) => {
+    if (!sortConfig || sortConfig.key !== columnKey) {
+      return <div className="w-4 h-4" />;
+    }
+    
+    return sortConfig.direction === 'asc' 
+      ? <ChevronUpIcon className="w-4 h-4" />
+      : <ChevronDownIcon className="w-4 h-4" />;
+  };
+
+  const renderCell = (column: TableColumn<T>, row: T, index: number) => {
+    const value = column.key.toString().includes('.') 
+      ? column.key.toString().split('.').reduce((obj, key) => obj?.[key], row)
+      : row[column.key as keyof T];
+
+    if (column.render) {
+      return column.render(value, row, index);
+    }
+
+    return value;
+  };
+
+  return (
+    <div className={cn('bg-white rounded-xl shadow-lg border border-dark-200 overflow-hidden', className)}>
+      {/* Header with Search */}
+      {searchable && (
+        <div className="p-6 border-b border-dark-200 bg-dark-50">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-dark-900">Dữ liệu</h3>
+            <div className="flex items-center space-x-4">
+              <Input
+                placeholder={searchPlaceholder}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                leftIcon={<MagnifyingGlassIcon className="w-5 h-5" />}
+                className="w-64"
+              />
+              <Button variant="outline" size="sm" leftIcon={<FunnelIcon className="w-4 h-4" />}>
+                Lọc
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          {/* Header */}
+          <thead className={cn('bg-dark-50 border-b border-dark-200', headerClassName)}>
+            <tr>
+              {columns.map((column, index) => (
+                <th
+                  key={index}
+                  className={cn(
+                    'px-6 py-4 text-left text-sm font-semibold text-dark-900',
+                    column.align === 'center' && 'text-center',
+                    column.align === 'right' && 'text-right',
+                    column.sortable && 'cursor-pointer hover:bg-dark-100 transition-colors'
+                  )}
+                  style={{ width: column.width }}
+                  onClick={() => column.sortable && handleSort(column.key.toString())}
+                >
+                  <div className="flex items-center space-x-2">
+                    <span>{column.label}</span>
+                    {column.sortable && getSortIcon(column.key.toString())}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+
+          {/* Body */}
+          <tbody className={cn('divide-y divide-dark-100', bodyClassName)}>
+            {loading ? (
+              <tr>
+                <td colSpan={columns.length} className="px-6 py-12 text-center">
+                  <div className="flex items-center justify-center space-x-2">
+                    <Spinner size="md" />
+                    <span className="text-dark-600">Đang tải...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredData.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length} className="px-6 py-12 text-center">
+                  <div className="text-dark-500">
+                    <div className="text-lg font-medium mb-2">Không có dữ liệu</div>
+                    <div className="text-sm">{emptyMessage}</div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filteredData.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  className={cn(
+                    'hover:bg-dark-50 transition-colors',
+                    onRowClick && 'cursor-pointer',
+                    rowClassName?.(row, rowIndex)
+                  )}
+                  onClick={() => onRowClick?.(row, rowIndex)}
+                >
+                  {columns.map((column, colIndex) => (
+                    <td
+                      key={colIndex}
+                      className={cn(
+                        'px-6 py-4 text-sm text-dark-900',
+                        column.align === 'center' && 'text-center',
+                        column.align === 'right' && 'text-right'
+                      )}
+                    >
+                      {renderCell(column, row, rowIndex)}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {pagination && (
+        <div className="px-6 py-4 border-t border-dark-200 bg-dark-50">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-dark-600">
+              Hiển thị {((pagination.currentPage - 1) * pagination.pageSize) + 1} - {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} trong tổng số {pagination.totalItems} kết quả
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              {/* Page Size Selector */}
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-dark-600">Hiển thị:</span>
+                <select
+                  value={pagination.pageSize}
+                  onChange={(e) => pagination.onPageSizeChange(Number(e.target.value))}
+                  className="border border-dark-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blood-500"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+
+              {/* Page Navigation */}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pagination.currentPage === 1}
+                  onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+                >
+                  Trước
+                </Button>
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const page = i + 1;
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => pagination.onPageChange(page)}
+                        className={cn(
+                          'w-8 h-8 rounded-lg text-sm font-medium transition-colors',
+                          page === pagination.currentPage
+                            ? 'bg-blood-600 text-white'
+                            : 'text-dark-600 hover:bg-dark-100'
+                        )}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pagination.currentPage === pagination.totalPages}
+                  onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+                >
+                  Sau
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default Table;

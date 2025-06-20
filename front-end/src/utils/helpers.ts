@@ -1,22 +1,36 @@
-import { Gender, BloodTypeABO, BloodTypeRh } from './enums';
+import { 
+    Gender, 
+    BloodTypeABO, 
+    BloodTypeRh,
+    DonationStatus,
+    RequestStatus,
+    RequestPriority,
+    BloodUnitStatus,
+    AppointmentStatus,
+    NotificationPriority,
+    FeedbackCategory,
+    EligibilityStatus
+} from './enums';
 
-// Date formatters
+// Utility function for combining class names (similar to clsx)
+export const cn = (...classes: (string | undefined | null | false)[]): string => {
+    return classes.filter(Boolean).join(' ');
+};
+
+// Date and time formatters
 export const formatDate = (date: Date | string, options?: Intl.DateTimeFormatOptions): string => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-
-    const defaultOptions: Intl.DateTimeFormatOptions = {
+    return dateObj.toLocaleDateString('vi-VN', {
         year: 'numeric',
         month: '2-digit',
-        day: '2-digit'
-    };
-
-    return dateObj.toLocaleDateString('vi-VN', { ...defaultOptions, ...options });
+        day: '2-digit',
+        ...options
+    });
 };
 
 export const formatDateTime = (date: Date | string): string => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-
-    return dateObj.toLocaleString('vi-VN', {
+    return dateObj.toLocaleDateString('vi-VN', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -27,7 +41,6 @@ export const formatDateTime = (date: Date | string): string => {
 
 export const formatTime = (date: Date | string): string => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-
     return dateObj.toLocaleTimeString('vi-VN', {
         hour: '2-digit',
         minute: '2-digit'
@@ -35,57 +48,47 @@ export const formatTime = (date: Date | string): string => {
 };
 
 export const formatDateRange = (startDate: Date | string, endDate: Date | string): string => {
-    const start = formatDate(startDate);
-    const end = formatDate(endDate);
-    return `${start} - ${end}`;
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
 };
 
 // Number formatters
 export const formatNumber = (num: number, decimals: number = 0): string => {
-    return new Intl.NumberFormat('vi-VN', {
+    return num.toLocaleString('vi-VN', {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
-    }).format(num);
+    });
 };
 
 export const formatCurrency = (amount: number, currency: string = 'VND'): string => {
-    return new Intl.NumberFormat('vi-VN', {
+    return amount.toLocaleString('vi-VN', {
         style: 'currency',
         currency: currency
-    }).format(amount);
+    });
 };
 
 export const formatPercentage = (value: number, decimals: number = 1): string => {
-    return new Intl.NumberFormat('vi-VN', {
+    return value.toLocaleString('vi-VN', {
         style: 'percent',
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
-    }).format(value / 100);
+    });
 };
 
 export const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
-
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
 export const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-        return `${minutes} phút`;
-    }
-
     const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-
-    if (remainingMinutes === 0) {
-        return `${hours} giờ`;
-    }
-
-    return `${hours} giờ ${remainingMinutes} phút`;
+    const mins = minutes % 60;
+    
+    if (hours === 0) return `${mins} phút`;
+    if (mins === 0) return `${hours} giờ`;
+    return `${hours} giờ ${mins} phút`;
 };
 
 // Text formatters
@@ -132,18 +135,18 @@ export const formatBloodTypeDisplay = (abo: BloodTypeABO, rh: BloodTypeRh): stri
 
 export const formatBloodVolume = (volume: number, unit: 'ml' | 'l' = 'ml'): string => {
     if (unit === 'l') {
-        return `${(volume / 1000).toFixed(1)}L`;
+        return `${(volume / 1000).toFixed(2)} lít`;
     }
-    return `${volume}ml`;
+    return `${volume} ml`;
 };
 
-// Medical formatters
+// Medical data formatters
 export const formatWeight = (weight: number): string => {
-    return `${weight}kg`;
+    return `${weight} kg`;
 };
 
 export const formatHeight = (height: number): string => {
-    return `${height}cm`;
+    return `${height} cm`;
 };
 
 export const formatBMI = (bmi: number): string => {
@@ -166,22 +169,27 @@ export const formatHemoglobin = (level: number): string => {
     return `${level.toFixed(1)} g/dL`;
 };
 
-// Status formatters
+// Status and priority formatters
 export const formatStatus = (status: string): string => {
     const statusMap: Record<string, string> = {
         pending: 'Đang chờ',
         approved: 'Đã duyệt',
-        rejected: 'Từ chối',
+        rejected: 'Đã từ chối',
         completed: 'Hoàn thành',
         cancelled: 'Đã hủy',
         scheduled: 'Đã lên lịch',
         in_progress: 'Đang thực hiện',
         available: 'Có sẵn',
-        reserved: 'Đã đặt',
+        reserved: 'Đã đặt trước',
         used: 'Đã sử dụng',
-        expired: 'Hết hạn'
+        expired: 'Đã hết hạn',
+        active: 'Hoạt động',
+        inactive: 'Không hoạt động',
+        eligible: 'Đủ điều kiện',
+        temporarily_deferred: 'Tạm hoãn',
+        permanently_deferred: 'Hoãn vĩnh viễn',
+        under_review: 'Đang xem xét'
     };
-
     return statusMap[status] || status;
 };
 
@@ -193,7 +201,6 @@ export const formatPriority = (priority: string): string => {
         critical: 'Nghiêm trọng',
         emergency: 'Khẩn cấp'
     };
-
     return priorityMap[priority] || priority;
 };
 
@@ -204,7 +211,6 @@ export const formatGender = (gender: Gender): string => {
         [Gender.OTHER]: 'Khác',
         [Gender.PREFER_NOT_TO_SAY]: 'Không muốn tiết lộ'
     };
-
     return genderMap[gender] || gender;
 };
 
@@ -310,3 +316,8 @@ export const formatValidationErrors = (errors: Record<string, string[]>): string
 
     return messages;
 };
+
+export function truncateText(text: string, maxLength: number): string {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}

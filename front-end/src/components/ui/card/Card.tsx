@@ -1,47 +1,61 @@
 import React from 'react';
+import { cn } from '../../../utils/helpers';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-    variant?: 'default' | 'elevated' | 'bordered' | 'gradient';
-    padding?: 'none' | 'sm' | 'md' | 'lg';
-    hover?: boolean;
+  variant?: 'default' | 'elevated' | 'outlined' | 'glass' | 'gradient';
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  hover?: boolean;
+  glow?: boolean;
 }
 
-const Card = React.forwardRef<HTMLDivElement, CardProps>(({
-                                                              className = '',
-                                                              variant = 'default',
-                                                              padding = 'md',
-                                                              hover = false,
-                                                              children,
-                                                              ...props
-                                                          }, ref) => {
-    const baseStyles = 'rounded-xl transition-all duration-200';
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({
+    className,
+    variant = 'default',
+    padding = 'md',
+    hover = false,
+    glow = false,
+    children,
+    ...props
+  }, ref) => {
+    const baseClasses = [
+      'rounded-2xl transition-all duration-300',
+      hover && 'hover:scale-105 cursor-pointer',
+      glow && 'hover:shadow-glow'
+    ].filter(Boolean).join(' ');
 
     const variants = {
-        default: 'bg-white border border-gray-200 shadow-sm',
-        elevated: 'bg-white shadow-lg',
-        bordered: 'bg-white border-2 border-gray-100',
-        gradient: 'bg-gradient-to-br from-red-50 to-pink-50 border border-red-100'
+      default: 'bg-white border border-dark-200 shadow-lg',
+      elevated: 'bg-white shadow-dark-lg border-0',
+      outlined: 'bg-white border-2 border-blood-200 shadow-sm',
+      glass: 'bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl',
+      gradient: 'bg-gradient-to-br from-blood-50 to-blood-100 border border-blood-200 shadow-blood'
     };
 
     const paddings = {
-        none: '',
-        sm: 'p-4',
-        md: 'p-6',
-        lg: 'p-8'
+      none: '',
+      sm: 'p-4',
+      md: 'p-6',
+      lg: 'p-8',
+      xl: 'p-10'
     };
 
-    const hoverStyles = hover ? 'hover:shadow-xl hover:-translate-y-1 cursor-pointer' : '';
-
     return (
-        <div
-            ref={ref}
-            className={`${baseStyles} ${variants[variant]} ${paddings[padding]} ${hoverStyles} ${className}`}
-            {...props}
-        >
-            {children}
-        </div>
+      <div
+        className={cn(
+          baseClasses,
+          variants[variant],
+          paddings[padding],
+          className
+        )}
+        ref={ref}
+        {...props}
+      >
+        {children}
+      </div>
     );
-});
+  }
+);
 
 Card.displayName = 'Card';
 

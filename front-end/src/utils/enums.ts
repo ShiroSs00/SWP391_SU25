@@ -28,7 +28,10 @@ export enum BloodComponentType {
     PLASMA = 'plasma',
     PLATELETS = 'platelets',
     CRYOPRECIPITATE = 'cryoprecipitate',
-    FRESH_FROZEN_PLASMA = 'fresh_frozen_plasma'
+    FRESH_FROZEN_PLASMA = 'fresh_frozen_plasma',
+    PACKED_RED_CELLS = 'packed_red_cells',
+    PLATELET_CONCENTRATE = 'platelet_concentrate',
+    GRANULOCYTES = 'granulocytes'
 }
 
 // Donation Status Enum
@@ -43,13 +46,18 @@ export enum DonationStatus {
 
 // Blood Unit Status Enum
 export enum BloodUnitStatus {
+    COLLECTED = 'collected',
+    TESTING = 'testing',
+    PROCESSING = 'processing',
     AVAILABLE = 'available',
     RESERVED = 'reserved',
     ALLOCATED = 'allocated',
+    ISSUED = 'issued',
     USED = 'used',
     EXPIRED = 'expired',
     QUARANTINED = 'quarantined',
-    DISCARDED = 'discarded'
+    DISCARDED = 'discarded',
+    RECALLED = 'recalled'
 }
 
 // Request Status Enum
@@ -60,7 +68,8 @@ export enum RequestStatus {
     MATCHED = 'matched',
     FULFILLED = 'fulfilled',
     CANCELLED = 'cancelled',
-    EXPIRED = 'expired'
+    EXPIRED = 'expired',
+    REJECTED = 'rejected'
 }
 
 // Request Priority Enum
@@ -120,7 +129,9 @@ export enum NotificationType {
     DONATION_THANK_YOU = 'donation_thank_you',
     SYSTEM_ALERT = 'system_alert',
     INVENTORY_ALERT = 'inventory_alert',
-    MAINTENANCE = 'maintenance'
+    MAINTENANCE = 'maintenance',
+    SECURITY_ALERT = 'security_alert',
+    PROMOTIONAL = 'promotional'
 }
 
 // Notification Priority Enum
@@ -192,7 +203,10 @@ export enum StaffPosition {
     TECHNICIAN = 'technician',
     COORDINATOR = 'coordinator',
     MANAGER = 'manager',
-    ADMINISTRATOR = 'administrator'
+    ADMINISTRATOR = 'administrator',
+    RECEPTIONIST = 'receptionist',
+    SECURITY = 'security',
+    CLEANER = 'cleaner'
 }
 
 // Work Shift Enum
@@ -211,7 +225,9 @@ export enum AchievementType {
     CONSECUTIVE_DONATIONS = 'consecutive_donations',
     REFERRALS = 'referrals',
     COMMUNITY_SERVICE = 'community_service',
-    SPECIAL_EVENT = 'special_event'
+    SPECIAL_EVENT = 'special_event',
+    EMERGENCY_RESPONSE = 'emergency_response',
+    RARE_BLOOD_DONATION = 'rare_blood_donation'
 }
 
 // Achievement Rarity Enum
@@ -238,7 +254,9 @@ export enum BlogCategory {
     SUCCESS_STORIES = 'success_stories',
     MEDICAL_NEWS = 'medical_news',
     COMMUNITY = 'community',
-    RESEARCH = 'research'
+    RESEARCH = 'research',
+    EVENTS = 'events',
+    EDUCATION = 'education'
 }
 
 // System Status Enum
@@ -258,7 +276,9 @@ export enum AuditAction {
     LOGIN = 'login',
     LOGOUT = 'logout',
     EXPORT = 'export',
-    IMPORT = 'import'
+    IMPORT = 'import',
+    APPROVE = 'approve',
+    REJECT = 'reject'
 }
 
 // Report Type Enum
@@ -268,7 +288,9 @@ export enum ReportType {
     USER_ACTIVITY = 'user_activity',
     FINANCIAL = 'financial',
     COMPLIANCE = 'compliance',
-    PERFORMANCE = 'performance'
+    PERFORMANCE = 'performance',
+    ANALYTICS = 'analytics',
+    AUDIT = 'audit'
 }
 
 // Report Format Enum
@@ -355,3 +377,162 @@ export enum HttpStatusCode {
     INTERNAL_SERVER_ERROR = 500,
     SERVICE_UNAVAILABLE = 503
 }
+
+// Inventory Alert Type Enum
+export enum InventoryAlertType {
+    LOW_STOCK = 'low_stock',
+    CRITICAL_STOCK = 'critical_stock',
+    EXPIRATION = 'expiration',
+    TEMPERATURE = 'temperature',
+    CONTAMINATION = 'contamination',
+    EQUIPMENT_FAILURE = 'equipment_failure',
+    QUALITY_ISSUE = 'quality_issue',
+    RECALL = 'recall'
+}
+
+// Alert Severity Enum
+export enum AlertSeverity {
+    LOW = 'low',
+    MEDIUM = 'medium',
+    HIGH = 'high',
+    CRITICAL = 'critical'
+}
+
+// Transaction Type Enum
+export enum TransactionType {
+    RECEIVED = 'received',
+    ISSUED = 'issued',
+    TRANSFERRED = 'transferred',
+    DISCARDED = 'discarded',
+    EXPIRED = 'expired',
+    RETURNED = 'returned'
+}
+
+// Stock Status Enum
+export enum StockStatus {
+    ADEQUATE = 'adequate',
+    LOW = 'low',
+    CRITICAL = 'critical',
+    EXCESS = 'excess'
+}
+
+// Feedback Category Enum
+export enum FeedbackCategory {
+    SERVICE_QUALITY = 'service_quality',
+    STAFF_BEHAVIOR = 'staff_behavior',
+    FACILITY_CLEANLINESS = 'facility_cleanliness',
+    WAITING_TIME = 'waiting_time',
+    OVERALL_EXPERIENCE = 'overall_experience',
+    SUGGESTION = 'suggestion',
+    COMPLAINT = 'complaint'
+}
+
+// Feedback Status Enum
+export enum FeedbackStatus {
+    PENDING = 'pending',
+    REVIEWED = 'reviewed',
+    RESPONDED = 'responded',
+    RESOLVED = 'resolved'
+}
+
+// Survey Question Type Enum
+export enum SurveyQuestionType {
+    RATING = 'rating',
+    MULTIPLE_CHOICE = 'multiple_choice',
+    TEXT = 'text',
+    YES_NO = 'yes_no',
+    SCALE = 'scale'
+}
+
+// Smoking Status Enum
+export enum SmokingStatus {
+    NEVER = 'never',
+    FORMER = 'former',
+    CURRENT = 'current'
+}
+
+// Alcohol Consumption Enum
+export enum AlcoholConsumption {
+    NONE = 'none',
+    OCCASIONAL = 'occasional',
+    MODERATE = 'moderate',
+    HEAVY = 'heavy'
+}
+
+// Eligibility Status Enum
+export enum EligibilityStatus {
+    ELIGIBLE = 'eligible',
+    TEMPORARILY_DEFERRED = 'temporarily_deferred',
+    PERMANENTLY_DEFERRED = 'permanently_deferred',
+    UNDER_REVIEW = 'under_review'
+}
+
+// Deferral Reason Enum
+export enum DeferralReason {
+    LOW_HEMOGLOBIN = 'low_hemoglobin',
+    HIGH_BLOOD_PRESSURE = 'high_blood_pressure',
+    LOW_BLOOD_PRESSURE = 'low_blood_pressure',
+    RECENT_ILLNESS = 'recent_illness',
+    MEDICATION = 'medication',
+    TRAVEL_HISTORY = 'travel_history',
+    TATTOO_PIERCING = 'tattoo_piercing',
+    PREGNANCY = 'pregnancy',
+    BREASTFEEDING = 'breastfeeding',
+    WEIGHT = 'weight',
+    AGE = 'age',
+    MEDICAL_CONDITION = 'medical_condition'
+}
+
+// Export all enums as a default object for convenience
+export default {
+    UserRole,
+    BloodTypeABO,
+    BloodTypeRh,
+    BloodComponentType,
+    DonationStatus,
+    BloodUnitStatus,
+    RequestStatus,
+    RequestPriority,
+    RequestUrgency,
+    AppointmentStatus,
+    HealthCheckStatus,
+    TestResultStatus,
+    NotificationType,
+    NotificationPriority,
+    Gender,
+    MaritalStatus,
+    EducationLevel,
+    EmploymentStatus,
+    HospitalType,
+    HospitalStatus,
+    StaffPosition,
+    WorkShift,
+    AchievementType,
+    AchievementRarity,
+    BlogPostStatus,
+    BlogCategory,
+    SystemStatus,
+    AuditAction,
+    ReportType,
+    ReportFormat,
+    PaymentStatus,
+    CommunicationChannel,
+    Frequency,
+    TimeZone,
+    Language,
+    Theme,
+    SortOrder,
+    FileType,
+    HttpStatusCode,
+    InventoryAlertType,
+    AlertSeverity,
+    TransactionType,
+    StockStatus,
+    FeedbackCategory,
+    FeedbackStatus,
+    SurveyQuestionType,
+    SmokingStatus,
+    AlcoholConsumption,
+    EligibilityStatus,
+    DeferralReason
+};

@@ -1,126 +1,195 @@
-import React from 'react';
-import { Bell, User, Settings, LogOut, Heart } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  HeartIcon, 
+  Bars3Icon, 
+  XMarkIcon,
+  BellIcon,
+  UserCircleIcon,
+  PhoneIcon,
+  MapPinIcon
+} from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
+import Button from '../../ui/button/Button';
 
-export interface HeaderProps {
-    title?: string;
-    user?: {
-        name: string;
-        avatar?: string;
-        role: string;
+export function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
     };
-    notifications?: number;
-    onNotificationClick?: () => void;
-    onProfileClick?: () => void;
-    onSettingsClick?: () => void;
-    onLogout?: () => void;
-}
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-const Header: React.FC<HeaderProps> = ({
-                                           title = 'Blood Donation Management',
-                                           user,
-                                           notifications = 0,
-                                           onNotificationClick,
-                                           onProfileClick,
-                                           onSettingsClick,
-                                           onLogout
-                                       }) => {
-    const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
+  const navigation = [
+    { name: 'Trang chủ', href: '/', current: true },
+    { name: 'Hiến máu', href: '/donate', current: false },
+    { name: 'Tìm máu', href: '/request', current: false },
+    { name: 'Lịch sử', href: '/history', current: false },
+    { name: 'Blog', href: '/blog', current: false },
+    { name: 'Liên hệ', href: '/contact', current: false },
+  ];
 
-    return (
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                        <Heart className="w-8 h-8 text-red-600" />
-                        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                    {/* Notifications */}
-                    <button
-                        onClick={onNotificationClick}
-                        className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                    >
-                        <Bell className="w-6 h-6" />
-                        {notifications > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {notifications > 9 ? '9+' : notifications}
-              </span>
-                        )}
-                    </button>
-
-                    {/* User Menu */}
-                    {user && (
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                                className="flex items-center gap-3 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                            >
-                                {user.avatar ? (
-                                    <img
-                                        src={user.avatar}
-                                        alt={user.name}
-                                        className="w-8 h-8 rounded-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                                        <User className="w-5 h-5 text-red-600" />
-                                    </div>
-                                )}
-                                <div className="text-left hidden md:block">
-                                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                                    <p className="text-xs text-gray-500">{user.role}</p>
-                                </div>
-                            </button>
-
-                            {isProfileMenuOpen && (
-                                <>
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                                        <button
-                                            onClick={() => {
-                                                onProfileClick?.();
-                                                setIsProfileMenuOpen(false);
-                                            }}
-                                            className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                                        >
-                                            <User className="w-4 h-4" />
-                                            Profile
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                onSettingsClick?.();
-                                                setIsProfileMenuOpen(false);
-                                            }}
-                                            className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
-                                        >
-                                            <Settings className="w-4 h-4" />
-                                            Settings
-                                        </button>
-                                        <hr className="my-1 border-gray-200" />
-                                        <button
-                                            onClick={() => {
-                                                onLogout?.();
-                                                setIsProfileMenuOpen(false);
-                                            }}
-                                            className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
-                                        >
-                                            <LogOut className="w-4 h-4" />
-                                            Logout
-                                        </button>
-                                    </div>
-                                    <div
-                                        className="fixed inset-0 z-40"
-                                        onClick={() => setIsProfileMenuOpen(false)}
-                                    />
-                                </>
-                            )}
-                        </div>
-                    )}
-                </div>
+  return (
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-dark-100' 
+        : 'bg-transparent'
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <div className="w-12 h-12 bg-blood-gradient rounded-xl flex items-center justify-center shadow-blood">
+                <HeartSolidIcon className="w-7 h-7 text-white animate-heartbeat" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-life-500 rounded-full animate-pulse"></div>
             </div>
-        </header>
-    );
-};
+            <div>
+              <h1 className={`text-2xl font-display font-bold transition-colors ${
+                isScrolled ? 'text-dark-900' : 'text-white'
+              }`}>
+                BloodConnect
+              </h1>
+              <p className={`text-xs transition-colors ${
+                isScrolled ? 'text-dark-600' : 'text-dark-300'
+              }`}>
+                Kết nối sự sống
+              </p>
+            </div>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-8">
+            {navigation.map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className={`relative px-3 py-2 text-sm font-medium transition-all duration-200 group ${
+                  item.current
+                    ? isScrolled 
+                      ? 'text-blood-600' 
+                      : 'text-white'
+                    : isScrolled
+                      ? 'text-dark-700 hover:text-blood-600'
+                      : 'text-dark-300 hover:text-white'
+                }`}
+              >
+                {item.name}
+                {item.current && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blood-600 rounded-full"></div>
+                )}
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blood-600 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></div>
+              </a>
+            ))}
+          </nav>
+
+          {/* Emergency & Actions */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {/* Emergency Hotline */}
+            <div className="flex items-center space-x-2 px-4 py-2 bg-emergency-500/20 rounded-xl border border-emergency-500/30 backdrop-blur-sm">
+              <PhoneIcon className="w-4 h-4 text-emergency-600" />
+              <span className={`text-sm font-medium ${
+                isScrolled ? 'text-emergency-700' : 'text-emergency-300'
+              }`}>
+                Khẩn cấp: 115
+              </span>
+            </div>
+
+            {/* Notifications */}
+            <button className={`relative p-2 rounded-xl transition-colors ${
+              isScrolled 
+                ? 'text-dark-700 hover:bg-dark-100' 
+                : 'text-white hover:bg-white/10'
+            }`}>
+              <BellIcon className="w-6 h-6" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-blood-500 rounded-full animate-pulse"></div>
+            </button>
+
+            {/* User Menu */}
+            <button className={`p-2 rounded-xl transition-colors ${
+              isScrolled 
+                ? 'text-dark-700 hover:bg-dark-100' 
+                : 'text-white hover:bg-white/10'
+            }`}>
+              <UserCircleIcon className="w-6 h-6" />
+            </button>
+
+            {/* CTA Button */}
+            <Button
+              variant="primary"
+              size="md"
+              gradient
+              leftIcon={<HeartSolidIcon className="w-4 h-4" />}
+              className="ml-4"
+            >
+              Hiến máu ngay
+            </Button>
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`lg:hidden p-2 rounded-xl transition-colors ${
+              isScrolled 
+                ? 'text-dark-700 hover:bg-dark-100' 
+                : 'text-white hover:bg-white/10'
+            }`}
+          >
+            {isMenuOpen ? (
+              <XMarkIcon className="w-6 h-6" />
+            ) : (
+              <Bars3Icon className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <div className="lg:hidden bg-white/95 backdrop-blur-md border-t border-dark-100 animate-slide-down">
+          <div className="px-4 py-6 space-y-4">
+            {navigation.map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                  item.current
+                    ? 'bg-blood-50 text-blood-600 border border-blood-200'
+                    : 'text-dark-700 hover:bg-dark-50'
+                }`}
+              >
+                {item.name}
+              </a>
+            ))}
+            
+            {/* Mobile Emergency */}
+            <div className="flex items-center justify-between px-4 py-3 bg-emergency-50 rounded-xl border border-emergency-200">
+              <div className="flex items-center space-x-2">
+                <PhoneIcon className="w-5 h-5 text-emergency-600" />
+                <span className="text-emergency-700 font-medium">Hotline khẩn cấp</span>
+              </div>
+              <span className="text-emergency-800 font-bold">115</span>
+            </div>
+
+            {/* Mobile CTA */}
+            <Button
+              variant="primary"
+              size="lg"
+              gradient
+              fullWidth
+              leftIcon={<HeartSolidIcon className="w-5 h-5" />}
+            >
+              Đăng ký hiến máu
+            </Button>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}
 
 export default Header;

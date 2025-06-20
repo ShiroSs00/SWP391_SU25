@@ -1,18 +1,24 @@
 // Application Constants
 export const APP_CONFIG = {
     NAME: 'BloodConnect',
-    VERSION: '1.0.0',
-    DESCRIPTION: 'Hệ thống quản lý hiến máu',
+    VERSION: '2.0.0',
+    DESCRIPTION: 'Hệ thống quản lý hiến máu thông minh',
     CONTACT_EMAIL: 'info@bloodconnect.vn',
     CONTACT_PHONE: '+84 123 456 789',
-    ADDRESS: '123 Đường ABC, Quận 1, TP.HCM'
+    EMERGENCY_HOTLINE: '115',
+    ADDRESS: '123 Đường ABC, Quận 1, TP.HCM',
+    WEBSITE: 'https://bloodconnect.vn',
+    SUPPORT_EMAIL: 'support@bloodconnect.vn'
 } as const;
 
 // Blood Type Constants
 export const BLOOD_TYPES = {
     ABO: ['A', 'B', 'AB', 'O'] as const,
     RH: ['+', '-'] as const,
-    ALL: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const
+    ALL: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const,
+    UNIVERSAL_DONOR: 'O-',
+    UNIVERSAL_RECIPIENT: 'AB+',
+    RARE_TYPES: ['AB-', 'B-', 'A-', 'O-'] as const
 } as const;
 
 // Blood Component Constants
@@ -22,16 +28,19 @@ export const BLOOD_COMPONENTS = {
     PLASMA: 'plasma',
     PLATELETS: 'platelets',
     CRYOPRECIPITATE: 'cryoprecipitate',
-    FRESH_FROZEN_PLASMA: 'fresh_frozen_plasma'
+    FRESH_FROZEN_PLASMA: 'fresh_frozen_plasma',
+    PACKED_RED_CELLS: 'packed_red_cells',
+    PLATELET_CONCENTRATE: 'platelet_concentrate',
+    GRANULOCYTES: 'granulocytes'
 } as const;
 
-// Donation Constants
+// Donation Configuration
 export const DONATION_CONFIG = {
     MIN_AGE: 18,
     MAX_AGE: 65,
-    MIN_WEIGHT: 45, // kg
+    MIN_WEIGHT: 50, // kg
     MIN_HEMOGLOBIN_MALE: 13.0, // g/dL
-    MIN_HEMOGLOBIN_FEMALE: 12.5, // g/dL
+    MIN_HEMOGLOBIN_FEMALE: 12.0, // g/dL
     DONATION_VOLUME: 450, // ml
     INTERVALS: {
         WHOLE_BLOOD: 56, // days
@@ -42,11 +51,20 @@ export const DONATION_CONFIG = {
     MAX_DONATIONS_PER_YEAR: {
         WHOLE_BLOOD: 6,
         PLASMA: 24,
-        PLATELETS: 24
+        PLATELETS: 24,
+        DOUBLE_RED_CELLS: 3
+    },
+    VITAL_SIGNS: {
+        MIN_BLOOD_PRESSURE: { systolic: 90, diastolic: 50 },
+        MAX_BLOOD_PRESSURE: { systolic: 180, diastolic: 100 },
+        MIN_HEART_RATE: 50,
+        MAX_HEART_RATE: 100,
+        MIN_TEMPERATURE: 36.1,
+        MAX_TEMPERATURE: 37.5
     }
 } as const;
 
-// Request Priority Constants
+// Request Priority Levels
 export const REQUEST_PRIORITY = {
     LOW: 1,
     MEDIUM: 2,
@@ -57,111 +75,163 @@ export const REQUEST_PRIORITY = {
 
 // Inventory Thresholds
 export const INVENTORY_THRESHOLDS = {
-    CRITICAL: 5,
-    LOW: 10,
-    NORMAL: 20,
-    HIGH: 50
+    CRITICAL: 10,
+    LOW: 25,
+    NORMAL: 50,
+    HIGH: 100,
+    EXCESS: 200
 } as const;
 
 // Time Constants
 export const TIME_CONSTANTS = {
     BLOOD_SHELF_LIFE: {
         WHOLE_BLOOD: 35, // days
-        RED_CELLS: 42, // days
-        PLASMA: 365, // days
-        PLATELETS: 5, // days
-        CRYOPRECIPITATE: 365 // days
+        RED_CELLS: 42,
+        PLASMA: 365,
+        PLATELETS: 5,
+        CRYOPRECIPITATE: 365,
+        FRESH_FROZEN_PLASMA: 365
     },
     APPOINTMENT_SLOTS: [
         '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
         '11:00', '11:30', '13:00', '13:30', '14:00', '14:30',
-        '15:00', '15:30', '16:00', '16:30'
+        '15:00', '15:30', '16:00', '16:30', '17:00'
     ],
     WORKING_HOURS: {
         START: '08:00',
-        END: '17:00',
+        END: '17:30',
         LUNCH_START: '12:00',
         LUNCH_END: '13:00'
-    }
+    },
+    EMERGENCY_RESPONSE_TIME: 30, // minutes
+    NOTIFICATION_DELAY: 5000 // milliseconds
 } as const;
 
-// API Configuration Constants
+// API Configuration
 export const API_CONFIG = {
-    BASE_URL: 'http://localhost:5173/api', // Default base URL for API requests
-    TIMEOUT: 30000, // Request timeout in milliseconds
-    RETRY_ATTEMPTS: 3, // Number of retry attempts for failed requests
+    BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:3001/api',
+    TIMEOUT: 30000, // milliseconds
+    RETRY_ATTEMPTS: 3,
+    RETRY_DELAY: 1000,
     ENDPOINTS: {
-        AUTH: '/auth', // Authentication-related endpoints
-        USERS: '/users', // User management endpoints
-        DONATIONS: '/donations', // Blood donation-related endpoints
-        REQUESTS: '/requests', // Blood request-related endpoints
-        INVENTORY: '/inventory', // Blood inventory-related endpoints
-        HOSPITALS: '/hospitals', // Hospital-related endpoints
-        NOTIFICATIONS: '/notifications', // Notification-related endpoints
-        BLOG: '/blog', // Blog-related endpoints
-        REPORTS: '/reports' // Reporting-related endpoints
+        AUTH: '/auth',
+        USERS: '/users',
+        DONATIONS: '/donations',
+        INVENTORY: '/inventory',
+        HOSPITALS: '/hospitals',
+        REQUESTS: '/requests',
+        NOTIFICATIONS: '/notifications',
+        BLOG: '/blog',
+        FEEDBACK: '/feedback',
+        ACHIEVEMENTS: '/achievements',
+        POINTS: '/points',
+        STAFF: '/staff',
+        ADMIN: '/admin',
+        HEALTH_CHECKS: '/health-checks',
+        BLOOD_TYPES: '/blood-types',
+        MATCHING: '/matching',
+        REPORTS: '/reports',
+        ANALYTICS: '/analytics'
     }
 } as const;
 
-// Pagination Constants
+// Pagination
 export const PAGINATION = {
-    DEFAULT_PAGE_SIZE: 10,
-    PAGE_SIZE_OPTIONS: [5, 10, 20, 50, 100],
+    DEFAULT_PAGE_SIZE: 20,
+    PAGE_SIZE_OPTIONS: [10, 20, 50, 100],
     MAX_PAGE_SIZE: 100
 } as const;
 
-// File Upload Constants
+// File Upload
 export const FILE_UPLOAD = {
     MAX_SIZE: 5 * 1024 * 1024, // 5MB
-    ALLOWED_TYPES: {
-        IMAGES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-        DOCUMENTS: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-    }
+    ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'],
+    ALLOWED_EXTENSIONS: ['.jpg', '.jpeg', '.png', '.gif', '.pdf']
 } as const;
 
-// Notification Constants
+// Notification Types
 export const NOTIFICATION_TYPES = {
     SUCCESS: 'success',
     ERROR: 'error',
     WARNING: 'warning',
-    INFO: 'info'
+    INFO: 'info',
+    APPOINTMENT_REMINDER: 'appointment_reminder',
+    ELIGIBILITY_RESTORED: 'eligibility_restored',
+    URGENT_REQUEST: 'urgent_request',
+    ACHIEVEMENT_UNLOCKED: 'achievement_unlocked',
+    DONATION_THANK_YOU: 'donation_thank_you',
+    SYSTEM_ALERT: 'system_alert',
+    INVENTORY_ALERT: 'inventory_alert',
+    MAINTENANCE: 'maintenance'
 } as const;
 
-// Local Storage Keys
+// Storage Keys
 export const STORAGE_KEYS = {
     AUTH_TOKEN: 'bloodconnect_auth_token',
     REFRESH_TOKEN: 'bloodconnect_refresh_token',
-    USER_PROFILE: 'bloodconnect_user_profile',
+    USER_DATA: 'bloodconnect_user_data',
     PREFERENCES: 'bloodconnect_preferences',
+    THEME: 'bloodconnect_theme',
+    LANGUAGE: 'bloodconnect_language',
+    LAST_VISIT: 'bloodconnect_last_visit',
     CART: 'bloodconnect_cart',
-    RECENT_SEARCHES: 'bloodconnect_recent_searches'
+    SEARCH_HISTORY: 'bloodconnect_search_history'
 } as const;
 
-// Achievement Constants
+// Achievements
 export const ACHIEVEMENTS = {
     FIRST_DONATION: 'first_donation',
     REGULAR_DONOR: 'regular_donor',
-    HERO_DONOR: 'hero_donor',
-    LIFESAVER: 'lifesaver',
+    LIFE_SAVER: 'life_saver',
+    HERO: 'hero',
     CHAMPION: 'champion',
-    LEGEND: 'legend'
+    LEGEND: 'legend',
+    REFERRAL_MASTER: 'referral_master',
+    COMMUNITY_BUILDER: 'community_builder',
+    EMERGENCY_RESPONDER: 'emergency_responder',
+    MILESTONE_5: 'milestone_5',
+    MILESTONE_10: 'milestone_10',
+    MILESTONE_25: 'milestone_25',
+    MILESTONE_50: 'milestone_50',
+    MILESTONE_100: 'milestone_100'
 } as const;
 
 // Points System
 export const POINTS_SYSTEM = {
     DONATION: 100,
     REFERRAL: 50,
-    PROFILE_COMPLETE: 25,
-    HEALTH_CHECK: 10,
-    FEEDBACK: 5,
+    SURVEY_COMPLETION: 25,
+    PROFILE_COMPLETION: 30,
+    FIRST_DONATION: 200,
+    EMERGENCY_DONATION: 150,
+    RARE_BLOOD_DONATION: 120,
+    CONSECUTIVE_DONATIONS: 50,
     MULTIPLIERS: {
-        EMERGENCY: 2,
         RARE_BLOOD: 1.5,
-        FIRST_TIME: 1.2
+        EMERGENCY: 2.0,
+        FIRST_TIME: 2.0,
+        CONSECUTIVE: 1.2
     }
 } as const;
 
-// Geographic Constants: Districts and Wards of Ho Chi Minh City
+// Vietnam Provinces
+export const VIETNAM_PROVINCES = [
+    'An Giang', 'Bà Rịa - Vũng Tàu', 'Bắc Giang', 'Bắc Kạn', 'Bạc Liêu',
+    'Bắc Ninh', 'Bến Tre', 'Bình Định', 'Bình Dương', 'Bình Phước',
+    'Bình Thuận', 'Cà Mau', 'Cao Bằng', 'Đắk Lắk', 'Đắk Nông',
+    'Điện Biên', 'Đồng Nai', 'Đồng Tháp', 'Gia Lai', 'Hà Giang',
+    'Hà Nam', 'Hà Tĩnh', 'Hải Dương', 'Hậu Giang', 'Hòa Bình',
+    'Hưng Yên', 'Khánh Hòa', 'Kiên Giang', 'Kon Tum', 'Lai Châu',
+    'Lâm Đồng', 'Lạng Sơn', 'Lào Cai', 'Long An', 'Nam Định',
+    'Nghệ An', 'Ninh Bình', 'Ninh Thuận', 'Phú Thọ', 'Phú Yên',
+    'Quảng Bình', 'Quảng Nam', 'Quảng Ngãi', 'Quảng Ninh', 'Quảng Trị',
+    'Sóc Trăng', 'Sơn La', 'Tây Ninh', 'Thái Bình', 'Thái Nguyên',
+    'Thanh Hóa', 'Thừa Thiên Huế', 'Tiền Giang', 'Trà Vinh', 'Tuyên Quang',
+    'Vĩnh Long', 'Vĩnh Phúc', 'Yên Bái', 'Hà Nội', 'TP Hồ Chí Minh',
+    'Hải Phòng', 'Đà Nẵng', 'Cần Thơ'
+] as const;
+
+// HCM Districts (keeping existing structure)
 export const HCM_DISTRICTS = [
     {
         name: 'Quận 1',
@@ -324,7 +394,17 @@ export const ERROR_MESSAGES = {
     NOT_FOUND: 'Không tìm thấy dữ liệu.',
     SERVER_ERROR: 'Lỗi máy chủ. Vui lòng thử lại sau.',
     VALIDATION_ERROR: 'Dữ liệu không hợp lệ.',
-    TIMEOUT_ERROR: 'Hết thời gian chờ. Vui lòng thử lại.'
+    TIMEOUT_ERROR: 'Hết thời gian chờ. Vui lòng thử lại.',
+    DUPLICATE_ERROR: 'Dữ liệu đã tồn tại.',
+    INSUFFICIENT_PERMISSIONS: 'Không đủ quyền thực hiện thao tác này.',
+    EXPIRED_TOKEN: 'Phiên đăng nhập đã hết hạn.',
+    INVALID_CREDENTIALS: 'Thông tin đăng nhập không chính xác.',
+    ACCOUNT_LOCKED: 'Tài khoản đã bị khóa.',
+    EMAIL_NOT_VERIFIED: 'Email chưa được xác thực.',
+    WEAK_PASSWORD: 'Mật khẩu không đủ mạnh.',
+    FILE_TOO_LARGE: 'File quá lớn.',
+    INVALID_FILE_TYPE: 'Loại file không được hỗ trợ.',
+    QUOTA_EXCEEDED: 'Đã vượt quá giới hạn cho phép.'
 } as const;
 
 // Success Messages
@@ -333,5 +413,89 @@ export const SUCCESS_MESSAGES = {
     PROFILE_UPDATED: 'Cập nhật hồ sơ thành công!',
     REQUEST_SUBMITTED: 'Gửi yêu cầu thành công!',
     APPOINTMENT_SCHEDULED: 'Đặt lịch hẹn thành công!',
-    PASSWORD_CHANGED: 'Đổi mật khẩu thành công!'
+    PASSWORD_CHANGED: 'Đổi mật khẩu thành công!',
+    EMAIL_VERIFIED: 'Xác thực email thành công!',
+    ACCOUNT_CREATED: 'Tạo tài khoản thành công!',
+    LOGIN_SUCCESS: 'Đăng nhập thành công!',
+    LOGOUT_SUCCESS: 'Đăng xuất thành công!',
+    DATA_SAVED: 'Lưu dữ liệu thành công!',
+    DATA_DELETED: 'Xóa dữ liệu thành công!',
+    FEEDBACK_SUBMITTED: 'Gửi phản hồi thành công!',
+    NOTIFICATION_SENT: 'Gửi thông báo thành công!',
+    BACKUP_CREATED: 'Tạo bản sao lưu thành công!',
+    SETTINGS_UPDATED: 'Cập nhật cài đặt thành công!'
+} as const;
+
+// Medical Conditions
+export const MEDICAL_CONDITIONS = {
+    DISQUALIFYING: [
+        'hiv', 'hepatitis_b', 'hepatitis_c', 'syphilis', 'malaria',
+        'chagas_disease', 'babesiosis', 'leishmaniasis', 'trypanosomiasis',
+        'creutzfeldt_jakob_disease', 'variant_creutzfeldt_jakob_disease'
+    ],
+    TEMPORARY_DEFERRAL: [
+        'cold', 'flu', 'fever', 'dental_work', 'vaccination',
+        'antibiotic_treatment', 'pregnancy', 'breastfeeding',
+        'recent_surgery', 'recent_tattoo', 'recent_piercing'
+    ],
+    CHRONIC_CONDITIONS: [
+        'diabetes', 'hypertension', 'heart_disease', 'asthma',
+        'epilepsy', 'cancer', 'autoimmune_disease', 'kidney_disease',
+        'liver_disease', 'blood_disorder', 'mental_health_condition'
+    ]
+} as const;
+
+// Medication Categories
+export const MEDICATION_CATEGORIES = {
+    BLOOD_THINNERS: ['warfarin', 'heparin', 'aspirin', 'clopidogrel'],
+    ANTIBIOTICS: ['penicillin', 'amoxicillin', 'ciprofloxacin', 'azithromycin'],
+    IMMUNOSUPPRESSANTS: ['methotrexate', 'cyclosporine', 'tacrolimus'],
+    HORMONES: ['insulin', 'thyroid_hormone', 'birth_control'],
+    PAIN_MEDICATIONS: ['ibuprofen', 'acetaminophen', 'morphine', 'codeine']
+} as const;
+
+// System Configuration
+export const SYSTEM_CONFIG = {
+    MAINTENANCE_MODE: false,
+    FEATURE_FLAGS: {
+        ENABLE_NOTIFICATIONS: true,
+        ENABLE_ACHIEVEMENTS: true,
+        ENABLE_POINTS_SYSTEM: true,
+        ENABLE_BLOG: true,
+        ENABLE_FEEDBACK: true,
+        ENABLE_ANALYTICS: true,
+        ENABLE_REAL_TIME: true,
+        ENABLE_MOBILE_APP: false
+    },
+    CACHE_DURATION: {
+        USER_DATA: 300000, // 5 minutes
+        INVENTORY_DATA: 60000, // 1 minute
+        STATIC_DATA: 3600000, // 1 hour
+        SEARCH_RESULTS: 180000 // 3 minutes
+    }
+} as const;
+
+// Export all constants
+export default {
+    APP_CONFIG,
+    BLOOD_TYPES,
+    BLOOD_COMPONENTS,
+    DONATION_CONFIG,
+    REQUEST_PRIORITY,
+    INVENTORY_THRESHOLDS,
+    TIME_CONSTANTS,
+    API_CONFIG,
+    PAGINATION,
+    FILE_UPLOAD,
+    NOTIFICATION_TYPES,
+    STORAGE_KEYS,
+    ACHIEVEMENTS,
+    POINTS_SYSTEM,
+    VIETNAM_PROVINCES,
+    HCM_DISTRICTS,
+    ERROR_MESSAGES,
+    SUCCESS_MESSAGES,
+    MEDICAL_CONDITIONS,
+    MEDICATION_CATEGORIES,
+    SYSTEM_CONFIG
 } as const;

@@ -1,56 +1,103 @@
 import React from 'react';
+import { cn } from '../../../utils/helpers';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-    variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'blood-type';
-    size?: 'sm' | 'md' | 'lg';
-    dot?: boolean;
+  variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'blood' | 'emergency';
+  size?: 'sm' | 'md' | 'lg';
+  rounded?: boolean;
+  outline?: boolean;
+  pulse?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
-const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(({
-                                                                 className = '',
-                                                                 variant = 'default',
-                                                                 size = 'md',
-                                                                 dot = false,
-                                                                 children,
-                                                                 ...props
-                                                             }, ref) => {
-    const baseStyles = 'inline-flex items-center font-medium rounded-full transition-all duration-200';
+const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
+  ({
+    className,
+    variant = 'default',
+    size = 'md',
+    rounded = false,
+    outline = false,
+    pulse = false,
+    leftIcon,
+    rightIcon,
+    children,
+    ...props
+  }, ref) => {
+    const baseClasses = [
+      'inline-flex items-center font-medium transition-all duration-200',
+      pulse && 'animate-pulse',
+      rounded ? 'rounded-full' : 'rounded-lg'
+    ].filter(Boolean).join(' ');
 
     const variants = {
-        default: 'bg-gray-100 text-gray-800',
-        success: 'bg-green-100 text-green-800 border border-green-200',
-        warning: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
-        danger: 'bg-red-100 text-red-800 border border-red-200',
-        info: 'bg-blue-100 text-blue-800 border border-blue-200',
-        'blood-type': 'bg-red-600 text-white shadow-sm'
+      default: outline 
+        ? 'bg-transparent border border-dark-300 text-dark-700'
+        : 'bg-dark-100 text-dark-800',
+      primary: outline
+        ? 'bg-transparent border border-blood-300 text-blood-700'
+        : 'bg-blood-100 text-blood-800',
+      secondary: outline
+        ? 'bg-transparent border border-dark-300 text-dark-600'
+        : 'bg-dark-50 text-dark-600',
+      success: outline
+        ? 'bg-transparent border border-life-300 text-life-700'
+        : 'bg-life-100 text-life-800',
+      warning: outline
+        ? 'bg-transparent border border-emergency-300 text-emergency-700'
+        : 'bg-emergency-100 text-emergency-800',
+      danger: outline
+        ? 'bg-transparent border border-red-300 text-red-700'
+        : 'bg-red-100 text-red-800',
+      info: outline
+        ? 'bg-transparent border border-blue-300 text-blue-700'
+        : 'bg-blue-100 text-blue-800',
+      blood: outline
+        ? 'bg-transparent border border-blood-400 text-blood-700'
+        : 'bg-blood-gradient text-white shadow-blood',
+      emergency: outline
+        ? 'bg-transparent border border-emergency-400 text-emergency-700'
+        : 'bg-emergency-gradient text-white shadow-lg animate-pulse-slow'
     };
 
     const sizes = {
-        sm: 'px-2 py-0.5 text-xs gap-1',
-        md: 'px-2.5 py-1 text-sm gap-1.5',
-        lg: 'px-3 py-1.5 text-sm gap-2'
+      sm: 'px-2 py-1 text-xs',
+      md: 'px-3 py-1.5 text-sm',
+      lg: 'px-4 py-2 text-base'
+    };
+
+    const iconSizes = {
+      sm: 'w-3 h-3',
+      md: 'w-4 h-4',
+      lg: 'w-5 h-5'
     };
 
     return (
-        <span
-            ref={ref}
-            className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
-            {...props}
-        >
-      {dot && (
-          <span className={`w-2 h-2 rounded-full ${
-              variant === 'default' ? 'bg-gray-400' :
-                  variant === 'success' ? 'bg-green-500' :
-                      variant === 'warning' ? 'bg-yellow-500' :
-                          variant === 'danger' ? 'bg-red-500' :
-                              variant === 'info' ? 'bg-blue-500' :
-                                  'bg-white'
-          }`} />
-      )}
-            {children}
-    </span>
+      <span
+        className={cn(
+          baseClasses,
+          variants[variant],
+          sizes[size],
+          className
+        )}
+        ref={ref}
+        {...props}
+      >
+        {leftIcon && (
+          <span className={`${iconSizes[size]} mr-1`}>
+            {leftIcon}
+          </span>
+        )}
+        {children}
+        {rightIcon && (
+          <span className={`${iconSizes[size]} ml-1`}>
+            {rightIcon}
+          </span>
+        )}
+      </span>
     );
-});
+  }
+);
 
 Badge.displayName = 'Badge';
 
