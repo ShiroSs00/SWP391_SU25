@@ -17,11 +17,10 @@ export interface SearchSuggestion {
 }
 
 export interface SearchBarProps {
-  placeholder?: string;
   value?: string;
-  onChange?: (value: string) => void;
-  onSearch?: (query: string) => void;
-  onSuggestionSelect?: (suggestion: SearchSuggestion) => void;
+  onChange: (value: string) => void;
+  onSearch?: (value: string) => void;
+  placeholder?: string;
   suggestions?: SearchSuggestion[];
   showSuggestions?: boolean;
   loading?: boolean;
@@ -32,15 +31,15 @@ export interface SearchBarProps {
   debounceMs?: number;
   maxSuggestions?: number;
   recentSearches?: string[];
-  onClearRecentSearches?: () => void;
+  onRecentSearchAdd?: (search: string) => void;
+  onRecentSearchClear?: () => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = 'Tìm kiếm...',
   value = '',
   onChange,
   onSearch,
-  onSuggestionSelect,
+  placeholder = 'Tìm kiếm...',
   suggestions = [],
   showSuggestions = true,
   loading = false,
@@ -51,27 +50,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
   debounceMs = 300,
   maxSuggestions = 8,
   recentSearches = [],
-  onClearRecentSearches
+  onRecentSearchAdd,
+  onRecentSearchClear
 }) => {
-  const [inputValue, setInputValue] = useState(value);
   const [isFocused, setIsFocused] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const debouncedValue = useDebounce(inputValue, debounceMs);
+  const debouncedValue = useDebounce(value, debounceMs);
 
   useEffect(() => {
-    setInputValue(value);
-  }, [value]);
-
-  useEffect(() => {
-    if (debouncedValue !== value) {
-      onChange?.(debouncedValue);
+    if (debouncedValue && onSearch) {
+      onSearch(debouncedValue);
     }
-  }, [debouncedValue, onChange, value]);
+  }, [debouncedValue, onSearch]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -81,25 +76,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
         !inputRef.current?.contains(event.target as Node)
       ) {
         setShowDropdown(false);
-        setSelectedIndex(-1);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const sizeClasses = {
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-4 py-3 text-base',
-    lg: 'px-6 py-4 text-lg'
-  };
-
-  const variantClasses = {
-    default: 'border border-dark-300 bg-white focus:border-blood-500 focus:ring-2 focus:ring-blood-500/20',
-    filled: 'border-0 bg-dark-50 focus:bg-white focus:ring-2 focus:ring-blood-500/20',
-    outlined: 'border-2 border-dark-200 bg-transparent focus:border-blood-500'
-  };
 
   const allSuggestions = [
     ...recentSearches.slice(0, 3).map(search => ({
@@ -108,13 +90,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
       type: 'recent' as const,
       icon: <ClockIcon className="w-4 h-4" />
     })),
-    ...suggestions.slice(0, maxSuggestions - Math.min(recentSearches.length, 3))
+    ...suggestions.slice(0, maxSuggestions - recentSearches.length)
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    setInputValue(newValue);
-    setSelectedIndex(-1);
+    onChange(newValue);
+    setHighlightedIndex(-1);
     
     if (showSuggestions && newValue.length > 0) {
       setShowDropdown(true);
@@ -125,7 +107,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleInputFocus = () => {
     setIsFocused(true);
-    if (showSuggestions && (inputValue.length > 0 || recentSearches.length > 0)) {
+    if (showSuggestions && (value.length > 0 || recentSearches.length > 0)) {
       setShowDropdown(true);
     }
   };
@@ -136,10 +118,31 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setTimeout(() => setShowDropdown(false), 150);
   };
 
+  const handleSuggestionClick = (suggestion: SearchSuggestion) => {
+    onChange(suggestion.text);
+    setShowDropdown(false);
+    
+    if (onSearch) {
+      onSearch(suggestion.text);
+    }
+    
+    if (onRecentSearchAdd && suggestion.type !== 'recent') {
+      onRecentSearchAdd(suggestion.text);
+    }
+    
+    inputRef.current?.blur();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown || allSuggestions.length === 0) {
-      if (e.key === 'Enter') {
-        handleSearch();
+      if (e.key === 'Enter' && value.trim()) {
+        if (onSearch) {
+          onSearch(value);
+        }
+        if (onRecentSearchAdd) {
+          onRecentSearchAdd(value);
+        }
+        inputRef.current?.blur();
       }
       return;
     }
@@ -147,66 +150,74 @@ const SearchBar: React.FC<SearchBarProps> = ({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setHighlightedIndex(prev => 
           prev < allSuggestions.length - 1 ? prev + 1 : 0
         );
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setHighlightedIndex(prev => 
           prev > 0 ? prev - 1 : allSuggestions.length - 1
         );
         break;
       case 'Enter':
         e.preventDefault();
-        if (selectedIndex >= 0) {
-          handleSuggestionClick(allSuggestions[selectedIndex]);
-        } else {
-          handleSearch();
+        if (highlightedIndex >= 0) {
+          handleSuggestionClick(allSuggestions[highlightedIndex]);
+        } else if (value.trim()) {
+          if (onSearch) {
+            onSearch(value);
+          }
+          if (onRecentSearchAdd) {
+            onRecentSearchAdd(value);
+          }
+          setShowDropdown(false);
+          inputRef.current?.blur();
         }
         break;
       case 'Escape':
         setShowDropdown(false);
-        setSelectedIndex(-1);
         inputRef.current?.blur();
         break;
     }
   };
 
-  const handleSearch = () => {
-    if (inputValue.trim()) {
-      onSearch?.(inputValue.trim());
-      setShowDropdown(false);
-      setSelectedIndex(-1);
+  const clearSearch = () => {
+    onChange('');
+    setShowDropdown(false);
+    inputRef.current?.focus();
+  };
+
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm':
+        return 'px-3 py-2 text-sm';
+      case 'lg':
+        return 'px-6 py-4 text-lg';
+      default:
+        return 'px-4 py-3 text-base';
     }
   };
 
-  const handleSuggestionClick = (suggestion: SearchSuggestion) => {
-    setInputValue(suggestion.text);
-    onChange?.(suggestion.text);
-    onSuggestionSelect?.(suggestion);
-    setShowDropdown(false);
-    setSelectedIndex(-1);
-  };
-
-  const handleClear = () => {
-    setInputValue('');
-    onChange?.('');
-    inputRef.current?.focus();
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'filled':
+        return 'bg-dark-50 border-0 focus:bg-white focus:ring-2 focus:ring-blood-500/20';
+      case 'outlined':
+        return 'border-2 border-dark-200 bg-transparent focus:border-blood-500';
+      default:
+        return 'border border-dark-300 bg-white focus:border-blood-500 focus:ring-2 focus:ring-blood-500/20';
+    }
   };
 
   const getSuggestionIcon = (suggestion: SearchSuggestion) => {
     if (suggestion.icon) return suggestion.icon;
     
     switch (suggestion.type) {
-      case 'recent':
-        return <ClockIcon className="w-4 h-4" />;
       case 'location':
         return <MapPinIcon className="w-4 h-4" />;
-      case 'bloodType':
-        return <div className="w-4 h-4 bg-blood-500 rounded-full flex items-center justify-center text-xs text-white font-bold">
-          {suggestion.text}
-        </div>;
+      case 'recent':
+        return <ClockIcon className="w-4 h-4" />;
       default:
         return <MagnifyingGlassIcon className="w-4 h-4" />;
     }
@@ -214,16 +225,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <div className={cn('relative', className)}>
-      {/* Search Input */}
       <div className="relative">
-        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400">
-          <MagnifyingGlassIcon className="w-5 h-5" />
-        </div>
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400" />
         
         <input
           ref={inputRef}
           type="text"
-          value={inputValue}
+          value={value}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
@@ -232,94 +240,85 @@ const SearchBar: React.FC<SearchBarProps> = ({
           disabled={disabled}
           className={cn(
             'w-full pl-10 pr-10 rounded-xl transition-all duration-200',
-            'focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed',
-            sizeClasses[size],
-            variantClasses[variant],
-            isFocused && 'shadow-lg'
+            'focus:outline-none',
+            getSizeClasses(),
+            getVariantClasses(),
+            disabled && 'opacity-50 cursor-not-allowed',
+            className
           )}
         />
 
-        {/* Clear Button */}
-        {inputValue && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-dark-400 hover:text-dark-600 transition-colors"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
-        )}
-
-        {/* Loading Spinner */}
-        {loading && (
+        {(value || loading) && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-blood-500 border-t-transparent"></div>
+            {loading ? (
+              <div className="animate-spin w-4 h-4 border-2 border-blood-600 border-t-transparent rounded-full" />
+            ) : (
+              <button
+                onClick={clearSearch}
+                className="text-dark-400 hover:text-dark-600 transition-colors"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            )}
           </div>
         )}
       </div>
 
       {/* Suggestions Dropdown */}
-      {showDropdown && showSuggestions && (
+      {showDropdown && showSuggestions && allSuggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 right-0 mt-2 bg-white border border-dark-200 rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto animate-slide-down"
+          className="absolute top-full left-0 right-0 mt-2 bg-white border border-dark-200 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto"
         >
-          {allSuggestions.length > 0 ? (
-            <>
-              {/* Recent Searches Header */}
-              {recentSearches.length > 0 && inputValue.length === 0 && (
-                <div className="flex items-center justify-between px-4 py-2 border-b border-dark-100">
-                  <span className="text-sm font-medium text-dark-600">Tìm kiếm gần đây</span>
-                  {onClearRecentSearches && (
-                    <button
-                      type="button"
-                      onClick={onClearRecentSearches}
-                      className="text-xs text-blood-600 hover:text-blood-700"
-                    >
-                      Xóa tất cả
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Suggestions List */}
-              <div className="py-2">
-                {allSuggestions.map((suggestion, index) => (
+          {recentSearches.length > 0 && (
+            <div className="p-3 border-b border-dark-100">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-dark-600">Tìm kiếm gần đây</span>
+                {onRecentSearchClear && (
                   <button
-                    key={suggestion.id}
-                    type="button"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className={cn(
-                      'w-full px-4 py-3 text-left flex items-center space-x-3 hover:bg-dark-50 transition-colors',
-                      selectedIndex === index && 'bg-blood-50 text-blood-700'
-                    )}
+                    onClick={onRecentSearchClear}
+                    className="text-xs text-blood-600 hover:text-blood-700 transition-colors"
                   >
-                    <div className={cn(
-                      'text-dark-400',
-                      selectedIndex === index && 'text-blood-600'
-                    )}>
-                      {getSuggestionIcon(suggestion)}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">{suggestion.text}</div>
-                      {suggestion.type === 'recent' && (
-                        <div className="text-xs text-dark-500">Tìm kiếm gần đây</div>
-                      )}
-                    </div>
+                    Xóa tất cả
                   </button>
-                ))}
+                )}
               </div>
-            </>
-          ) : inputValue.length > 0 ? (
-            <div className="px-4 py-8 text-center text-dark-500">
-              <MagnifyingGlassIcon className="w-8 h-8 mx-auto mb-2 text-dark-300" />
-              <div className="text-sm">Không tìm thấy kết quả</div>
-            </div>
-          ) : (
-            <div className="px-4 py-8 text-center text-dark-500">
-              <div className="text-sm">Nhập từ khóa để tìm kiếm</div>
             </div>
           )}
+
+          <div className="py-2">
+            {allSuggestions.map((suggestion, index) => (
+              <button
+                key={suggestion.id}
+                onClick={() => handleSuggestionClick(suggestion)}
+                className={cn(
+                  'w-full px-4 py-3 text-left flex items-center gap-3 transition-colors',
+                  'hover:bg-dark-50',
+                  highlightedIndex === index && 'bg-blood-50 text-blood-700'
+                )}
+              >
+                <div className={cn(
+                  'text-dark-400',
+                  highlightedIndex === index && 'text-blood-600'
+                )}>
+                  {getSuggestionIcon(suggestion)}
+                </div>
+                
+                <div className="flex-1">
+                  <div className="text-sm font-medium">{suggestion.text}</div>
+                  {suggestion.metadata?.description && (
+                    <div className="text-xs text-dark-500 mt-1">
+                      {suggestion.metadata.description}
+                    </div>
+                  )}
+                </div>
+
+                {suggestion.type === 'recent' && (
+                  <div className="text-xs text-dark-400">Gần đây</div>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

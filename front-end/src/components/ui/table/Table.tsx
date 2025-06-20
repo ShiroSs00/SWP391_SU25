@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   ChevronUpIcon, 
   ChevronDownIcon,
   MagnifyingGlassIcon,
-  FunnelIcon
+  FunnelIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { cn } from '../../../utils/helpers';
 import Button from '../button/Button';
@@ -17,6 +18,7 @@ export interface TableColumn<T> {
   width?: string;
   align?: 'left' | 'center' | 'right';
   render?: (value: any, row: T, index: number) => React.ReactNode;
+  className?: string;
 }
 
 export interface TableProps<T> {
@@ -30,12 +32,12 @@ export interface TableProps<T> {
     direction: 'asc' | 'desc';
   };
   onSort?: (key: string, direction: 'asc' | 'desc') => void;
-  onRowClick?: (row: T, index: number) => void;
+  onSearch?: (query: string) => void;
+  onRefresh?: () => void;
   emptyMessage?: string;
   className?: string;
   rowClassName?: (row: T, index: number) => string;
-  headerClassName?: string;
-  bodyClassName?: string;
+  onRowClick?: (row: T, index: number) => void;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -44,6 +46,7 @@ export interface TableProps<T> {
     onPageChange: (page: number) => void;
     onPageSizeChange: (size: number) => void;
   };
+  actions?: React.ReactNode;
 }
 
 function Table<T extends Record<string, any>>({
@@ -54,57 +57,85 @@ function Table<T extends Record<string, any>>({
   searchPlaceholder = 'Tìm kiếm...',
   sortConfig,
   onSort,
-  onRowClick,
+  onSearch,
+  onRefresh,
   emptyMessage = 'Không có dữ liệu',
   className = '',
   rowClassName,
-  headerClassName = '',
-  bodyClassName = '',
-  pagination
+  onRowClick,
+  pagination,
+  actions
 }: TableProps<T>) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredData, setFilteredData] = useState(data);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [localSortConfig, setLocalSortConfig] = useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+  } | null>(null);
 
-  React.useEffect(() => {
-    if (!searchable || !searchTerm) {
-      setFilteredData(data);
-      return;
-    }
-
-    const filtered = data.filter(row =>
-      Object.values(row).some(value =>
-        String(value).toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-    setFilteredData(filtered);
-  }, [data, searchTerm, searchable]);
+  const currentSortConfig = sortConfig || localSortConfig;
 
   const handleSort = (key: string) => {
-    if (!onSort) return;
-    
     const direction = 
-      sortConfig?.key === key && sortConfig.direction === 'asc' 
+      currentSortConfig?.key === key && currentSortConfig.direction === 'asc' 
         ? 'desc' 
         : 'asc';
-    
-    onSort(key, direction);
+
+    if (onSort) {
+      onSort(key, direction);
+    } else {
+      setLocalSortConfig({ key, direction });
+    }
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (onSearch) {
+      onSearch(query);
+    }
+  };
+
+  const filteredData = useMemo(() => {
+    if (!searchQuery || onSearch) return data;
+
+    return data.filter(row =>
+      Object.values(row).some(value =>
+        String(value).toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [data, searchQuery, onSearch]);
+
+  const sortedData = useMemo(() => {
+    if (!currentSortConfig || onSort) return filteredData;
+
+    return [...filteredData].sort((a, b) => {
+      const aValue = a[currentSortConfig.key];
+      const bValue = b[currentSortConfig.key];
+
+      if (aValue < bValue) {
+        return currentSortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return currentSortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredData, currentSortConfig, onSort]);
+
   const getSortIcon = (columnKey: string) => {
-    if (!sortConfig || sortConfig.key !== columnKey) {
+    if (currentSortConfig?.key !== columnKey) {
       return <div className="w-4 h-4" />;
     }
-    
-    return sortConfig.direction === 'asc' 
-      ? <ChevronUpIcon className="w-4 h-4" />
-      : <ChevronDownIcon className="w-4 h-4" />;
+
+    return currentSortConfig.direction === 'asc' ? (
+      <ChevronUpIcon className="w-4 h-4" />
+    ) : (
+      <ChevronDownIcon className="w-4 h-4" />
+    );
   };
 
   const renderCell = (column: TableColumn<T>, row: T, index: number) => {
-    const value = column.key.toString().includes('.') 
-      ? column.key.toString().split('.').reduce((obj, key) => obj?.[key], row)
-      : row[column.key as keyof T];
-
+    const value = row[column.key as keyof T];
+    
     if (column.render) {
       return column.render(value, row, index);
     }
@@ -113,23 +144,38 @@ function Table<T extends Record<string, any>>({
   };
 
   return (
-    <div className={cn('bg-white rounded-xl shadow-lg border border-dark-200 overflow-hidden', className)}>
-      {/* Header with Search */}
-      {searchable && (
-        <div className="p-6 border-b border-dark-200 bg-dark-50">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-dark-900">Dữ liệu</h3>
-            <div className="flex items-center space-x-4">
-              <Input
-                placeholder={searchPlaceholder}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                leftIcon={<MagnifyingGlassIcon className="w-5 h-5" />}
-                className="w-64"
-              />
-              <Button variant="outline" size="sm" leftIcon={<FunnelIcon className="w-4 h-4" />}>
-                Lọc
-              </Button>
+    <div className={cn('bg-white rounded-xl shadow-lg border border-dark-200', className)}>
+      {/* Header */}
+      {(searchable || onRefresh || actions) && (
+        <div className="p-6 border-b border-dark-200">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1">
+              {searchable && (
+                <div className="max-w-md">
+                  <Input
+                    placeholder={searchPlaceholder}
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    leftIcon={<MagnifyingGlassIcon className="w-5 h-5" />}
+                    variant="outlined"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {onRefresh && (
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={onRefresh}
+                  leftIcon={<ArrowPathIcon className="w-4 h-4" />}
+                  disabled={loading}
+                >
+                  Làm mới
+                </Button>
+              )}
+              {actions}
             </div>
           </div>
         </div>
@@ -138,8 +184,7 @@ function Table<T extends Record<string, any>>({
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          {/* Header */}
-          <thead className={cn('bg-dark-50 border-b border-dark-200', headerClassName)}>
+          <thead className="bg-dark-50">
             <tr>
               {columns.map((column, index) => (
                 <th
@@ -148,61 +193,61 @@ function Table<T extends Record<string, any>>({
                     'px-6 py-4 text-left text-sm font-semibold text-dark-900',
                     column.align === 'center' && 'text-center',
                     column.align === 'right' && 'text-right',
-                    column.sortable && 'cursor-pointer hover:bg-dark-100 transition-colors'
+                    column.sortable && 'cursor-pointer hover:bg-dark-100 transition-colors',
+                    column.className
                   )}
                   style={{ width: column.width }}
-                  onClick={() => column.sortable && handleSort(column.key.toString())}
+                  onClick={() => column.sortable && handleSort(column.key as string)}
                 >
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
                     <span>{column.label}</span>
-                    {column.sortable && getSortIcon(column.key.toString())}
+                    {column.sortable && getSortIcon(column.key as string)}
                   </div>
                 </th>
               ))}
             </tr>
           </thead>
-
-          {/* Body */}
-          <tbody className={cn('divide-y divide-dark-100', bodyClassName)}>
+          <tbody className="divide-y divide-dark-100">
             {loading ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-12 text-center">
-                  <div className="flex items-center justify-center space-x-2">
-                    <Spinner size="md" />
-                    <span className="text-dark-600">Đang tải...</span>
+                  <div className="flex items-center justify-center">
+                    <Spinner size="lg" />
+                    <span className="ml-3 text-dark-600">Đang tải...</span>
                   </div>
                 </td>
               </tr>
-            ) : filteredData.length === 0 ? (
+            ) : sortedData.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-12 text-center">
                   <div className="text-dark-500">
-                    <div className="text-lg font-medium mb-2">Không có dữ liệu</div>
-                    <div className="text-sm">{emptyMessage}</div>
+                    <FunnelIcon className="w-12 h-12 mx-auto mb-4 text-dark-300" />
+                    <p className="text-lg font-medium mb-2">Không có dữ liệu</p>
+                    <p className="text-sm">{emptyMessage}</p>
                   </div>
                 </td>
               </tr>
             ) : (
-              filteredData.map((row, rowIndex) => (
+              sortedData.map((row, index) => (
                 <tr
-                  key={rowIndex}
+                  key={index}
                   className={cn(
                     'hover:bg-dark-50 transition-colors',
                     onRowClick && 'cursor-pointer',
-                    rowClassName?.(row, rowIndex)
+                    rowClassName?.(row, index)
                   )}
-                  onClick={() => onRowClick?.(row, rowIndex)}
+                  onClick={() => onRowClick?.(row, index)}
                 >
-                  {columns.map((column, colIndex) => (
+                  {columns.map((column, columnIndex) => (
                     <td
-                      key={colIndex}
+                      key={columnIndex}
                       className={cn(
                         'px-6 py-4 text-sm text-dark-900',
                         column.align === 'center' && 'text-center',
                         column.align === 'right' && 'text-right'
                       )}
                     >
-                      {renderCell(column, row, rowIndex)}
+                      {renderCell(column, row, index)}
                     </td>
                   ))}
                 </tr>
@@ -214,64 +259,58 @@ function Table<T extends Record<string, any>>({
 
       {/* Pagination */}
       {pagination && (
-        <div className="px-6 py-4 border-t border-dark-200 bg-dark-50">
+        <div className="px-6 py-4 border-t border-dark-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-dark-600">
-              Hiển thị {((pagination.currentPage - 1) * pagination.pageSize) + 1} - {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} trong tổng số {pagination.totalItems} kết quả
+              Hiển thị {((pagination.currentPage - 1) * pagination.pageSize) + 1} đến{' '}
+              {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} trong{' '}
+              {pagination.totalItems} kết quả
             </div>
-            
-            <div className="flex items-center space-x-4">
-              {/* Page Size Selector */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-dark-600">Hiển thị:</span>
-                <select
-                  value={pagination.pageSize}
-                  onChange={(e) => pagination.onPageSizeChange(Number(e.target.value))}
-                  className="border border-dark-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blood-500"
-                >
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                </select>
-              </div>
 
-              {/* Page Navigation */}
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
+              <select
+                value={pagination.pageSize}
+                onChange={(e) => pagination.onPageSizeChange(Number(e.target.value))}
+                className="px-3 py-1 border border-dark-300 rounded-lg text-sm"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+
+              <div className="flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={pagination.currentPage === 1}
                   onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+                  disabled={pagination.currentPage === 1}
                 >
                   Trước
                 </Button>
-                
-                <div className="flex items-center space-x-1">
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    const page = i + 1;
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => pagination.onPageChange(page)}
-                        className={cn(
-                          'w-8 h-8 rounded-lg text-sm font-medium transition-colors',
-                          page === pagination.currentPage
-                            ? 'bg-blood-600 text-white'
-                            : 'text-dark-600 hover:bg-dark-100'
-                        )}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-                </div>
+
+                {/* Page numbers */}
+                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                  const pageNumber = pagination.currentPage - 2 + i;
+                  if (pageNumber < 1 || pageNumber > pagination.totalPages) return null;
+
+                  return (
+                    <Button
+                      key={pageNumber}
+                      variant={pageNumber === pagination.currentPage ? 'primary' : 'outline'}
+                      size="sm"
+                      onClick={() => pagination.onPageChange(pageNumber)}
+                    >
+                      {pageNumber}
+                    </Button>
+                  );
+                })}
 
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={pagination.currentPage === pagination.totalPages}
                   onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+                  disabled={pagination.currentPage === pagination.totalPages}
                 >
                   Sau
                 </Button>

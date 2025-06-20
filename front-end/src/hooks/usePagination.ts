@@ -4,7 +4,6 @@ export interface PaginationOptions {
   initialPage?: number;
   initialPageSize?: number;
   totalItems: number;
-  pageSizeOptions?: number[];
 }
 
 export interface PaginationResult {
@@ -28,31 +27,18 @@ export interface PaginationResult {
 export function usePagination({
   initialPage = 1,
   initialPageSize = 20,
-  totalItems,
-  pageSizeOptions = [10, 20, 50, 100]
+  totalItems
 }: PaginationOptions): PaginationResult {
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [pageSize, setPageSizeState] = useState(initialPageSize);
 
-  const totalPages = useMemo(() => {
-    return Math.ceil(totalItems / pageSize);
-  }, [totalItems, pageSize]);
+  const totalPages = Math.ceil(totalItems / pageSize);
 
-  const startIndex = useMemo(() => {
-    return (currentPage - 1) * pageSize;
-  }, [currentPage, pageSize]);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize - 1, totalItems - 1);
 
-  const endIndex = useMemo(() => {
-    return Math.min(startIndex + pageSize - 1, totalItems - 1);
-  }, [startIndex, pageSize, totalItems]);
-
-  const hasNextPage = useMemo(() => {
-    return currentPage < totalPages;
-  }, [currentPage, totalPages]);
-
-  const hasPreviousPage = useMemo(() => {
-    return currentPage > 1;
-  }, [currentPage]);
+  const hasNextPage = currentPage < totalPages;
+  const hasPreviousPage = currentPage > 1;
 
   const goToPage = (page: number) => {
     const validPage = Math.max(1, Math.min(page, totalPages));
@@ -80,11 +66,9 @@ export function usePagination({
   };
 
   const setPageSize = (size: number) => {
-    if (pageSizeOptions.includes(size)) {
-      setPageSizeState(size);
-      // Reset to first page when changing page size
-      setCurrentPage(1);
-    }
+    setPageSizeState(size);
+    // Reset to first page when page size changes
+    setCurrentPage(1);
   };
 
   const getPageNumbers = (maxVisible: number = 5): number[] => {
@@ -103,7 +87,7 @@ export function usePagination({
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
-  return {
+  return useMemo(() => ({
     currentPage,
     pageSize,
     totalPages,
@@ -119,5 +103,14 @@ export function usePagination({
     goToLastPage,
     setPageSize,
     getPageNumbers
-  };
+  }), [
+    currentPage,
+    pageSize,
+    totalPages,
+    totalItems,
+    startIndex,
+    endIndex,
+    hasNextPage,
+    hasPreviousPage
+  ]);
 }
