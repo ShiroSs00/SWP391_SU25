@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -91,8 +92,11 @@ public class AccountService {
 
 
 
-        }catch(Exception e){
-            return new AccountRegistrationResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
-        }
+        } catch (Exception e) {
+        // Bắt buộc rollback
+        TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        return new AccountRegistrationResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
     }
+
+}
 }

@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 public class HealthCheck {
     @Column(name = "health_check_id")
     @Id
-    private String heathCheckId;
+    private String healthCheckId;
     @Column(name = "weight")
     private double weight;
     @Column(name = "temperate")
@@ -24,10 +24,10 @@ public class HealthCheck {
     @Column(name = "note")
     private String note;
     @OneToOne
-    @JoinColumn(name = "donation_registration_id")
+    @JoinColumn(name = "registration_id")
     private DonationRegistration donationRegistration;
-    @OneToOne
-    @JoinColumn(name = "after_donation_id")
+
+    @OneToOne(mappedBy = "healthCheck",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private AfterDonationBlood afterDonationBlood;
 
     public HealthCheck() {
@@ -60,12 +60,12 @@ public class HealthCheck {
         this.afterDonationBlood = afterDonationBlood;
     }
 
-    public String getHeathCheckId() {
-        return heathCheckId;
+    public String getHealthCheckId() {
+        return healthCheckId;
     }
 
-    public void setHeathCheckId(String heathCheckId) {
-        this.heathCheckId = heathCheckId;
+    public void setHealthCheckId(String healthCheckId) {
+        this.healthCheckId = healthCheckId;
     }
 
 
@@ -136,7 +136,7 @@ public class HealthCheck {
     @Override
     public String toString() {
         return "HealthCheck{" +
-                "heathCheckId=" + heathCheckId +
+                "heathCheckId=" + healthCheckId +
                 ", weight=" + weight +
                 ", temperate=" + temperate +
                 ", bloodPressure=" + bloodPressure +

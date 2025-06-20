@@ -1,10 +1,8 @@
 package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.BloodDonationEventDTO;
-import com.swp391.bloodcare.entity.BloodDonationEvent;
 import com.swp391.bloodcare.service.EventService;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,34 +15,50 @@ import java.util.*;
 @RequestMapping("/api/event")
 public class EventController {
 
-    @Autowired
-    private EventService eventService;
+    private final EventService eventService;
+
+    public EventController(EventService eventService) {
+        this.eventService = eventService;
+    }
 
     @GetMapping("/getall")
-    public ResponseEntity<List<BloodDonationEventDTO>> getEvent() {
-        List<BloodDonationEventDTO> events = eventService.getAllEvent();
-        return ResponseEntity.ok(events);
+    public ResponseEntity<?> getEvent() {
+        try {
+            List<BloodDonationEventDTO> events = eventService.getAllEvent();
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Lỗi khi lấy danh sách sự kiện: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/create")
-    public ResponseEntity<BloodDonationEventDTO> addEvent(@RequestBody BloodDonationEventDTO dto) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        BloodDonationEventDTO createdEvent = eventService.createEventByUsername(username, dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
+    public ResponseEntity<?> addEvent(@RequestBody BloodDonationEventDTO dto) {
+        try {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            BloodDonationEventDTO createdEvent = eventService.createEventByUsername(username, dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Không tìm thấy tài khoản tạo sự kiện"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Tạo sự kiện thất bại: " + e.getMessage()));
+        }
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateEvent(
-            @PathVariable("id") String id,
-            @RequestBody BloodDonationEventDTO dto
-    ) {
+    public ResponseEntity<?> updateEvent(@PathVariable("id") String id,
+                                         @RequestBody BloodDonationEventDTO dto) {
         try {
             BloodDonationEventDTO updatedEvent = eventService.updateEvent(id, dto);
             return ResponseEntity.ok(updatedEvent);
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found with id: " + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Không tìm thấy sự kiện với ID: " + id));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Cập nhật thất bại: " + e.getMessage()));
         }
     }
 
@@ -52,22 +66,28 @@ public class EventController {
     public ResponseEntity<?> deleteEvent(@PathVariable("id") String id) {
         try {
             eventService.deleteEvent(id);
-            return ResponseEntity.ok(Map.of("message", "Event deleted successfully with id: " + id));
+            return ResponseEntity.ok(Map.of("message", "Đã xoá sự kiện thành công với ID: " + id));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Event not found with id: " + id));
+                    .body(Map.of("error", "Không tìm thấy sự kiện với ID: " + id));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Delete failed: " + e.getMessage()));
+                    .body(Map.of("error", "Xóa sự kiện thất bại: " + e.getMessage()));
         }
     }
 
     @GetMapping("/filter/by-date")
-    public ResponseEntity<List<BloodDonationEventDTO>> getEventsByDateRange(
+    public ResponseEntity<?> getEventsByDateRange(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date start,
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date end
     ) {
-        List<BloodDonationEventDTO> events = eventService.getEventByDate(start, end);
-        return ResponseEntity.ok(events);
+        try {
+            List<BloodDonationEventDTO> events = eventService.getEventByDate(start, end);
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Không thể lọc sự kiện theo ngày: " + e.getMessage()));
+        }
     }
 }
+

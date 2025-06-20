@@ -18,9 +18,10 @@ public class DonorFeedback {
     private long comfortable;
     @Column(name = "description")
     private String description;
+
     @OneToOne
     @JoinColumn(name = "registration_id")
-    private DonationRegistration registration;
+    private DonationRegistration donationRegistration;
 
     public DonorFeedback() {
     }
@@ -33,12 +34,12 @@ public class DonorFeedback {
         this.description = description;
     }
 
-    public DonationRegistration getRegistration() {
-        return registration;
+    public DonationRegistration getDonationRegistration() {
+        return donationRegistration;
     }
 
-    public void setRegistration(DonationRegistration registration) {
-        this.registration = registration;
+    public void setDonationRegistration(DonationRegistration donationRegistration) {
+        this.donationRegistration = donationRegistration;
     }
 
     public String getFeedbackID() {

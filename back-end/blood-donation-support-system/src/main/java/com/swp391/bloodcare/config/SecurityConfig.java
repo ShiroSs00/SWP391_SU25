@@ -1,11 +1,9 @@
 package com.swp391.bloodcare.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,8 +22,12 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,33 +39,24 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ dùng config đã định nghĩa bên dưới
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/swagger-resources/**",
-                                "/webjars/**"
-                        ).permitAll()
-
+                        // Public
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Ưu tiên mở quyền donation trước tất cả
-                        .requestMatchers("/api/donation/**").permitAll()
-
-                        // Cho phép GET toàn bộ api
+                        // Public GET
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
 
-                        // Sau đó mới tới hạn chế các method PUT/POST
-                        .requestMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/event/**").hasRole("STAFF")
+                        // STAFF & ADMIN
+                        .requestMatchers("/api/event/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/healthcheck/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/donation/**").hasAnyRole("STAFF", "ADMIN")
 
-
+                        // ADMIN-only (nên để cuối cùng)
+                        .requestMatchers("/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 

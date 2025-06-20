@@ -15,9 +15,11 @@ public class AfterDonationBlood {
     private String status;
     @Column(name = "note")
     private String note;
+
     @OneToOne
     @JoinColumn(name = "health_check_id")
     private HealthCheck healthCheck;
+
     @ManyToOne()
     @JoinColumn(name = "blood_id")
     private Blood blood;

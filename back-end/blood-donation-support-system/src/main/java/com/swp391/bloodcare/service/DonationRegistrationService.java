@@ -8,7 +8,6 @@ import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import com.swp391.bloodcare.repository.EventRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -24,14 +23,17 @@ import static com.swp391.bloodcare.dto.DonationRegistrationDTO.toDTO;
 @Service
 public class DonationRegistrationService {
 
-    @Autowired
-    private DonationRegistrationRepository donationRegistrationRepository;
+    private final DonationRegistrationRepository donationRegistrationRepository;
 
-    @Autowired
-    private AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
 
-    @Autowired
-    private EventRepository eventRepository;
+    private final EventRepository eventRepository;
+
+    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository) {
+        this.donationRegistrationRepository = donationRegistrationRepository;
+        this.accountRepository = accountRepository;
+        this.eventRepository = eventRepository;
+    }
 
     public DonationRegistrationDTO createDonationByUsername(String username, String eventId) {
         Account account = accountRepository.findByUserName(username)
@@ -92,13 +94,12 @@ public class DonationRegistrationService {
     }
 
 
-    public DonationRegistration deleteDonationRegistration(String id) {
-        DonationRegistration donorRegis = donationRegistrationRepository.findByRegistrationId(id).orElse(null);
-        if (donorRegis != null) {
-            donationRegistrationRepository.delete(donorRegis);
-        }
-        return donorRegis;
+    public void deleteDonationRegistration(String id) {
+        DonationRegistration donorRegis = donationRegistrationRepository.findByRegistrationId(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đăng ký với ID: " + id));
+        donationRegistrationRepository.delete(donorRegis);
     }
+
 
     public List<DonationRegistrationDTO> getAllDonationRegistrations() {
         return donationRegistrationRepository.findAll()
