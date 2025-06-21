@@ -9,11 +9,10 @@ const api = axios.create({
 // Add a request interceptor
 api.interceptors.request.use(
     (config) => {
-        // You can add any custom logic here before the request is sent
-        // For example, you can add an authorization token if needed
-        const token = localStorage.getItem('token');
+        // Lấy token đúng key đã lưu (authToken)
+        const token = localStorage.getItem('authToken');
         if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+          config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },

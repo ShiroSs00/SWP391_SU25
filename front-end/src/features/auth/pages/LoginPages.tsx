@@ -1,18 +1,15 @@
 // src/pages/LoginPage.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import LoginForm from '../components/LoginForm';
 import { type Toast } from '../types/auth.types';
 
-export const LoginPage: React.FC = () => {
-  const { login, isLoading } = useAuth();
-  const [toasts, setToasts] = useState<Toast[]>([]);
+interface LoginPageProps {
+  showToast: (message: string, type: 'success' | 'error') => void;
+}
 
-  const showToast = (message: string, type: 'success' | 'error') => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
-  };
+export const LoginPage: React.FC<LoginPageProps> = ({ showToast }) => {
+  const { login, isLoading } = useAuth();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f0f2f5]">
@@ -24,18 +21,6 @@ export const LoginPage: React.FC = () => {
         <div className="flex-1 flex flex-col items-center">
           <LoginForm onLogin={login} showToast={showToast} isLoading={isLoading} />
         </div>
-      </div>
-      <div className="fixed top-5 right-5 space-y-2 z-50">
-        {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className={`px-4 py-2 rounded shadow text-white transition-all duration-300 animate-slide-in-right \
-              ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}
-            `}
-          >
-            {toast.message}
-          </div>
-        ))}
       </div>
     </div>
   );

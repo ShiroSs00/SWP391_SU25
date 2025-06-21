@@ -59,5 +59,31 @@ export const useAuth = () => {
     }
   };
 
-  return { login, register, isLoading, error };
+  const logout = async (): Promise<void> => {
+    setIsLoading(true);
+    setError('');
+    try {
+      await api.post('/auth/logout');
+    } catch (err: unknown) {
+      let message = 'Lỗi không xác định';
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        'response' in err &&
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message
+      ) {
+        message = (err as { response: { data: { message: string } } }).response.data.message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
+    } finally {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('role'); // nếu có lưu role
+      setIsLoading(false);
+    }
+  };
+
+  return { login, register, logout, isLoading, error };
 };

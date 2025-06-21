@@ -34,6 +34,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, showToast, isLoading }) 
     const response = await onLogin(formData);
     console.log('Full login response:', response);
     if (response.token && response.role) {
+      // Lưu user vào localStorage để ProtectedRoute kiểm tra
+      localStorage.setItem('user', JSON.stringify({ role: response.role }));
       showToast(response.message, 'success');
       const role = response.role.toUpperCase();
       console.log('Login response role:', role);
