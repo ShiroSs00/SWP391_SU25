@@ -111,6 +111,28 @@ public class DonationRegistrationService {
         return donationRegistrationRepository.findByRegistrationId(id).orElse(null);
     }
 
+    public List<DonationRegistrationDTO> getByUsername(String username) {
+        return donationRegistrationRepository.findByAccountUserName(username)
+                .stream()
+                .map(DonationRegistrationDTO::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<DonationRegistrationDTO> getByEventId(String eventId) {
+        return donationRegistrationRepository.findByEventEventId(eventId)
+                .stream()
+                .map(DonationRegistrationDTO::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<DonationRegistrationDTO> getByUsernameAndEventId(String username, String eventId) {
+        return donationRegistrationRepository.findByAccountUserNameAndEventEventId(username, eventId)
+                .stream()
+                .map(DonationRegistrationDTO::toDTO)
+                .collect(Collectors.toList());
+    }
+
+
     @Transactional
     public Map<String, Object> deleteMultipleDonationRegistrationsSafe(List<String> ids) {
         List<String> deleted = new ArrayList<>();

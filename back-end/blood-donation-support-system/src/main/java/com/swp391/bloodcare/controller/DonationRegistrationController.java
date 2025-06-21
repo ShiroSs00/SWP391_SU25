@@ -27,6 +27,21 @@ public class DonationRegistrationController {
         return ResponseEntity.ok(donationRegistrationService.getAllDonationRegistrations());
     }
 
+    @GetMapping("/get-by-event/{eventId}")
+    public ResponseEntity<List<DonationRegistrationDTO>> getByEventId(@PathVariable String eventId) {
+        return ResponseEntity.ok(donationRegistrationService.getByEventId(eventId));
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<DonationRegistrationDTO>> filterByUserAndEvent(
+            @RequestParam String username,
+            @RequestParam String eventId
+    ) {
+        return ResponseEntity.ok(donationRegistrationService.getByUsernameAndEventId(username, eventId));
+    }
+
+
+
     @PostMapping("/create/{id}")
     public ResponseEntity<DonationRegistrationDTO> createDonationRegistration(@PathVariable String id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -51,11 +66,18 @@ public class DonationRegistrationController {
         return ResponseEntity.ok("✅ Xóa đơn đăng ký thành công với ID: " + id);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("get-by-id/{id}")
     public ResponseEntity<DonationRegistration> getDonationRegistrationById(@PathVariable String id) {
         DonationRegistration donation = donationRegistrationService.getDonationRegistrationById(id);
         return ResponseEntity.ok(donation);
     }
+
+    @GetMapping("/get-by-username/{username}")
+    public ResponseEntity<List<DonationRegistrationDTO>> getByUsername(@PathVariable String username) {
+        return ResponseEntity.ok(donationRegistrationService.getByUsername(username));
+    }
+
+
     @DeleteMapping("/delete-multiple")
     public ResponseEntity<?> deleteMultipleRegistrations(@RequestBody List<String> ids) {
         var result = donationRegistrationService.deleteMultipleDonationRegistrationsSafe(ids);
