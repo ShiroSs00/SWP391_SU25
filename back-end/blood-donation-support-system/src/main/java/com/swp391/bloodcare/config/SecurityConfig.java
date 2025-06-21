@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/feedback/**").permitAll()
+                        .requestMatchers("/api/donation/**").permitAll()
 
                         // Public GET
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
@@ -53,8 +55,8 @@ public class SecurityConfig {
                         // STAFF & ADMIN
                         .requestMatchers("/api/event/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/healthcheck/**").hasAnyRole("STAFF", "ADMIN")
-                        .requestMatchers("/api/donation/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")
+
 
 
 
