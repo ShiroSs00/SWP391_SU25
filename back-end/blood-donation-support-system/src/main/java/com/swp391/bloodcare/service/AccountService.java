@@ -1,7 +1,7 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.account.AccountRegistrationDTO;
-import com.swp391.bloodcare.dto.account.AccountRegistrationResponse;
+import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.Address;
 import com.swp391.bloodcare.entity.Profile;
@@ -34,15 +34,15 @@ public class AccountService {
     private PasswordEncoder passwordEncoder;
 
     @Transactional
-    public AccountRegistrationResponse<String> registerAccount(AccountRegistrationDTO accountRegistration) {
+    public ApiResponse<String> registerAccount(AccountRegistrationDTO accountRegistration) {
         try{
 
             if(accountRepository.existsByUserName(accountRegistration.getUsername())){
-                return new AccountRegistrationResponse<>(false,"Tài khoản đã tồn tại",null);
+                return new ApiResponse<>(false,"Tài khoản đã tồn tại",null);
             }
 
             if(accountRepository.existsByEmail(accountRegistration.getEmail())){
-                return new AccountRegistrationResponse<>(false,"Email đã tồn tại",null);
+                return new ApiResponse<>(false,"Email đã tồn tại",null);
             }
 
 
@@ -88,15 +88,15 @@ public class AccountService {
 
             profileRepository.save(profile);
 
-            return new AccountRegistrationResponse<>(true,"Đăng ký tài khoản thành công!", savedAccount.getAccountId());
-
-
-
+            return new ApiResponse<>(true,"Đăng ký tài khoản thành công!", savedAccount.getAccountId());
         } catch (Exception e) {
         // Bắt buộc rollback
         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-        return new AccountRegistrationResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
+            return new ApiResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
+        }
     }
 
-}
+    public Account findAccountByUserName (String id){
+        return accountRepository.findAccountByUserName(id);
+    }
 }

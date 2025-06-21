@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 
 import static com.swp391.bloodcare.dto.HealthCheckDTO.toDTO;
@@ -27,6 +25,30 @@ public class HealthCheckService {
     public HealthCheckService(HealthCheckRepository healthCheckRepository, DonationRegistrationRepository donationRegistrationRepository) {
         this.healthCheckRepository = healthCheckRepository;
         this.donationRegistrationRepository = donationRegistrationRepository;
+    }
+
+    @Transactional
+    public Map<String, Object> deleteMultipleHealthChecksSafe(List<String> ids) {
+        List<String> deleted = new ArrayList<>();
+        Map<String, String> errors = new HashMap<>();
+
+        for (String id : ids) {
+            try {
+                var healthCheck = healthCheckRepository.findByHealthCheckId(id)
+                        .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi kiểm tra với ID: " + id));
+                healthCheckRepository.delete(healthCheck);
+                deleted.add(id);
+            } catch (EntityNotFoundException e) {
+                errors.put(id, "Không tìm thấy bản ghi");
+            } catch (Exception e) {
+                errors.put(id, "Lỗi không xác định: " + e.getMessage());
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("deleted", deleted);
+        result.put("errors", errors);
+        return result;
     }
 
 

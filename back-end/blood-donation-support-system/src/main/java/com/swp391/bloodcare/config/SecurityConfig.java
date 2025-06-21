@@ -54,6 +54,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/event/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/healthcheck/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/donation/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")
+
+
 
                         // ADMIN-only (nên để cuối cùng)
                         .requestMatchers("/**").hasRole("ADMIN")

@@ -71,7 +71,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             System.out.println("JWT Filter Exception: " + e.getMessage());
+
+            response.setCharacterEncoding("UTF-8"); // ⚠️ Cái này là then chốt
+            response.setContentType("application/json; charset=UTF-8"); // ⚠️ Set luôn charset ở đây
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"status\":\"fail\",\"message\":\"Token không hợp lệ hoặc đã hết hạn\"}");
+            return; // ⚠️ Không cho đi tiếp nữa
         }
+
+
 
         filterChain.doFilter(request, response);
     }

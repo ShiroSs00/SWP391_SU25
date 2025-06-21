@@ -1,4 +1,4 @@
-package com.swp391.bloodcare.dto.account;
+package com.swp391.bloodcare.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

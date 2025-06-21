@@ -3,7 +3,6 @@ package com.swp391.bloodcare.controller;
 import com.swp391.bloodcare.dto.DonationRegistrationDTO;
 import com.swp391.bloodcare.entity.DonationRegistration;
 import com.swp391.bloodcare.service.DonationRegistrationService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,73 +23,50 @@ public class DonationRegistrationController {
     }
 
     @GetMapping("/getall")
-    public ResponseEntity<?> getAllDonationRegistration() {
-        try {
-            List<DonationRegistrationDTO> registrations = donationRegistrationService.getAllDonationRegistrations();
-            return ResponseEntity.ok(registrations);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("❗ Lỗi khi lấy danh sách đơn đăng ký: " + e.getMessage());
-        }
+    public ResponseEntity<List<DonationRegistrationDTO>> getAllDonationRegistration() {
+        return ResponseEntity.ok(donationRegistrationService.getAllDonationRegistrations());
     }
 
     @PostMapping("/create/{id}")
-    public ResponseEntity<?> createDonationRegistration(
-            @PathVariable String id) {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
+    public ResponseEntity<DonationRegistrationDTO> createDonationRegistration(@PathVariable String id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
 
-            DonationRegistrationDTO savedRegistration = donationRegistrationService.createDonationByUsername(username, id);
-            return new ResponseEntity<>(savedRegistration, HttpStatus.CREATED);
-
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("❌ Không tìm thấy sự kiện với ID: " + id);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("❗ Lỗi khi tạo đơn đăng ký hiến máu: " + e.getMessage());
-        }
+        DonationRegistrationDTO savedRegistration = donationRegistrationService.createDonationByUsername(username, id);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedRegistration);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateDonationRegistration(
+    public ResponseEntity<DonationRegistrationDTO> updateDonationRegistration(
             @PathVariable String id,
             @RequestBody DonationRegistration donationRegistration
     ) {
-        try {
-            DonationRegistrationDTO result = donationRegistrationService.updateDonationRegistration(id, donationRegistration);
-            return ResponseEntity.ok(result);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("❌ Không tìm thấy đơn đăng ký hiến máu với ID: " + id);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("❗ Lỗi khi cập nhật đơn đăng ký: " + e.getMessage());
-        }
+        DonationRegistrationDTO result = donationRegistrationService.updateDonationRegistration(id, donationRegistration);
+        return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteDonationRegistration(@PathVariable String id) {
-        try {
-            donationRegistrationService.deleteDonationRegistration(id);
-            return ResponseEntity.ok("✅ Xóa đơn đăng ký thành công với ID: " + id);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("❌ Không tìm thấy đơn đăng ký để xóa với ID: " + id);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("❗ Lỗi khi xóa đơn đăng ký: " + e.getMessage());
-        }
+    public ResponseEntity<String> deleteDonationRegistration(@PathVariable String id) {
+        donationRegistrationService.deleteDonationRegistration(id);
+        return ResponseEntity.ok("✅ Xóa đơn đăng ký thành công với ID: " + id);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getDonationRegistrationById(@PathVariable String id) {
+    public ResponseEntity<DonationRegistration> getDonationRegistrationById(@PathVariable String id) {
         DonationRegistration donation = donationRegistrationService.getDonationRegistrationById(id);
-        if (donation != null) {
-            return ResponseEntity.ok(donation);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Không tìm thấy đăng ký với ID: " + id));
-        }
+        return ResponseEntity.ok(donation);
     }
+    @DeleteMapping("/delete-multiple")
+    public ResponseEntity<?> deleteMultipleRegistrations(@RequestBody List<String> ids) {
+        var result = donationRegistrationService.deleteMultipleDonationRegistrationsSafe(ids);
+        return ResponseEntity.ok().body(
+                // Có thể format chuẩn với key: status, message, data
+                Map.of(
+                        "status", "partial-success",
+                        "message", "Đã xử lý xóa danh sách đăng ký",
+                        "data", result
+                )
+        );
+    }
+
 }

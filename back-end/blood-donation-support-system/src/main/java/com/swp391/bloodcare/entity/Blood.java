@@ -45,11 +45,85 @@ public class Blood {
     public Blood() {
     }
 
+    public Blood(String bloodCode, BloodType bloodType, RhFactor rh, Component component, boolean isRareBood, long volumn, long quantity, String bloodMatch) {
+        this.bloodCode = bloodCode;
+        this.bloodType = bloodType;
+        this.rh = rh;
+        this.component = component;
+        this.isRareBood = isRareBood;
+        this.volumn = volumn;
+        this.quantity = quantity;
+        this.bloodMatch = bloodMatch;
+    }
 
+    public String getBloodCode() {
+        return bloodCode;
+    }
+
+    public void setBloodCode(String bloodCode) {
+        this.bloodCode = bloodCode;
+    }
+
+    public BloodType getBloodType() {
+        return bloodType;
+    }
+
+    public void setBloodType(BloodType bloodType) {
+        this.bloodType = bloodType;
+    }
+
+    public RhFactor getRh() {
+        return rh;
+    }
+
+    public void setRh(RhFactor rh) {
+        this.rh = rh;
+    }
+
+    public Component getComponent() {
+        return component;
+    }
+
+    public void setComponent(Component component) {
+        this.component = component;
+    }
+
+    public boolean isRareBood() {
+        return isRareBood;
+    }
+
+    public void setRareBood(boolean rareBood) {
+        isRareBood = rareBood;
+    }
+
+    public long getVolumn() {
+        return volumn;
+    }
+
+    public void setVolumn(long volumn) {
+        this.volumn = volumn;
+    }
+
+    public long getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(long quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getBloodMatch() {
+        return bloodMatch;
+    }
+
+    public void setBloodMatch(String bloodMatch) {
+        this.bloodMatch = bloodMatch;
+    }
 
     public enum BloodType{
         A, B, AB, O
     }
+
 
     public enum RhFactor{
         POSITIVE, NEGATIVE
