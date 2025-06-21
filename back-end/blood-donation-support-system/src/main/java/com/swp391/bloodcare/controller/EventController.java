@@ -6,7 +6,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +52,8 @@ public class EventController {
             @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date end) {
         return ResponseEntity.ok(eventService.getEventByDate(start, end));
     }
+
+
 
     @DeleteMapping("/delete-multiple")
     public ResponseEntity<?> deleteMultipleEvents(@RequestBody List<String> ids) {

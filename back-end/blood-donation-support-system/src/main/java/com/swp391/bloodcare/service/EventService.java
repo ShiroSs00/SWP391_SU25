@@ -112,11 +112,21 @@ public class EventService {
     }
 
     public List<BloodDonationEventDTO> getEventByDate(Date startTime, Date endTime) {
-        return eventRepository.findByCreationDateBetween(startTime, endTime)
+        // Đặt giờ cuối ngày cho endTime: 23:59:59.999
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(endTime);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
+        endTime = cal.getTime();
+
+        return eventRepository.findByEndDateBetween(startTime, endTime)
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
+
 
     public void deleteEvent(String id) {
         BloodDonationEvent event = eventRepository.findByEventId(id)
