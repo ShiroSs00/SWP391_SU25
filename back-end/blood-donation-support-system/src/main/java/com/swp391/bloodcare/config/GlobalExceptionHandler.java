@@ -1,11 +1,14 @@
 package com.swp391.bloodcare.config;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,6 +24,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleUserNotFound(UsernameNotFoundException ex) {
         System.out.println("❌ Username không tồn tại: " + ex.getMessage());
         return new ResponseEntity<>("Không tìm thấy người dùng", HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({ExpiredJwtException.class})
+    public ResponseEntity<?> handleJwtExpired(ExpiredJwtException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại"));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

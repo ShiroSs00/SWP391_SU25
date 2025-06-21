@@ -8,6 +8,7 @@ import com.swp391.bloodcare.repository.EventRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -137,4 +138,30 @@ public class EventService {
         dto.setAccountId(event.getAccount().getAccountId());
         return dto;
     }
+
+    @Transactional
+    public Map<String, Object> deleteMultipleEventsSafe(List<String> ids) {
+        List<String> deleted = new ArrayList<>();
+        Map<String, String> errors = new HashMap<>();
+
+        for (String id : ids) {
+            try {
+                eventRepository.findByEventId(id).ifPresentOrElse(
+                        event -> {
+                            eventRepository.delete(event);
+                            deleted.add(id);
+                        },
+                        () -> errors.put(id, "Không tìm thấy sự kiện")
+                );
+            } catch (Exception e) {
+                errors.put(id, "Lỗi không xác định: " + e.getMessage());
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("deleted", deleted);
+        result.put("errors", errors);
+        return result;
+    }
+
 }

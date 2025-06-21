@@ -17,6 +17,7 @@ public class Blog {
     private String conponent;
     @Column(name = "tag_name")
     private String tagName;
+
     @ManyToOne()
     @JoinColumn(name = "account_id")
     private Account account;

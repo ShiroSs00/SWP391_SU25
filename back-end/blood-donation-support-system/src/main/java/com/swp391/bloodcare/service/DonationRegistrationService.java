@@ -10,12 +10,11 @@ import com.swp391.bloodcare.repository.EventRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import static com.swp391.bloodcare.dto.DonationRegistrationDTO.toDTO;
 
@@ -111,4 +110,29 @@ public class DonationRegistrationService {
     public DonationRegistration getDonationRegistrationById(String id) {
         return donationRegistrationRepository.findByRegistrationId(id).orElse(null);
     }
+
+    @Transactional
+    public Map<String, Object> deleteMultipleDonationRegistrationsSafe(List<String> ids) {
+        List<String> deleted = new ArrayList<>();
+        Map<String, String> errors = new HashMap<>();
+
+        for (String id : ids) {
+            try {
+                DonationRegistration existing = donationRegistrationRepository.findByRegistrationId(id)
+                        .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn đăng ký với ID: " + id));
+                donationRegistrationRepository.delete(existing);
+                deleted.add(id);
+            } catch (EntityNotFoundException e) {
+                errors.put(id, "Không tìm thấy đơn đăng ký");
+            } catch (Exception e) {
+                errors.put(id, "Lỗi không xác định: " + e.getMessage());
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("deleted", deleted);
+        result.put("errors", errors);
+        return result;
+    }
+
 }

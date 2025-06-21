@@ -94,6 +94,9 @@ public class AccountService {
         TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ApiResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
         }
+    }
 
-}
+    public Account findAccountByUserName (String id){
+        return accountRepository.findAccountByUserName(id);
+    }
 }
