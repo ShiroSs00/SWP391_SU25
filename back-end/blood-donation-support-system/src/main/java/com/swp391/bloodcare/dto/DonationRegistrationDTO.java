@@ -74,7 +74,12 @@ public class DonationRegistrationDTO {
     public static DonationRegistrationDTO toDTO(DonationRegistration reg) {
         DonationRegistrationDTO dto = new DonationRegistrationDTO();
         dto.setRegistrationId(reg.getRegistrationId());
-        dto.setEventId(reg.getEvent().getEventId());
+        if (reg.getEvent() != null) {
+            dto.setEventId(reg.getEvent().getEventId());
+            // thêm các thuộc tính khác nếu có
+        } else {
+            dto.setEventId(null);
+        }
         dto.setAccountId(reg.getAccount().getAccountId());
         dto.setDateCreated(reg.getDateCreated());
         dto.setStatus(reg.getStatus());

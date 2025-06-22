@@ -42,8 +42,8 @@ public class DonationRegistrationController {
 
 
 
-    @PostMapping("/create/{id}")
-    public ResponseEntity<DonationRegistrationDTO> createDonationRegistration(@PathVariable String id) {
+    @PostMapping({"/create", "/create/{id}"})
+    public ResponseEntity<DonationRegistrationDTO> createDonationRegistration(@PathVariable(name = "id", required = false) String id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
