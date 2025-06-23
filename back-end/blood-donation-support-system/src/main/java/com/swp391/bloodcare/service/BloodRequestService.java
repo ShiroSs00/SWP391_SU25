@@ -70,6 +70,7 @@ public class BloodRequestService {
         br.setEmergency(bloodRequestDTO.isEmergency());
         br.setStatus("Đang xử lý");
         br.setRequestCreationDate(LocalDate.now());
+br.setEmergency(bloodRequestDTO.isEmergency());
 
         BloodRequest savedRequest = bloodRequestRepository.save(br);
 
@@ -80,7 +81,7 @@ public class BloodRequestService {
         BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
         dto.setIdBloodRequest(request.getIdBloodRequest());
         dto.setRequesterName(request.getAccount().getProfile().getName()); // Tên người đăng ký
-        dto.setAccountName(request.getAccount().getProfile().getName()); // Tên tài khoản
+        dto.setAccountName(request.getAccount().getUserName()); // Tên tài khoản
         dto.setHospitalName(request.getAccount().getHospital().getHospitalName()); // Assuming Hospital has getName()
         dto.setPatientName(request.getPatientName());
         dto.setRequestDate(request.getRequestDate());
@@ -95,7 +96,7 @@ public class BloodRequestService {
 
     // Lấy danh sách theo account
     public List<BloodRequestResponseDTO> getBloodRequestsByAccount(String accountId){
-        return bloodRequestRepository.findByAccountId(accountId).stream().map(this::convertToResponseDTO).collect(Collectors.toList());
+        return bloodRequestRepository.findByAccount_AccountId(accountId).stream().map(this::convertToResponseDTO).collect(Collectors.toList());
     }
 
     // Lấy đánh sách theo Id
@@ -105,17 +106,22 @@ public class BloodRequestService {
     }
 
     //Cập nhật trạng thái đơn
-    public BloodRequest updateStatus(String id, String nStatus){
-        BloodRequest request = bloodRequestRepository.findById(id).orElseThrow(()-> new RuntimeException("Không tìm thấy đơn xin máu: " + id));
-
+    public BloodRequestResponseDTO updateStatus(String id, String nStatus){
+        BloodRequest request = bloodRequestRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu: " + id));
         request.setStatus(nStatus);
-        return bloodRequestRepository.save(request);
+        BloodRequest saved = bloodRequestRepository.save(request);
+        return convertToResponseDTO(saved);
     }
 
     //Lấy danh sách đơn cấp cứu
-    public List<BloodRequest> getEmergencyRequests(){
-        return bloodRequestRepository.findByIsEmergencyTrue();
+    public List<BloodRequestResponseDTO> getEmergencyRequests() {
+        return bloodRequestRepository.findByIsEmergencyTrue()
+                .stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
     }
+
 
     //Generate Id theo format BR-[Ngày tạo]-[3 số random]
     private String generateBloodRequestId(){

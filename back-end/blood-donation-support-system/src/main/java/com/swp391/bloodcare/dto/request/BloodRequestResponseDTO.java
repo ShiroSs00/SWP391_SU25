@@ -18,7 +18,7 @@ public class BloodRequestResponseDTO {
     private String patientName;
     private LocalDate requestDate;
     private String bloodType;
-    private boolean isEmergency;
+    private boolean emergency;
     private String status;
     private int volume;
     private LocalDate requestCreationDate;

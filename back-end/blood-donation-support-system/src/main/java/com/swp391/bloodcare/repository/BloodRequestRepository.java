@@ -11,7 +11,8 @@ import java.util.List;
 public interface BloodRequestRepository extends JpaRepository<BloodRequest, String> {
 
     //Tìm đơn thheo account
-    List<BloodRequest> findByAccountId(String accountId);
+    List<BloodRequest> findByAccount_AccountId(String accountId);
+
 
     //Tìm đơn theo trạng thái
     List<BloodRequest> findByStatus(String status);

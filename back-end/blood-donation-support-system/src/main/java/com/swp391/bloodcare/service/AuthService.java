@@ -68,7 +68,7 @@ public class AuthService  {
 //            }
 
             //tạo jwt token
-            String token = jwtUtil.generateToken(account.getUserName());
+            String token = jwtUtil.generateToken(account);
 
             return new LoginResponse(token,"Login successful", account.getUserName(),account.getRole().getRole());
         }catch (Exception e) {

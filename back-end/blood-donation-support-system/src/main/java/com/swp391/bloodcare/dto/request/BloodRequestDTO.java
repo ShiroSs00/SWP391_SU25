@@ -26,8 +26,10 @@ public class BloodRequestDTO {
     @NotNull(message = "ID Bệnh viện không được bỏ trống")
     private String hospitalName;
 
+    @NotNull(message = "Số lượng máu không được để trống")
     @Min(value = 1, message = "Số lượng máu phải lớn hơn 0")
     @Max(value = 500, message = "Số lượng máu không được vượt quá 500ml")
-    private int volume;
+    private Integer volume;
+
     private boolean isEmergency = false;
 }

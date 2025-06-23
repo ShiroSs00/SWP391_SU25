@@ -71,10 +71,10 @@ public class ProfileService {
            if(auth == null || !auth.isAuthenticated()){
                return new ApiResponse<>(false,"Người dùng chưa đăng nhập", null);
            }
-           String username = auth.getName();
+           String id = auth.getName();
 
            //Tìm tài khoản theo
-            Optional<Account> accountOpt = accountRepository.findByUserName(username);
+            Optional<Account> accountOpt = accountRepository.findById(id);
             if (!accountOpt.isPresent()) {
                 return new ApiResponse<>(false, "Không tìm thấy tài khoản", null);
             }

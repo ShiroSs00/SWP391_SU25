@@ -9,6 +9,7 @@
 package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "blood")
@@ -30,10 +31,10 @@ public class Blood {
     private Component component;
 
     @Column(name ="is_rare_blood")
-    private boolean isRareBood;
+    private Boolean isRareBlood;
 
-    @Column(name ="volumn")
-    private int volumn;
+    @Column(name = "quantity")
+   private Integer quantity;
 
     @Column(name ="blood_match")
     private String bloodMatch;
@@ -42,13 +43,13 @@ public class Blood {
     public Blood() {
     }
 
-    public Blood(String bloodCode, BloodType bloodType, RhFactor rh, Component component, boolean isRareBood, int volumn, String bloodMatch) {
+    public Blood(String bloodCode, BloodType bloodType, RhFactor rh, Component component, Boolean isRareBlood, int quantity, String bloodMatch) {
         this.bloodCode = bloodCode;
         this.bloodType = bloodType;
         this.rh = rh;
         this.component = component;
-        this.isRareBood = isRareBood;
-        this.volumn = volumn;
+        this.isRareBlood = isRareBlood;
+        this.quantity = quantity;
         this.bloodMatch = bloodMatch;
     }
 
@@ -84,20 +85,24 @@ public class Blood {
         this.component = component;
     }
 
-    public boolean isRareBood() {
-        return isRareBood;
+    public Boolean isRareBlood() {
+        return isRareBlood;
     }
 
-    public void setRareBood(boolean rareBood) {
-        isRareBood = rareBood;
+    public void setRareBlood(Boolean rareBlood) {
+        this.isRareBlood = rareBlood;
     }
 
-    public int getVolumn() {
-        return volumn;
+    public Boolean getRareBlood() {
+        return isRareBlood;
     }
 
-    public void setVolumn(int volumn) {
-        this.volumn = volumn;
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
     public String getBloodMatch() {

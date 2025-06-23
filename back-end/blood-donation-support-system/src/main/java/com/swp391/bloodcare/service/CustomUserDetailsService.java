@@ -16,15 +16,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     private AccountRepository accountRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Account account = accountRepository.findByUserName(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public UserDetails loadUserByUsername(String accountId) throws UsernameNotFoundException {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + accountId));
 
         return new User(
-                account.getUserName(),
+                account.getAccountId(), // trả accountId như là username
                 account.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + account.getRole().getRole().toUpperCase()))
         );
     }
+
 
 }

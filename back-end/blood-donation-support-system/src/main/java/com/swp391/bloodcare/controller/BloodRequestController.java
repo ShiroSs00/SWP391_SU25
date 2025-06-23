@@ -97,12 +97,12 @@ public class BloodRequestController {
             @RequestBody Map<String,String> statusUpdate) {
         try {
             String newStatus = statusUpdate.get("status");
-            BloodRequest updatedRequest = bloodRequestService.updateStatus(id, newStatus);
+            BloodRequestResponseDTO responseDTO = bloodRequestService.updateStatus(id, newStatus);
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Cập nhật trạng thái thành công",
-                    "data", updatedRequest
+                    "data", responseDTO
             ));
 
         } catch (Exception e) {
@@ -116,7 +116,7 @@ public class BloodRequestController {
     @GetMapping("/emergency")
     public ResponseEntity<?> getEmergencyRequests() {
         try {
-            List<BloodRequest> emergencyRequests = bloodRequestService.getEmergencyRequests();
+            List<BloodRequestResponseDTO> emergencyRequests = bloodRequestService.getEmergencyRequests();
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
