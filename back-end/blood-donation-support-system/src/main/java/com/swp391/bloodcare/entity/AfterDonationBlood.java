@@ -21,7 +21,7 @@ public class AfterDonationBlood {
     private HealthCheck healthCheck;
 
     @ManyToOne()
-    @JoinColumn(name = "blood_id")
+    @JoinColumn(name = "blood_code")
     private Blood blood;
 
 

@@ -76,7 +76,6 @@ public class DonationRegistrationDTO {
         dto.setRegistrationId(reg.getRegistrationId());
         if (reg.getEvent() != null) {
             dto.setEventId(reg.getEvent().getEventId());
-            // thêm các thuộc tính khác nếu có
         } else {
             dto.setEventId(null);
         }
