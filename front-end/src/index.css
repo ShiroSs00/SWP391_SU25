@@ -5,4 +5,5 @@
 
 body, html, #root {
   font-family: 'Montserrat', Arial, sans-serif;
+  color: #222222; /* Đổi màu chữ toàn cục */
 }
