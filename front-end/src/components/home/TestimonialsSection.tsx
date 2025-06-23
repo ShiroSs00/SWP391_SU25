@@ -71,14 +71,14 @@ export function TestimonialsSection() {
                         Câu chuyện cảm động
                     </div>
 
-                    <h2 className="text-4xl lg:text-5xl font-display font-bold text-dark-900 mb-6">
+                    <h2 className="text-4xl lg:text-5xl font-display font-bold text-[#222222] mb-6">
                         Câu chuyện từ
                         <span className="block bg-gradient-to-r from-blood-600 to-blood-800 bg-clip-text text-transparent">
               cộng đồng
             </span>
                     </h2>
 
-                    <p className="text-xl text-dark-600 max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-xl text-[#222222] max-w-3xl mx-auto leading-relaxed">
                         Những chia sẻ chân thực từ người hiến máu, bệnh nhân và đội ngũ y tế
                         về trải nghiệm với BloodConnect
                     </p>
@@ -92,23 +92,23 @@ export function TestimonialsSection() {
                                 <StarIcon key={i} className="w-5 h-5 text-yellow-400" />
                             ))}
                         </div>
-                        <div className="text-2xl font-bold text-dark-900">{stats.averageRating}</div>
-                        <div className="text-sm text-dark-600">Đánh giá trung bình</div>
+                        <div className="text-2xl font-bold text-[#222222]">{stats.averageRating}</div>
+                        <div className="text-sm text-[#222222]">Đánh giá trung bình</div>
                     </div>
 
                     <div className="text-center p-6 bg-white rounded-2xl shadow-lg border border-dark-100 hover:shadow-xl transition-shadow">
                         <div className="text-2xl font-bold text-blood-600 mb-1">{stats.totalReviews.toLocaleString()}</div>
-                        <div className="text-sm text-dark-600">Đánh giá tích cực</div>
+                        <div className="text-sm text-[#222222]">Đánh giá tích cực</div>
                     </div>
 
                     <div className="text-center p-6 bg-white rounded-2xl shadow-lg border border-dark-100 hover:shadow-xl transition-shadow">
                         <div className="text-2xl font-bold text-life-600 mb-1">{stats.satisfaction}%</div>
-                        <div className="text-sm text-dark-600">Hài lòng khách hàng</div>
+                        <div className="text-sm text-[#222222]">Hài lòng khách hàng</div>
                     </div>
 
                     <div className="text-center p-6 bg-white rounded-2xl shadow-lg border border-dark-100 hover:shadow-xl transition-shadow">
                         <div className="text-2xl font-bold text-emergency-600 mb-1">{stats.referrals.toLocaleString()}</div>
-                        <div className="text-sm text-dark-600">Giới thiệu bạn bè</div>
+                        <div className="text-sm text-[#222222]">Giới thiệu bạn bè</div>
                     </div>
                 </div>
 
@@ -141,8 +141,8 @@ export function TestimonialsSection() {
                                 </div>
 
                                 <div className="flex-1">
-                                    <h4 className="font-semibold text-dark-900 text-lg">{testimonial.name}</h4>
-                                    <p className="text-dark-600 text-sm mb-2">{testimonial.role}</p>
+                                    <h4 className="font-semibold text-[#222222] text-lg">{testimonial.name}</h4>
+                                    <p className="text-[#222222] text-sm mb-2">{testimonial.role}</p>
 
                                     {/* Rating */}
                                     <div className="flex items-center space-x-1">
@@ -154,12 +154,12 @@ export function TestimonialsSection() {
                             </div>
 
                             {/* Content */}
-                            <blockquote className="text-dark-700 italic leading-relaxed mb-6 relative z-10">
+                            <blockquote className="text-[#222222] italic leading-relaxed mb-6 relative z-10">
                                 "{testimonial.content}"
                             </blockquote>
 
                             {/* Footer */}
-                            <div className="flex items-center justify-between pt-4 border-t border-dark-100">
+                            <div className="flex items-center justify-between pt-4 border-t border-[#222222]/10">
                                 <div className="flex items-center space-x-3">
                                     <Badge variant="blood" size="sm">
                                         {testimonial.bloodType}
@@ -173,7 +173,7 @@ export function TestimonialsSection() {
                                     )}
                                 </div>
 
-                                <span className="text-sm text-dark-500">
+                                <span className="text-sm text-[#222222]">
                                     {new Date(testimonial.date).toLocaleDateString('vi-VN')}
                                 </span>
                             </div>

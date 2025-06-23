@@ -222,14 +222,14 @@ export function EmergencySection() {
                         Tình huống khẩn cấp
                     </div>
 
-                    <h2 className="text-4xl lg:text-5xl font-display font-bold mb-6">
+                    <h2 className="text-4xl lg:text-5xl font-display font-bold mb-6 text-[#222222]">
                         Yêu cầu máu
                         <span className="block bg-gradient-to-r from-emergency-400 to-emergency-600 bg-clip-text text-transparent">
               Khẩn cấp
             </span>
                     </h2>
 
-                    <p className="text-xl text-dark-300 max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-xl text-[#222222] max-w-3xl mx-auto leading-relaxed">
                         Hệ thống cảnh báo và phản hồi khẩn cấp 24/7. Mỗi giây đều quan trọng
                         trong việc cứu sống bệnh nhân.
                     </p>
@@ -262,7 +262,7 @@ export function EmergencySection() {
 
                 {/* Blood Types Emergency */}
                 <div className="mb-16">
-                    <h3 className="text-2xl font-bold text-center mb-8">Nhóm máu cần khẩn cấp</h3>
+                    <h3 className="text-2xl font-bold text-center mb-8 text-[#222222]">Nhóm máu cần khẩn cấp</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {bloodTypes.map((type, index) => (
                             <Card
@@ -282,16 +282,16 @@ export function EmergencySection() {
                                         <span className="text-xl font-bold text-white">{type.type}</span>
                                     </div>
 
-                                    <h4 className="font-semibold text-white mb-2">{type.name}</h4>
+                                    <h4 className="font-semibold text-[#222222] mb-2">{type.name}</h4>
 
                                     {getUrgencyBadge(type.urgency)}
 
                                     <div className="mt-3 text-sm">
-                                        <div className="flex justify-between text-dark-300 mb-1">
+                                        <div className="flex justify-between text-[#222222] mb-1">
                                             <span>Cần:</span>
                                             <span className="text-emergency-400 font-semibold">{type.needed}</span>
                                         </div>
-                                        <div className="flex justify-between text-dark-300">
+                                        <div className="flex justify-between text-[#222222]">
                                             <span>Có:</span>
                                             <span className={`font-semibold ${
                                                 type.available < type.needed * 0.3 ? 'text-red-400' :
@@ -322,7 +322,7 @@ export function EmergencySection() {
 
                 {/* Emergency Cases */}
                 <div className="mb-16">
-                    <h3 className="text-2xl font-bold text-center mb-8">Trường hợp khẩn cấp gần đây</h3>
+                    <h3 className="text-2xl font-bold text-center mb-8 text-[#222222]">Trường hợp khẩn cấp gần đây</h3>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {emergencyCases.map((emergencyCase, index) => (
                             <Card
@@ -341,8 +341,8 @@ export function EmergencySection() {
                                     <emergencyCase.icon className={`w-6 h-6 ${emergencyCase.color}`} />
                                 </div>
 
-                                <h4 className="font-semibold text-white mb-2">{emergencyCase.title}</h4>
-                                <p className="text-dark-300 text-sm mb-4 leading-relaxed">
+                                <h4 className="font-semibold text-[#222222] mb-2">{emergencyCase.title}</h4>
+                                <p className="text-[#222222] text-sm mb-4 leading-relaxed">
                                     {emergencyCase.description}
                                 </p>
 
@@ -355,12 +355,12 @@ export function EmergencySection() {
                                     </Badge>
                                 </div>
 
-                                <div className="flex items-center space-x-2 text-sm text-dark-300 mb-3">
-                                    <MapPinIcon className="w-4 h-4" />
+                                <div className="flex items-center space-x-2 text-sm text-[#222222] mb-3">
+                                    <MapPinIcon className="w-4 h-4 text-[#222222]" />
                                     <span>{emergencyCase.location}</span>
                                 </div>
 
-                                <div className="text-sm text-dark-300 mb-4">
+                                <div className="text-sm text-[#222222] mb-4">
                                     <strong>Cần:</strong> {emergencyCase.unitsNeeded} đơn vị máu
                                 </div>
 
@@ -407,7 +407,7 @@ export function EmergencySection() {
                         </Button>
                     </div>
 
-                    <p className="text-dark-400 text-sm mt-6">
+                    <p className="text-[#222222] text-sm mt-6">
                         Mọi thông tin được mã hóa và bảo mật theo tiêu chuẩn y tế quốc tế
                     </p>
                 </div>

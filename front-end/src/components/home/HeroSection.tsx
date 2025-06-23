@@ -35,7 +35,7 @@ export function HeroSection() {
                             </span>
                         </div>
 
-                        <h1 className="text-5xl lg:text-7xl font-display font-bold mb-6">
+                        <h1 className="text-5xl lg:text-7xl font-display font-bold mb-6 text-[#222222]">
                             <span className="text-white">Kết nối</span>
                             <br />
                             <span className="bg-gradient-to-r from-blood-400 to-blood-600 bg-clip-text text-transparent">
@@ -43,7 +43,7 @@ export function HeroSection() {
                             </span>
                         </h1>
 
-                        <p className="text-xl lg:text-2xl text-dark-300 mb-8 leading-relaxed max-w-2xl">
+                        <p className="text-xl lg:text-2xl text-[#222222] mb-8 leading-relaxed max-w-2xl">
                             Hệ thống hiến máu thông minh, kết nối người hiến máu và người cần máu một cách
                             <span className="text-blood-400 font-semibold"> nhanh chóng, an toàn và hiệu quả</span>.
                         </p>
@@ -76,11 +76,11 @@ export function HeroSection() {
                             {stats.map((stat, index) => (
                                 <div
                                     key={index}
-                                    className="text-center p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300 group"
+                                    className="text-center p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-[#222222]/10 hover:bg-[#222222]/5 transition-all duration-300 group"
                                 >
-                                    <stat.icon className="w-8 h-8 mx-auto mb-2 text-blood-400 group-hover:scale-110 transition-transform" />
-                                    <div className="text-2xl font-bold text-white mb-1">{stat.value}</div>
-                                    <div className="text-sm text-dark-300">{stat.label}</div>
+                                    <stat.icon className="w-8 h-8 mx-auto mb-2 text-[#222222] group-hover:scale-110 transition-transform" />
+                                    <div className="text-2xl font-bold text-[#222222] mb-1">{stat.value}</div>
+                                    <div className="text-sm text-[#222222]">{stat.label}</div>
                                 </div>
                             ))}
                         </div>
@@ -95,22 +95,22 @@ export function HeroSection() {
                                     <div className="w-20 h-20 bg-blood-gradient rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow">
                                         <HeartSolidIcon className="w-10 h-10 text-white animate-heartbeat" />
                                     </div>
-                                    <h3 className="text-2xl font-bold text-dark-900 mb-2">BloodConnect</h3>
-                                    <p className="text-dark-600">Hệ thống hiến máu thông minh</p>
+                                    <h3 className="text-2xl font-bold text-[#222222] mb-2">BloodConnect</h3>
+                                    <p className="text-[#222222]">Hệ thống hiến máu thông minh</p>
                                 </div>
                             </div>
 
                             {/* Floating Cards */}
-                            <div className="absolute -top-4 -right-4 bg-life-500 text-white p-4 rounded-2xl shadow-xl animate-bounce-slow">
+                            <div className="absolute -top-4 -right-4 bg-[#222222] text-white p-4 rounded-2xl shadow-xl animate-bounce-slow">
                                 <UserGroupIcon className="w-6 h-6 mb-1" />
-                                <div className="text-sm font-semibold">24/7</div>
-                                <div className="text-xs">Sẵn sàng</div>
+                                <div className="text-sm font-semibold text-white">24/7</div>
+                                <div className="text-xs text-white">Sẵn sàng</div>
                             </div>
 
-                            <div className="absolute -bottom-4 -left-4 bg-emergency-500 text-white p-4 rounded-2xl shadow-xl animate-pulse">
+                            <div className="absolute -bottom-4 -left-4 bg-[#222222] text-white p-4 rounded-2xl shadow-xl animate-pulse">
                                 <ClockIcon className="w-6 h-6 mb-1" />
-                                <div className="text-sm font-semibold">&lt; 30 phút</div>
-                                <div className="text-xs">Phản hồi</div>
+                                <div className="text-sm font-semibold text-white">&lt; 30 phút</div>
+                                <div className="text-xs text-white">Phản hồi</div>
                             </div>
 
                             {/* Background Decoration */}

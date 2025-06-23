@@ -18,7 +18,7 @@ const Footer: React.FC<FooterProps> = ({ className, variant = "default" }) => {
                     <div className="flex flex-col md:flex-row items-center justify-between">
                         <div className="flex items-center space-x-2 mb-4 md:mb-0">
                             <Heart className="h-5 w-5 text-red-600" />
-                            <span className="font-semibold">BloodDonation</span>
+                            <span className="font-semibold text-[#222222]">BloodDonation</span>
                         </div>
                         <p className="text-sm text-muted-foreground">© {currentYear} BloodDonation. Tất cả quyền được bảo lưu.</p>
                     </div>
@@ -35,9 +35,9 @@ const Footer: React.FC<FooterProps> = ({ className, variant = "default" }) => {
                     <div className="space-y-4">
                         <div className="flex items-center space-x-2">
                             <Heart className="h-6 w-6 text-red-600" />
-                            <span className="text-xl font-bold">BloodDonation</span>
+                            <span className="text-xl font-bold text-[#222222]">BloodDonation</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-[#222222]">
                             Hệ thống hiến máu toàn quốc, kết nối yêu thương và cứu sống những người cần được giúp đỡ.
                         </p>
                         <div className="flex space-x-4">
@@ -118,7 +118,7 @@ const Footer: React.FC<FooterProps> = ({ className, variant = "default" }) => {
                         <div className="space-y-3 text-sm">
                             <div className="flex items-center space-x-2">
                                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">123 Đường ABC, Quận XYZ, Hà Nội</span>
+                                <span className="text-[#222222]">123 Đường ABC, Quận XYZ, Hà Nội</span>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Phone className="h-4 w-4 text-muted-foreground" />
@@ -137,7 +137,7 @@ const Footer: React.FC<FooterProps> = ({ className, variant = "default" }) => {
                 </div>
 
                 <div className="border-t mt-8 pt-8 text-center">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-[#222222]">
                         © {currentYear} BloodDonation. Tất cả quyền được bảo lưu. Được phát triển với ❤️ để cứu sống nhiều người hơn.
                     </p>
                 </div>

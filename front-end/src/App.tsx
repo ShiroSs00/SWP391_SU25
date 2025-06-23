@@ -10,7 +10,9 @@ import RegisterPage from './features/auth/pages/RegisterPage';
 //admin
 import AdminPage from './features/admin/pages/adminPage';
 //homePages
-import HomePage from './features/pages/HomePage';
+import HomePage from './pages/HomePage';
+//health-check
+import HealthCheckPage from './features/health-checks/pages/HealthCheckPage';
 function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -29,6 +31,7 @@ function App() {
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path= "health-check" element={<HealthCheckPage />} />
         <Route path="/login" element={<LoginPage showToast={showToast} />} />
         <Route path="/register" element={<RegisterPage showToast={showToast} />} />
         <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}> 

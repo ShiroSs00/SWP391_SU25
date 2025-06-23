@@ -113,13 +113,13 @@ export function BloodTypesSection() {
                         <HeartSolidIcon className="w-4 h-4 mr-2" />
                         Kiến thức về máu
                     </div>
-                    <h2 className="text-4xl lg:text-5xl font-display font-bold text-dark-900 mb-6">
+                    <h2 className="text-4xl lg:text-5xl font-display font-bold text-[#222222] mb-6">
                         Thông tin các
                         <span className="block bg-gradient-to-r from-blood-600 to-blood-800 bg-clip-text text-transparent">
                             nhóm máu
                         </span>
                     </h2>
-                    <p className="text-xl text-dark-600 max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-xl text-[#222222] max-w-3xl mx-auto leading-relaxed">
                         Hiểu rõ về nhóm máu của bạn và khả năng tương thích để có thể hiến máu hiệu quả nhất,
                         cứu sống nhiều người hơn.
                     </p>
@@ -128,32 +128,32 @@ export function BloodTypesSection() {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
                     <Card variant="elevated" padding="lg" className="text-center">
-                        <div className="w-12 h-12 bg-blood-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <div className="w-12 h-12 bg-[#222222] rounded-xl flex items-center justify-center mx-auto mb-4">
                             <HeartSolidIcon className="w-6 h-6 text-white" />
                         </div>
-                        <div className="text-2xl font-bold text-blood-800 mb-1">8</div>
-                        <div className="text-sm text-blood-700">Nhóm máu chính</div>
+                        <div className="text-2xl font-bold text-[#222222] mb-1">8</div>
+                        <div className="text-sm text-[#222222]">Nhóm máu chính</div>
                     </Card>
                     <Card variant="elevated" padding="lg" className="text-center">
-                        <div className="w-12 h-12 bg-life-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <div className="w-12 h-12 bg-[#222222] rounded-xl flex items-center justify-center mx-auto mb-4">
                             <UserGroupIcon className="w-6 h-6 text-white" />
                         </div>
-                        <div className="text-2xl font-bold text-life-800 mb-1">O-</div>
-                        <div className="text-sm text-life-700">Hiến máu vạn năng</div>
+                        <div className="text-2xl font-bold text-[#222222] mb-1">O-</div>
+                        <div className="text-sm text-[#222222]">Hiến máu vạn năng</div>
                     </Card>
                     <Card variant="elevated" padding="lg" className="text-center">
-                        <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <div className="w-12 h-12 bg-[#222222] rounded-xl flex items-center justify-center mx-auto mb-4">
                             <CheckCircleIcon className="w-6 h-6 text-white" />
                         </div>
-                        <div className="text-2xl font-bold text-purple-800 mb-1">AB+</div>
-                        <div className="text-sm text-purple-700">Nhận máu vạn năng</div>
+                        <div className="text-2xl font-bold text-[#222222] mb-1">AB+</div>
+                        <div className="text-sm text-[#222222]">Nhận máu vạn năng</div>
                     </Card>
                     <Card variant="elevated" padding="lg" className="text-center">
-                        <div className="w-12 h-12 bg-emergency-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <div className="w-12 h-12 bg-[#222222] rounded-xl flex items-center justify-center mx-auto mb-4">
                             <InformationCircleIcon className="w-6 h-6 text-white" />
                         </div>
-                        <div className="text-2xl font-bold text-emergency-800 mb-1">1%</div>
-                        <div className="text-sm text-emergency-700">AB- hiếm nhất</div>
+                        <div className="text-2xl font-bold text-[#222222] mb-1">1%</div>
+                        <div className="text-sm text-[#222222]">AB- hiếm nhất</div>
                     </Card>
                 </div>
 
@@ -179,8 +179,8 @@ export function BloodTypesSection() {
                                 <div className={`w-20 h-20 ${bloodType.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                                     <span className="text-2xl font-bold text-white">{bloodType.type}</span>
                                 </div>
-                                <h3 className="text-lg font-bold text-dark-900 mb-1">{bloodType.name}</h3>
-                                <p className="text-sm text-dark-600">{bloodType.description}</p>
+                                <h3 className="text-lg font-bold text-[#222222] mb-1">{bloodType.name}</h3>
+                                <p className="text-sm text-[#222222]">{bloodType.description}</p>
                             </div>
 
                             {/* Percentage */}
@@ -209,7 +209,7 @@ export function BloodTypesSection() {
                                 <div className="mt-6 pt-6 border-t border-dark-200 animate-slide-down">
                                     <div className="space-y-4">
                                         <div>
-                                            <h5 className="font-semibold text-dark-900 mb-2">Có thể hiến cho:</h5>
+                                            <h5 className="font-semibold text-[#222222] mb-2">Có thể hiến cho:</h5>
                                             <div className="flex flex-wrap gap-1">
                                                 {bloodType.canDonateTo.map((type) => (
                                                     <Badge key={type} variant="success" size="sm">
@@ -219,7 +219,7 @@ export function BloodTypesSection() {
                                             </div>
                                         </div>
                                         <div>
-                                            <h5 className="font-semibold text-dark-900 mb-2">Có thể nhận từ:</h5>
+                                            <h5 className="font-semibold text-[#222222] mb-2">Có thể nhận từ:</h5>
                                             <div className="flex flex-wrap gap-1">
                                                 {bloodType.canReceiveFrom.map((type) => (
                                                     <Badge key={type} variant="info" size="sm">
@@ -243,10 +243,10 @@ export function BloodTypesSection() {
                 {/* Compatibility Matrix */}
                 <Card variant="outlined" padding="lg" className="mb-16">
                     <div className="text-center mb-8">
-                        <h3 className="text-2xl font-bold text-dark-900 mb-4">
+                        <h3 className="text-2xl font-bold text-[#222222] mb-4">
                             Ma trận tương thích hiến máu
                         </h3>
-                        <p className="text-dark-600">
+                        <p className="text-[#222222]">
                             Bảng tương thích giữa người hiến máu và người nhận máu
                         </p>
                     </div>
@@ -254,11 +254,11 @@ export function BloodTypesSection() {
                         <table className="w-full">
                             <thead>
                             <tr className="border-b border-dark-200">
-                                <th className="text-left py-3 px-4 font-semibold text-dark-900">
+                                <th className="text-left py-3 px-4 font-semibold text-[#222222]">
                                     Người hiến
                                 </th>
                                 {bloodTypes.map((type) => (
-                                    <th key={type.type} className="text-center py-3 px-2 font-semibold text-dark-900">
+                                    <th key={type.type} className="text-center py-3 px-2 font-semibold text-[#222222]">
                                         {type.type}
                                     </th>
                                 ))}
@@ -267,7 +267,7 @@ export function BloodTypesSection() {
                             <tbody>
                             {bloodTypes.map((donorType) => (
                                 <tr key={donorType.type} className="border-b border-dark-100 hover:bg-dark-50">
-                                    <td className="py-3 px-4 font-semibold text-dark-900">
+                                    <td className="py-3 px-4 font-semibold text-[#222222]">
                                         {donorType.type}
                                     </td>
                                     {bloodTypes.map((recipientType) => (
@@ -287,11 +287,11 @@ export function BloodTypesSection() {
                     <div className="mt-6 flex items-center justify-center space-x-6 text-sm">
                         <div className="flex items-center space-x-2">
                             <CheckCircleIcon className="w-5 h-5 text-life-500" />
-                            <span className="text-dark-600">Có thể hiến</span>
+                            <span className="text-[#222222]">Có thể hiến</span>
                         </div>
                         <div className="flex items-center space-x-2">
                             <div className="w-5 h-5 bg-dark-200 rounded-full"></div>
-                            <span className="text-dark-600">Không thể hiến</span>
+                            <span className="text-[#222222]">Không thể hiến</span>
                         </div>
                     </div>
                 </Card>

@@ -81,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
 
                     <Link to="/" className="flex items-center space-x-2">
                         <Heart className="h-6 w-6 text-red-600" />
-                        <span className="font-bold text-xl">BloodDonation</span>
+                        <span className="font-bold text-xl text-[#222222]">BloodDonation</span>
                     </Link>
                 </div>
 

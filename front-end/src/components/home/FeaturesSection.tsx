@@ -79,14 +79,14 @@ export function FeaturesSection() {
                         Tính năng nổi bật
                     </div>
 
-                    <h2 className="text-4xl lg:text-5xl font-display font-bold text-dark-900 mb-6">
+                    <h2 className="text-4xl lg:text-5xl font-display font-bold text-[#222222] mb-6">
                         Công nghệ tiên tiến cho
                         <span className="block bg-gradient-to-r from-blood-600 to-blood-800 bg-clip-text text-transparent">
               sứ mệnh cứu người
             </span>
                     </h2>
 
-                    <p className="text-xl text-dark-600 max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-xl text-[#222222] max-w-3xl mx-auto leading-relaxed">
                         BloodConnect sử dụng AI và công nghệ blockchain để tạo ra hệ sinh thái hiến máu
                         thông minh, minh bạch và hiệu quả nhất.
                     </p>
@@ -99,7 +99,7 @@ export function FeaturesSection() {
                             key={index}
                             variant="default"
                             padding="lg"
-                            className={`group relative overflow-hidden border-2 ${feature.borderColor} hover:${feature.borderColor} transition-all duration-300 animate-slide-up`}
+                            className={`group relative overflow-hidden border-2 border-[#222222]/10 hover:border-[#222222]/10 transition-all duration-300 animate-slide-up`}
                             style={{ animationDelay: `${index * 100}ms` }}
                         >
                             {/* Background Gradient */}
@@ -108,15 +108,15 @@ export function FeaturesSection() {
                             <div className="relative z-10">
                                 {/* Icon */}
                                 <div className={`w-16 h-16 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                                    <feature.icon className={`w-8 h-8 ${feature.color}`} />
+                                    <feature.icon className="w-8 h-8 text-[#222222]" />
                                 </div>
 
                                 {/* Content */}
-                                <h3 className="text-xl font-bold text-dark-900 mb-4 group-hover:text-dark-800 transition-colors">
+                                <h3 className="text-xl font-bold text-[#222222] mb-4 group-hover:text-[#222222] transition-colors">
                                     {feature.title}
                                 </h3>
 
-                                <p className="text-dark-600 leading-relaxed group-hover:text-dark-700 transition-colors">
+                                <p className="text-[#222222] leading-relaxed group-hover:text-[#222222] transition-colors">
                                     {feature.description}
                                 </p>
 
@@ -129,23 +129,23 @@ export function FeaturesSection() {
 
                 {/* CTA Section */}
                 <div className="text-center mt-20 animate-slide-up">
-                    <div className="bg-gradient-to-r from-blood-600 to-blood-800 rounded-3xl p-12 text-white relative overflow-hidden">
+                    <div className="bg-gradient-to-r from-blood-600 to-blood-800 rounded-3xl p-12 text-[#222222] relative overflow-hidden">
                         {/* Background Pattern */}
                         <div className="absolute inset-0 bg-hero-pattern opacity-10"></div>
 
                         <div className="relative z-10">
-                            <h3 className="text-3xl font-bold mb-4">
+                            <h3 className="text-3xl font-bold mb-4 text-[#222222]">
                                 Sẵn sàng tham gia cứu sống?
                             </h3>
-                            <p className="text-xl text-blood-100 mb-8 max-w-2xl mx-auto">
+                            <p className="text-xl text-[#222222] mb-8 max-w-2xl mx-auto">
                                 Hãy trở thành một phần của cộng đồng hiến máu tình nguyện và góp phần cứu sống hàng ngàn người.
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <button className="bg-white text-blood-600 px-8 py-4 rounded-xl font-semibold hover:bg-blood-50 transition-colors duration-200 transform hover:scale-105">
+                                <button className="bg-white text-[#222222] px-8 py-4 rounded-xl font-semibold hover:bg-[#f5f5f5] transition-colors duration-200 transform hover:scale-105">
                                     Tìm hiểu thêm
                                 </button>
-                                <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blood-600 transition-all duration-200 transform hover:scale-105">
+                                <button className="border-2 border-white text-[#222222] px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-[#222222] transition-all duration-200 transform hover:scale-105">
                                     Liên hệ hỗ trợ
                                 </button>
                             </div>

@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import HomePage from "../features/pages/HomePage";
-import AboutPage from "../features/pages/AboutPage";
-import ContactPage from "../features/pages/ContactPage";
-import NotFoundPage from "../features/pages/NotFoundPage";
-import UnauthorizedPage from "../features/pages/UnauthorizedPage";
-import MaintenancePage from "../features/pages/MaintenancePage";
+import HomePage from "../pages/HomePage";
+import AboutPage from "../pages/AboutPage";
+import ContactPage from "../pages/ContactPage";
+import NotFoundPage from "../pages/NotFoundPage";
+import UnauthorizedPage from "../pages/UnauthorizedPage";
+import MaintenancePage from "../pages/MaintenancePage";
 
 const AppRoute = () => (
     <BrowserRouter>
