@@ -9,6 +9,7 @@ import com.swp391.bloodcare.entity.Role;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
 import com.swp391.bloodcare.repository.RoleRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -96,7 +97,25 @@ public class AccountService {
         }
     }
 
-    public Account findAccountByUserName (String id){
-        return accountRepository.findAccountByUserName(id);
+    public Account findAccountByUserName(String id) {
+        Account acc = accountRepository.findAccountByUserName(id);
+        if (acc == null) {
+            throw new EntityNotFoundException("Không tìm thấy tài khoản với username: " + id);
+        }
+        return acc;
     }
+
+    @Transactional
+    public void setRoleForAccount(String username, String roleName) {
+        Account account = findAccountByUserName(username);
+
+        Role role = roleRepository.findById(roleName)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy vai trò với tên: " + roleName));
+
+        account.setRole(role);
+        accountRepository.save(account);
+    }
+
+
+
 }

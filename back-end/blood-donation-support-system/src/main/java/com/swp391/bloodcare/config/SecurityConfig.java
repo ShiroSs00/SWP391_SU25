@@ -48,6 +48,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/feedback/**").permitAll()
                         .requestMatchers("/api/donation/**").permitAll()
+                        .requestMatchers("/api/role/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/set-role/**").hasRole("ADMIN")
 
                         // Public GET
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
