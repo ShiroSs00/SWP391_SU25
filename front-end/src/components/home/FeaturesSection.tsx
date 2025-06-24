@@ -7,6 +7,8 @@ import {
     Users as UserGroupIcon,
     BarChart3 as ChartBarIcon,
     Bell as BellIcon,
+    Calendar as CalendarIcon,
+    Droplets as DropletsIcon,
 } from 'lucide-react';
 
 export function FeaturesSection() {
@@ -69,6 +71,33 @@ export function FeaturesSection() {
         },
     ];
 
+    const process = [
+        {
+            step: "01",
+            title: "Đăng ký hiến máu",
+            description: "Điền thông tin cá nhân và đặt lịch hẹn hiến máu tại trung tâm gần nhất.",
+            icon: CalendarIcon
+        },
+        {
+            step: "02",
+            title: "Kiểm tra sức khỏe",
+            description: "Bác sĩ sẽ kiểm tra sức khỏe tổng quát và xét nghiệm máu cơ bản.",
+            icon: ShieldCheckIcon
+        },
+        {
+            step: "03",
+            title: "Hiến máu an toàn",
+            description: "Quy trình hiến máu diễn ra an toàn với thiết bị y tế hiện đại.",
+            icon: DropletsIcon
+        },
+        {
+            step: "04",
+            title: "Nghỉ ngơi & chăm sóc",
+            description: "Nghỉ ngơi và được chăm sóc chu đáo sau khi hiến máu hoàn tất.",
+            icon: HeartIcon
+        }
+    ];
+
     return (
         <section className="py-24 bg-gradient-to-b from-white to-dark-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -126,6 +155,39 @@ export function FeaturesSection() {
                         </Card>
                     ))}
                 </div>
+
+                {/* Process Section */}
+                <section id="process" className="section-padding bg-gray-50">
+                    <div className="container-custom">
+                        <div className="text-center mb-16">
+                            <h2 className="section-title text-gray-900 mb-4">
+                                Quy trình hiến máu
+                            </h2>
+                            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                                Quy trình hiến máu được thực hiện theo tiêu chuẩn quốc tế,
+                                đảm bảo an toàn tuyệt đối cho người hiến.
+                            </p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {process.map((item, index) => {
+                                const Icon = item.icon;
+                                return (
+                                    <div key={index} className="process-step">
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 mx-auto bg-gradient-blood rounded-full flex items-center justify-center mb-4">
+                                                <Icon className="w-8 h-8 text-white" />
+                                            </div>
+                                            <div className="text-blood-600 font-bold text-sm mb-2">BƯỚC {item.step}</div>
+                                            <h3 className="font-semibold text-gray-900 mb-3">{item.title}</h3>
+                                            <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
 
                 {/* CTA Section */}
                 <div className="text-center mt-20 animate-slide-up">

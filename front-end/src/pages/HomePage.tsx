@@ -6,7 +6,7 @@ import { EmergencySection } from '../components/home/EmergencySection.tsx';
 import { BloodTypesSection } from '../components/home/BloodTypeSection.tsx';
 import { TestimonialsSection } from '../components/home/TestimonialsSection.tsx';
 import {Header} from "../components/layouts/Header.tsx";
-import {Footer} from "../components/layouts/Footer.tsx";
+import Footer from "../components/layouts/Footer.tsx";
 
 const HomePage: React.FC = () => {
     return (
