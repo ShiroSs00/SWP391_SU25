@@ -36,4 +36,8 @@ public class AfterDonationBlood {
     @ManyToOne
     @JoinColumn(name = "blood_code")
     private Blood blood;
+
+    @OneToOne
+    @JoinColumn(name = "bag_id")
+    private BloodBag bloodBag;
 }

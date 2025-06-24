@@ -5,41 +5,45 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
-@Data
+@Table(name = "blood_bag")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = {"afterDonationBlood" /*, "bloodMatchRequest"*/})
 public class BloodBag {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bagId;
+    @Column(name = "bag_id")
+    private String bagId;
 
-    @Column(nullable = false)
-    private int iADB;
-
+    @Column(name = "volume")
     private int volume;
-
-    @Column(columnDefinition = "BINARY(16)")
-    private UUID donorId;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
+    @Column(name = "collected_date")
     private Date collectedDate;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
+    @Column(name = "expiration_Date")
     private Date expirationDate;
 
+    @Column(nullable = false)
     private boolean isUsed;
 
     @OneToOne(mappedBy = "bloodBag", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "after_donation_id")
     private AfterDonationBlood afterDonationBlood;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "match_request_id")
-//    private BloodMatchRequest bloodMatchRequest;
+    // Nếu sau này bạn muốn dùng cho việc matching máu:
+    /*
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "match_request_id")
+    private BloodMatchRequest bloodMatchRequest;
+    */
 }

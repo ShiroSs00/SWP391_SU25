@@ -1,10 +1,9 @@
 package com.swp391.bloodcare.dto;
 
-import com.swp391.bloodcare.entity.BloodBag;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -12,28 +11,34 @@ import java.util.UUID;
 @Builder
 public class BloodBagDTO {
 
-    private Long bagId;
-    private int iADB;
+    private String bagId;
     private int volume;
-    private UUID donorId;
+
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date collectedDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date expirationDate;
+
     private boolean isUsed;
 
-    private Long afterDonationBloodId;
-    private Long matchRequestId;
-
-    public static BloodBagDTO fromEntity(BloodBag bag) {
+    public static BloodBagDTO fromEntity(com.swp391.bloodcare.entity.BloodBag bag) {
         return BloodBagDTO.builder()
                 .bagId(bag.getBagId())
-                .iADB(bag.getIADB())
                 .volume(bag.getVolume())
-                .donorId(bag.getDonorId())
                 .collectedDate(bag.getCollectedDate())
                 .expirationDate(bag.getExpirationDate())
                 .isUsed(bag.isUsed())
-                .afterDonationBloodId(bag.getAfterDonationBlood() != null ? bag.getAfterDonationBlood().getIdAfterDonation() : null)
-                .matchRequestId(bag.getBloodMatchRequest() != null ? bag.getBloodMatchRequest().getRequestId() : null)
+                .build();
+    }
+
+    public static com.swp391.bloodcare.entity.BloodBag toEntity(BloodBagDTO dto) {
+        return com.swp391.bloodcare.entity.BloodBag.builder()
+                .bagId(dto.getBagId())
+                .volume(dto.getVolume())
+                .collectedDate(dto.getCollectedDate())
+                .expirationDate(dto.getExpirationDate())
+                .isUsed(dto.isUsed())
                 .build();
     }
 }
