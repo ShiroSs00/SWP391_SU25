@@ -20,7 +20,7 @@ public class AfterDonationBloodDTO {
         AfterDonationBloodDTO dto = new AfterDonationBloodDTO();
         dto.setIdAfterDonation(entity.getIdAfterDonation());
         dto.setInfectiousDiseasesChecked(entity.getInfectiousDiseasesChecked());
-        dto.setIsBloodUsable(entity.getBloodUsable());
+        dto.setIsBloodUsable(entity.getIsBloodUsable());
         dto.setStatus(entity.getStatus());
         dto.setNote(entity.getNote());
         if (entity.getHealthCheck() != null)
@@ -33,7 +33,7 @@ public class AfterDonationBloodDTO {
     public static AfterDonationBlood toEntity(AfterDonationBloodDTO dto) {
         AfterDonationBlood entity = new AfterDonationBlood();
         entity.setInfectiousDiseasesChecked(dto.getInfectiousDiseasesChecked());
-        entity.setBloodUsable(dto.getIsBloodUsable());
+        entity.setIsBloodUsable(dto.getIsBloodUsable());
         entity.setStatus(dto.getStatus());
         entity.setNote(dto.getNote());
         return entity;

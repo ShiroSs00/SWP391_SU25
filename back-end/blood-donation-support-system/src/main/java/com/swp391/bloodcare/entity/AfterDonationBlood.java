@@ -1,18 +1,31 @@
 package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
+@Table(name = "after_donation_blood")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString(exclude = {"healthCheck", "blood"}) // Tránh vòng lặp khi gọi toString
 public class AfterDonationBlood {
-    @Column(name = "after_donation_id")
+
     @Id
+    @Column(name = "after_donation_id")
     private String idAfterDonation;
+
     @Column(name = "infectious_diseases_checked")
     private Boolean infectiousDiseasesChecked;
+
     @Column(name = "is_blood_usable")
     private Boolean isBloodUsable;
+
     @Column(name = "status")
     private String status;
+
     @Column(name = "note")
     private String note;
 
@@ -20,87 +33,7 @@ public class AfterDonationBlood {
     @JoinColumn(name = "health_check_id")
     private HealthCheck healthCheck;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "blood_code")
     private Blood blood;
-
-
-    public AfterDonationBlood() {
-    }
-
-    public AfterDonationBlood( Boolean infectiousDiseasesChecked, Boolean isBloodUsable, String status, String note) {
-
-        this.infectiousDiseasesChecked = infectiousDiseasesChecked;
-        this.isBloodUsable = isBloodUsable;
-        this.status = status;
-        this.note = note;
-    }
-
-    public HealthCheck getHealthCheck() {
-        return healthCheck;
-    }
-
-    public void setHealthCheck(HealthCheck healthCheck) {
-        this.healthCheck = healthCheck;
-    }
-
-    public Blood getBlood() {
-        return blood;
-    }
-
-    public void setBlood(Blood blood) {
-        this.blood = blood;
-    }
-
-    public String getIdAfterDonation() {
-        return idAfterDonation;
-    }
-
-    public void setIdAfterDonation(String idAfterDonation) {
-        this.idAfterDonation = idAfterDonation;
-    }
-
-
-    public Boolean getInfectiousDiseasesChecked() {
-        return infectiousDiseasesChecked;
-    }
-
-    public void setInfectiousDiseasesChecked(Boolean infectiousDiseasesChecked) {
-        this.infectiousDiseasesChecked = infectiousDiseasesChecked;
-    }
-
-    public Boolean getBloodUsable() {
-        return isBloodUsable;
-    }
-
-    public void setBloodUsable(Boolean bloodUsable) {
-        isBloodUsable = bloodUsable;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
-
-    @Override
-    public String toString() {
-        return "AfterDonationBlood{" +
-                "idAfterDonation=" + idAfterDonation +
-                ", infectiousDiseasesChecked=" + infectiousDiseasesChecked +
-                ", isBloodUsable=" + isBloodUsable +
-                ", status='" + status + '\'' +
-                ", note='" + note + '\'' +
-                '}';
-    }
 }

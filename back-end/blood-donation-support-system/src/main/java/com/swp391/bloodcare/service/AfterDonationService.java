@@ -62,7 +62,7 @@ public class AfterDonationService {
         if (dto.getInfectiousDiseasesChecked() != null)
             existing.setInfectiousDiseasesChecked(dto.getInfectiousDiseasesChecked());
         if (dto.getIsBloodUsable() != null)
-            existing.setBloodUsable(dto.getIsBloodUsable());
+            existing.setIsBloodUsable(dto.getIsBloodUsable());
         if (dto.getStatus() != null)
             existing.setStatus(dto.getStatus());
         if (dto.getNote() != null && !dto.getNote().isBlank())

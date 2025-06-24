@@ -79,7 +79,12 @@ public class DonationRegistrationDTO {
         } else {
             dto.setEventId(null);
         }
-        dto.setAccountId(reg.getAccount().getAccountId());
+        if (reg.getAccount() != null) {
+            dto.setAccountId(reg.getAccount().getAccountId());
+        } else {
+            dto.setAccountId(null);
+        }
+
         dto.setDateCreated(reg.getDateCreated());
         dto.setStatus(reg.getStatus());
         return dto;
