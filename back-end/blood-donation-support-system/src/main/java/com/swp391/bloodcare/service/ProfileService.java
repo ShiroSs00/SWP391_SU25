@@ -160,7 +160,7 @@ public class ProfileService {
         prd.setActive(account.isActive());
 
         //Proflie info
-        prd.setProfileId(profile.getProfileId());
+
         prd.setName(profile.getName());
         prd.setPhone(profile.getPhone());
         prd.setDob(profile.getDob());
