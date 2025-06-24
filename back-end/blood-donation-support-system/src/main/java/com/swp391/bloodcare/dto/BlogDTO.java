@@ -30,7 +30,7 @@ public class BlogDTO {
                 blog.getBlogId(),
                 blog.getContent(),
                 blog.getPostDate(),
-                blog.getConponent(),
+                blog.getComponent(),
                 blog.getTagName(),
                 blog.getAccount() != null ? blog.getAccount().getAccountId() : null
         );
@@ -41,7 +41,7 @@ public class BlogDTO {
         blog.setBlogId(dto.getBlogId());
         blog.setContent(dto.getContent());
         blog.setPostDate(dto.getPostDate());
-        blog.setConponent(dto.getConponent());
+        blog.setComponent(dto.getConponent());
         blog.setTagName(dto.getTagName());
         return blog;
     }

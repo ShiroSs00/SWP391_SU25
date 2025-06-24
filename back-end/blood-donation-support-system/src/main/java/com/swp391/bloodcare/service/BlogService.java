@@ -42,7 +42,7 @@ public class BlogService {
             blog.setContent(dto.getContent());
 
         if (dto.getConponent() != null && !dto.getConponent().isBlank())
-            blog.setConponent(dto.getConponent());
+            blog.setComponent(dto.getConponent());
 
         if (dto.getTagName() != null)
             blog.setTagName(dto.getTagName());

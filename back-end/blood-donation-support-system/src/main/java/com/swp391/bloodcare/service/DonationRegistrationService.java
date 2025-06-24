@@ -41,23 +41,27 @@ public class DonationRegistrationService {
         String donationId;
         do {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            int randomCode = new Random().nextInt(1000); // 0–999
+            int randomCode = new Random().nextInt(1000);
             String randomPart = String.format("%03d", randomCode);
             donationId = "RD-" + timestamp + "-" + randomPart;
         } while (donationRegistrationRepository.existsByRegistrationId(donationId));
-
-        BloodDonationEvent event = eventRepository.findByEventId(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Event not found with ID: " + eventId));
 
         DonationRegistration donationRegistration = new DonationRegistration();
         donationRegistration.setRegistrationId(donationId);
         donationRegistration.setDateCreated(new Date());
         donationRegistration.setStatus("Đang đợi");
-        donationRegistration.setEvent(event);
         donationRegistration.setAccount(account);
+
+        // Chỉ gán sự kiện nếu eventId không null và tồn tại
+        if (eventId != null && !eventId.isBlank()) {
+            BloodDonationEvent event = eventRepository.findByEventId(eventId)
+                    .orElseThrow(() -> new EntityNotFoundException("Event not found with ID: " + eventId));
+            donationRegistration.setEvent(event);
+        }
 
         return toDTO(donationRegistrationRepository.save(donationRegistration));
     }
+
 
     public DonationRegistrationDTO updateDonationRegistration(String id, DonationRegistration updatedData) {
         DonationRegistration existing = donationRegistrationRepository.findByRegistrationId(id)

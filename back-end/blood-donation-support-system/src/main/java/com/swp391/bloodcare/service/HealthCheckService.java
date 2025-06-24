@@ -78,12 +78,12 @@ public class HealthCheckService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck"));
 
         if (dto.getWeight() != null) existing.setWeight(dto.getWeight());
-        if (dto.getTemperate() != null) existing.setTemperate(dto.getTemperate());
+        if (dto.getTemperature() != null) existing.setTemperature(dto.getTemperature());
         if (dto.getBloodPressure() != null) existing.setBloodPressure(dto.getBloodPressure());
-        if (dto.getPluse() != null) existing.setPluse(dto.getPluse());
-        if (dto.getHemogobin() != null) existing.setHemogobin(dto.getHemogobin());
+        if (dto.getPulse() != null) existing.setPulse(dto.getPulse());
+        if (dto.getHemoglobin() != null) existing.setHemoglobin(dto.getHemoglobin());
         if (dto.getVolumeToTake() != null) existing.setVolumeToTake(dto.getVolumeToTake());
-        if (dto.getFitToDonate() != null) existing.setFitToDonate(dto.getFitToDonate());
+        if (dto.getIsFitToDonate() != null) existing.setFitToDonate(dto.getIsFitToDonate());
         if (dto.getNote() != null && !dto.getNote().isBlank()) existing.setNote(dto.getNote());
         return toDTO(healthCheckRepository.save(existing));
     }

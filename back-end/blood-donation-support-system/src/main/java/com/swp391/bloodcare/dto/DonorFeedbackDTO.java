@@ -10,10 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DonorFeedbackDTO {
     private String feedbackID;
-    private long process;
-    private long bloodTest;
-    private long postDonationCare;
-    private long comfortable;
+
+    private Integer process;
+    private Integer bloodTest;
+    private Integer postDonationCare;
+    private Integer comfortable;
+
     private String description;
     private String registrationId;
 
@@ -29,5 +31,14 @@ public class DonorFeedbackDTO {
         );
     }
 
+    public static DonorFeedback toEntity(DonorFeedbackDTO dto) {
+        DonorFeedback fb = new DonorFeedback();
+        fb.setFeedbackID(dto.getFeedbackID());
+        fb.setProcess(dto.getProcess());
+        fb.setBloodTest(dto.getBloodTest());
+        fb.setPostDonationCare(dto.getPostDonationCare());
+        fb.setComfortable(dto.getComfortable());
+        fb.setDescription(dto.getDescription());
+        return fb;
+    }
 }
-

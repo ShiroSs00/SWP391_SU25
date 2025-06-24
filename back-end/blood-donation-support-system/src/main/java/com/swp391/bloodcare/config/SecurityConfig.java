@@ -55,6 +55,7 @@ public class SecurityConfig {
                         // STAFF & ADMIN
                         .requestMatchers("/api/event/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/healthcheck/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/after-donation/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")
 
 
