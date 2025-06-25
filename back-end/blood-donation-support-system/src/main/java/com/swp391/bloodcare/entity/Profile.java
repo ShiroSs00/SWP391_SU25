@@ -27,7 +27,8 @@ public class Profile {
 
     @OneToOne
     @JoinColumn(name = "account_id")
-    private Account accountId;
+    private Account account;
+
 
     @Column(name ="name")
     private String name;
@@ -46,7 +47,7 @@ public class Profile {
     private Address address;
 
     @Column(name ="number_of_blood_donation")
-    private int numberOfBloodDonation;
+    private long numberOfBloodDonation;
 
     @JoinColumn(name ="blood_code")
     @ManyToOne
@@ -62,9 +63,9 @@ public class Profile {
     public Profile() {
     }
 
+
     public Profile(String profileId, Account accountId, String name, String phone, Date dob, boolean gender, Address address, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate) {
         this.profileId = profileId;
-        this.accountId = accountId;
         this.name = name;
         this.phone = phone;
         this.dob = dob;
@@ -84,12 +85,12 @@ public class Profile {
         this.profileId = profileId;
     }
 
-    public Account getAccountId() {
-        return accountId;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setAccountId(Account accountId) {
-        this.accountId = accountId;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public String getName() {
@@ -132,11 +133,11 @@ public class Profile {
         this.address = address;
     }
 
-    public int getNumberOfBloodDonation() {
+    public long getNumberOfBloodDonation() {
         return numberOfBloodDonation;
     }
 
-    public void setNumberOfBloodDonation(int numberOfBloodDonation) {
+    public void setNumberOfBloodDonation(long numberOfBloodDonation) {
         this.numberOfBloodDonation = numberOfBloodDonation;
     }
 
@@ -168,7 +169,7 @@ public class Profile {
     public String toString() {
         return "Profile{" +
                 "profileId=" + profileId +
-                ", accountId=" + accountId +
+                ", account=" + account +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", dob=" + dob +

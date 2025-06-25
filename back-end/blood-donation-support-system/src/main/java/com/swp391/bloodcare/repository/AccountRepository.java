@@ -44,4 +44,7 @@ public interface AccountRepository extends JpaRepository<Account, String> {
             String district, List<Blood.BloodType> bloodTypes, List<Blood.RhFactor> rhFactors);
 
 
+    Account findAccountByAccountId(String accountId);
+
+    Account findAccountByUserName(String userName);
 }

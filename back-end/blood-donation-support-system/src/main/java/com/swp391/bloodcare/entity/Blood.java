@@ -34,7 +34,8 @@ public class Blood {
     private Boolean isRareBlood;
 
     @Column(name = "quantity")
-   private Integer quantity;
+    private Integer quantity;
+
 
     @Column(name ="blood_match")
     private String bloodMatch;

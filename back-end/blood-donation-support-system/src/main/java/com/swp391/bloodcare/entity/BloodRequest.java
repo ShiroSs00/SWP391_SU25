@@ -123,6 +123,7 @@ public class BloodRequest {
         this.status = status;
     }
 
+
     public int getVolume() {
         return volume;
     }
@@ -137,6 +138,7 @@ public class BloodRequest {
 
     public void setRequestCreationDate(LocalDate requestCreationDate) {
         this.requestCreationDate = requestCreationDate;
+
     }
 
     @Override

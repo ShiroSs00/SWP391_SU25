@@ -9,7 +9,7 @@ import java.time.LocalDate;
 public class BloodDonationHistory {
     @Id
     @Column(name ="history_id")
-    private int historyId;
+    private String historyId;
 
     @OneToOne
     @JoinColumn(name ="account_id")
@@ -20,7 +20,7 @@ public class BloodDonationHistory {
     private BloodDonationEvent event;
 
     @Column(name ="blood_volumn")
-    private int bloodVolumn;
+    private long bloodVolumn;
 
     @Column(name ="location_snapshot")
     private String locationSnapshot;
@@ -37,7 +37,7 @@ public class BloodDonationHistory {
     public BloodDonationHistory() {
     }
 
-    public BloodDonationHistory(int historyId,  int bloodVolumn, String locationSnapshot, String healthResult, String status, LocalDate createdAt) {
+    public BloodDonationHistory(String historyId,  long bloodVolumn, String locationSnapshot, String healthResult, String status, LocalDate createdAt) {
         this.historyId = historyId;
         this.bloodVolumn = bloodVolumn;
         this.locationSnapshot = locationSnapshot;
@@ -46,11 +46,11 @@ public class BloodDonationHistory {
         this.createdAt = createdAt;
     }
 
-    public int getHistoryId() {
+    public String getHistoryId() {
         return historyId;
     }
 
-    public void setHistoryId(int historyId) {
+    public void setHistoryId(String historyId) {
         this.historyId = historyId;
     }
 
@@ -70,11 +70,11 @@ public class BloodDonationHistory {
         this.event = event;
     }
 
-    public int getBloodVolumn() {
+    public long getBloodVolumn() {
         return bloodVolumn;
     }
 
-    public void setBloodVolumn(int bloodVolumn) {
+    public void setBloodVolumn(long bloodVolumn) {
         this.bloodVolumn = bloodVolumn;
     }
 

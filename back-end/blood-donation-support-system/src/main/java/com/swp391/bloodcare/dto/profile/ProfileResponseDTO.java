@@ -12,19 +12,19 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProfileResponseDTO {
-    private int profileId;
+    private String profileId;
     private String accountId;
     private String username;
     private String email;
     private String name;
     private String phone;
     private Date dob;
-    private boolean gender;
+    private Boolean gender;
     private AddressDTO address;
-    private int numberOfBloodDonation;
+    private Long numberOfBloodDonation;
     private String bloodType; //chưa ổn -- cần xem lại
     private String achievementName;
     private LocalDate restDate;
     private LocalDate creationDate;
-    private boolean isActive;
+    private Boolean isActive;
 }

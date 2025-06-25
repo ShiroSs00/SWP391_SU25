@@ -11,6 +11,7 @@ public class EmailSender {
     @Autowired
     private JavaMailSender mailSender;
 
+
     public void sendSimpleEmail(String to, String subject, String body) {
         int maxRetries = 3;
         int retryCount = 0;
