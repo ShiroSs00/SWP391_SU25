@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './router/ProtectedRoute';
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import ToastContainer from './features/auth/components/ToastContainer';
 import type { Toast } from './features/auth/types/auth.types';
 
@@ -9,10 +9,16 @@ import LoginPage from './features/auth/pages/LoginPages';
 import RegisterPage from './features/auth/pages/RegisterPage';
 //admin
 import AdminPage from './features/admin/pages/adminPage';
+
+//homePages
+import HomePage from './pages/HomePage';
+//health-check
+import HealthCheckPage from './features/health-checks/pages/HealthCheckPage'
 //donation
 import DonationPages from './features/donation-register/pages/donationpages';
 //staff
 import StaffPage from './features/staff/pages/staffPage';
+
 
 function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -31,7 +37,8 @@ function App() {
     <Router>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <Routes>
-        <Route path="/" element={<h1>Home Page</h1>} />
+        <Route path="/" element={<HomePage />} />
+        <Route path= "health-check" element={<HealthCheckPage />} />
         <Route path="/login" element={<LoginPage showToast={showToast} />} />
         <Route path="/register" element={<RegisterPage showToast={showToast} />} />
         <Route path="/donation" element={<DonationPages />} />

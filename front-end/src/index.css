@@ -1,8 +1,282 @@
-@import url('./assets/fonts/blood-font.css');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body, html, #root {
-  font-family: 'Montserrat', Arial, sans-serif;
+/* Import Google Fonts for better typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+/* Blood Donation Theme Design System */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 0 84% 45%; /* Blood red */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 84% 95%;
+    --secondary-foreground: 0 84% 15%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 0 84% 95%;
+    --accent-foreground: 0 84% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 0 84% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 0 84% 45%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 84% 95%;
+    --sidebar-accent-foreground: 0 84% 15%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 0 84% 45%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 0 84% 55%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 0 84% 55%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 0 84% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 0 84% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    @apply font-semibold leading-tight;
+  }
+}
+
+@layer components {
+  /* Blood donation specific components */
+  .btn-donate {
+    @apply bg-gradient-blood hover:shadow-lg hover:shadow-blood-500/25 transform hover:scale-105 transition-all duration-300 text-white font-semibold py-3 px-8 rounded-full;
+  }
+
+  .btn-secondary {
+    @apply bg-white border-2 border-blood-600 text-blood-600 hover:bg-blood-50 font-semibold py-3 px-8 rounded-full transition-all duration-300;
+  }
+
+  .card-blood {
+    @apply bg-white rounded-2xl shadow-lg hover:shadow-xl border border-blood-100 transition-all duration-300 hover:transform hover:scale-[1.02];
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-blood-600 to-heart-600 bg-clip-text text-transparent;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Blood drop animation */
+  .blood-drop {
+    position: relative;
+    width: 20px;
+    height: 26px;
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    transform: rotate(-45deg);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .blood-drop::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 18px;
+    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  }
+
+  /* Heart icon animation */
+  .heart-pulse {
+    @apply text-blood-600 animate-heartbeat;
+  }
+
+  /* Statistics counter animation */
+  .stat-number {
+    @apply text-4xl md:text-5xl font-bold text-blood-600 animate-pulse-slow;
+  }
+
+  /* Hero section background */
+  .hero-bg {
+    background:
+            radial-gradient(circle at 20% 50%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(239, 68, 68, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, rgba(248, 113, 113, 0.1) 0%, transparent 50%);
+  }
+
+  /* Testimonial cards */
+  .testimonial-card {
+    @apply bg-gradient-to-br from-white to-blood-50 border border-blood-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+
+  /* Process steps */
+  .process-step {
+    @apply relative bg-white rounded-2xl p-8 shadow-lg border-l-4 border-blood-500 hover:shadow-xl transition-all duration-300;
+  }
+
+  .process-step::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    border-radius: 50%;
+    border: 4px solid white;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  .scrollbar-blood::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-blood::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+  }
+
+  .scrollbar-blood::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    border-radius: 4px;
+  }
+
+  .scrollbar-blood::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #b91c1c, #dc2626);
+  }
+
+  /* Text selection */
+  ::selection {
+    background-color: rgba(220, 38, 38, 0.2);
+    color: #7f1d1d;
+  }
+
+  /* Focus styles */
+  .focus-blood:focus {
+    @apply outline-none ring-2 ring-blood-500 ring-offset-2;
+  }
+
+  /* Loading spinner */
+  .spinner-blood {
+    border: 3px solid rgba(220, 38, 38, 0.1);
+    border-top: 3px solid #dc2626;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+}
+
+/* Responsive typography */
+@media (max-width: 640px) {
+  .hero-title {
+    @apply text-3xl md:text-4xl lg:text-6xl;
+  }
+
+  .section-title {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+  }
+}
+
+/* Print styles for emergency contact info */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .animate-heartbeat,
+  .animate-float,
+  .animate-pulse-slow {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .btn-donate {
+    @apply border-2 border-black;
+  }
+
+  .card-blood {
+    @apply border-2 border-gray-800;
+  }
 }
