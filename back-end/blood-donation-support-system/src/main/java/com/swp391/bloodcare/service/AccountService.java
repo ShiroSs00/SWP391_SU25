@@ -34,6 +34,8 @@ public class AccountService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+
+    //tạo account
     @Transactional
     public ApiResponse<String> registerAccount(AccountRegistrationDTO accountRegistration) {
         try{
@@ -68,7 +70,10 @@ public class AccountService {
 
             //tạo profile
             Profile profile = new Profile();
-            profile.setAccount(savedAccount);
+            String profileId = generateProfileId();
+            profile.setProfileId(profileId);
+            profile.setAccountId(savedAccount);
+
             profile.setName(accountRegistration.getName());
             profile.setPhone(accountRegistration.getPhone());
             profile.setDob(accountRegistration.getDob());
@@ -116,6 +121,11 @@ public class AccountService {
         accountRepository.save(account);
     }
 
+    private String generateProfileId() {
+        String datePart = LocalDate.now().toString().replace("-", ""); // yyyyMMdd
+        int randomNum = (int)(Math.random() * 900) + 100; // Tạo số từ 100 - 999
+        return "PF-" + datePart + "-" + randomNum;
+    }
 
 
 }

@@ -3,7 +3,6 @@ package com.swp391.bloodcare.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.Date;
 
 @Entity
@@ -14,6 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"afterDonationBlood" /*, "bloodMatchRequest"*/})
+
 public class BloodBag {
 
     @Id

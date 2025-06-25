@@ -36,6 +36,7 @@ public class SecurityConfig {
 
 
     @Bean
+
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -60,10 +61,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/healthcheck/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/after-donation/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")
-
-
-
-
                         // ADMIN-only (nên để cuối cùng)
                         .requestMatchers("/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

@@ -63,7 +63,8 @@ public class Profile {
     public Profile() {
     }
 
-    public Profile(String profileId, String name, String phone, Date dob, boolean gender, Address address, long numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate) {
+
+    public Profile(String profileId, Account accountId, String name, String phone, Date dob, boolean gender, Address address, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate) {
         this.profileId = profileId;
         this.name = name;
         this.phone = phone;
