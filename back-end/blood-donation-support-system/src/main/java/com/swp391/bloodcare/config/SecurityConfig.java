@@ -50,7 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/feedback/**").permitAll()
                         .requestMatchers("/api/donation/**").permitAll()
                         .requestMatchers("/api/role/**").hasRole("ADMIN")
-                        .requestMatchers("/api/achievements/**").hasRole("ADMIN")
+                        .requestMatchers("/api/achievements/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/api/auth/set-role/**").hasRole("ADMIN")
 
                         // Public GET

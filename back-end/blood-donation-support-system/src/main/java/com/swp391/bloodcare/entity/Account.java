@@ -53,6 +53,9 @@ public class Account{
     @OneToOne(mappedBy = "account", cascade = CascadeType.ALL)
     private Profile profile;
 
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<BloodDonationEvent> events;
+
     public Profile getProfile() {
         return profile;
     }
@@ -63,6 +66,14 @@ public class Account{
 
     public void setActive(Boolean active) {
         isActive = active;
+    }
+
+    public List<BloodDonationEvent> getEvents() {
+        return events;
+    }
+
+    public void setEvents(List<BloodDonationEvent> events) {
+        this.events = events;
     }
 
     public List<BloodRequest> getBloodRequests() {

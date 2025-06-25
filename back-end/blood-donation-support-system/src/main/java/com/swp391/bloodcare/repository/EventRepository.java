@@ -15,4 +15,6 @@ public interface EventRepository extends JpaRepository<BloodDonationEvent, Long>
     boolean existsByEventId(String eventId);
 
     List<BloodDonationEvent> findByEndDateBetween(Date endDateAfter, Date endDateBefore);
+
+    List<BloodDonationEvent> findByNameOfEventContainingIgnoreCase(String nameOfEvent);
 }

@@ -2,67 +2,67 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.BloodDonationEventDTO;
 import com.swp391.bloodcare.service.EventService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/event")
+@RequiredArgsConstructor
 public class EventController {
 
     private final EventService eventService;
 
-    public EventController(EventService eventService) {
-        this.eventService = eventService;
+    @PostMapping("/create")
+    public ResponseEntity<BloodDonationEventDTO> create(@RequestBody BloodDonationEventDTO dto) {
+        String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(eventService.createEvent(dto, accountId));
+    }
+
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<BloodDonationEventDTO> update(@PathVariable String id,
+                                                        @RequestBody BloodDonationEventDTO dto) {
+        return ResponseEntity.ok(eventService.updateEvent(id, dto));
     }
 
     @GetMapping("/getall")
-    public ResponseEntity<List<BloodDonationEventDTO>> getEvent() {
-        return ResponseEntity.ok(eventService.getAllEvent());
+    public ResponseEntity<List<BloodDonationEventDTO>> getAll() {
+        return ResponseEntity.ok(eventService.getAllEvents());
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<BloodDonationEventDTO> addEvent(@RequestBody BloodDonationEventDTO dto) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        BloodDonationEventDTO createdEvent = eventService.createEventByUsername(username, dto);
-        return ResponseEntity.status(201).body(createdEvent);
-    }
-
-    @PutMapping("/update/{id}")
-    public ResponseEntity<BloodDonationEventDTO> updateEvent(
-            @PathVariable("id") String id,
-            @RequestBody BloodDonationEventDTO dto) {
-        BloodDonationEventDTO updatedEvent = eventService.updateEvent(id, dto);
-        return ResponseEntity.ok(updatedEvent);
+    @GetMapping("/get-by-id/{id}")
+    public ResponseEntity<BloodDonationEventDTO> getById(@PathVariable String id) {
+        return ResponseEntity.ok(eventService.getEventById(id));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Map<String, String>> deleteEvent(@PathVariable("id") String id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         eventService.deleteEvent(id);
-        return ResponseEntity.ok(Map.of("message", "Đã xoá sự kiện thành công với ID: " + id));
+        return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/filter/by-date")
-    public ResponseEntity<List<BloodDonationEventDTO>> getEventsByDateRange(
-            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date end) {
-        return ResponseEntity.ok(eventService.getEventByDate(start, end));
-    }
-
-
 
     @DeleteMapping("/delete-multiple")
-    public ResponseEntity<?> deleteMultipleEvents(@RequestBody List<String> ids) {
-        Map<String, Object> result = eventService.deleteMultipleEventsSafe(ids);
-        return ResponseEntity.ok(Map.of(
-                "status", "partial-success",
-                "message", "✅ Đã xử lý xóa danh sách sự kiện",
-                "data", result
-        ));
+    public ResponseEntity<Map<String, Object>> deleteMultiple(@RequestBody List<String> ids) {
+        return ResponseEntity.ok(eventService.deleteMultipleEventsSafe(ids));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<BloodDonationEventDTO>> search(@RequestParam("keyword") String keyword) {
+        return ResponseEntity.ok(eventService.searchByName(keyword));
+    }
+
+    @GetMapping("/by-end-date-range")
+    public ResponseEntity<List<BloodDonationEventDTO>> getByEndDateRange(
+            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date from,
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date to
+    ) {
+        return ResponseEntity.ok(eventService.getByEndDateRange(from, to));
+    }
 }
