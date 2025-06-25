@@ -32,22 +32,13 @@ public class DonationRegistrationController {
         return ResponseEntity.ok(donationRegistrationService.getByEventId(eventId));
     }
 
-    @GetMapping("/filter")
-    public ResponseEntity<List<DonationRegistrationDTO>> filterByUserAndEvent(
-            @RequestParam String username,
-            @RequestParam String eventId
-    ) {
-        return ResponseEntity.ok(donationRegistrationService.getByUsernameAndEventId(username, eventId));
-    }
-
-
 
     @PostMapping({"/create", "/create/{id}"})
     public ResponseEntity<DonationRegistrationDTO> createDonationRegistration(@PathVariable(name = "id", required = false) String id) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+        String accountId = auth.getName();
 
-        DonationRegistrationDTO savedRegistration = donationRegistrationService.createDonationByUsername(username, id);
+        DonationRegistrationDTO savedRegistration = donationRegistrationService.createDonationByUsername(accountId, id);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRegistration);
     }
 
@@ -72,10 +63,24 @@ public class DonationRegistrationController {
         return ResponseEntity.ok(donation);
     }
 
-    @GetMapping("/get-by-username/{username}")
-    public ResponseEntity<List<DonationRegistrationDTO>> getByUsername(@PathVariable String username) {
-        return ResponseEntity.ok(donationRegistrationService.getByUsername(username));
+    @GetMapping("/get-by-account/{accountId}")
+    public ResponseEntity<List<DonationRegistrationDTO>> getByAccount(@PathVariable String accountId) {
+        return ResponseEntity.ok(donationRegistrationService.getByAccountId(accountId));
     }
+
+    @GetMapping("/get-by-account-and-event")
+    public ResponseEntity<List<DonationRegistrationDTO>> getByAccountAndEvent(
+            @RequestParam String accountId,
+            @RequestParam String eventId) {
+        return ResponseEntity.ok(donationRegistrationService.getByAccountIdAndEventId(accountId, eventId));
+    }
+
+
+    @GetMapping("/direct-donations")
+    public ResponseEntity<List<DonationRegistrationDTO>> getDirectDonations() {
+        return ResponseEntity.ok(donationRegistrationService.getDirectDonationRegistrations());
+    }
+
 
 
     @DeleteMapping("/delete-multiple")

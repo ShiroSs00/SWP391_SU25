@@ -34,8 +34,8 @@ public class DonationRegistrationService {
         this.eventRepository = eventRepository;
     }
 
-    public DonationRegistrationDTO createDonationByUsername(String username, String eventId) {
-        Account account = accountRepository.findByUserName(username)
+    public DonationRegistrationDTO createDonationByUsername(String accountId, String eventId) {
+        Account account = accountRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         String donationId;
@@ -115,26 +115,79 @@ public class DonationRegistrationService {
         return donationRegistrationRepository.findByRegistrationId(id).orElse(null);
     }
 
-    public List<DonationRegistrationDTO> getByUsername(String username) {
-        return donationRegistrationRepository.findByAccountUserName(username)
+    public List<DonationRegistrationDTO> getByAccountId(String accountId) {
+        // ⚠️ Kiểm tra account tồn tại
+        if (!accountRepository.existsByAccountId(accountId)) {
+            throw new EntityNotFoundException("Không tìm thấy tài khoản với ID: " + accountId);
+        }
+
+        // ✅ Lấy các đơn đăng ký
+        List<DonationRegistrationDTO> result = donationRegistrationRepository.findByAccountAccountId(accountId)
                 .stream()
                 .map(DonationRegistrationDTO::toDTO)
                 .collect(Collectors.toList());
+
+        if (result.isEmpty()) {
+            throw new EntityNotFoundException("Tài khoản \"" + accountId + "\" chưa đăng ký hiến máu lần nào.");
+        }
+
+        return result;
     }
+
+
 
     public List<DonationRegistrationDTO> getByEventId(String eventId) {
-        return donationRegistrationRepository.findByEventEventId(eventId)
+        if (!eventRepository.existsByEventId(eventId)) {
+            throw new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + eventId);
+        }
+
+        List<DonationRegistrationDTO> result = donationRegistrationRepository.findByEventEventId(eventId)
                 .stream()
+                .map(DonationRegistrationDTO::toDTO)
+                .collect(Collectors.toList());
+
+        if (result.isEmpty()) {
+            throw new EntityNotFoundException("Không tìm thấy đơn đăng ký nào cho sự kiện ID: " + eventId);
+        }
+
+        return result;
+    }
+
+    public List<DonationRegistrationDTO> getDirectDonationRegistrations() {
+        return donationRegistrationRepository.findAll().stream()
+                .filter(d -> d.getEvent() == null)
                 .map(DonationRegistrationDTO::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<DonationRegistrationDTO> getByUsernameAndEventId(String username, String eventId) {
-        return donationRegistrationRepository.findByAccountUserNameAndEventEventId(username, eventId)
+
+
+
+    public List<DonationRegistrationDTO> getByAccountIdAndEventId(String accountId, String eventId) {
+        // ⚠️ Kiểm tra account và event có tồn tại không
+        if (!accountRepository.existsByAccountId(accountId)) {
+            throw new EntityNotFoundException("Không tìm thấy tài khoản với ID: " + accountId);
+        }
+
+        if (!eventRepository.existsByEventId(eventId)) {
+            throw new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + eventId);
+        }
+
+        // ✅ Tìm các đơn đăng ký theo accountId + eventId
+        List<DonationRegistrationDTO> result = donationRegistrationRepository
+                .findByAccountAccountIdAndEventEventId(accountId, eventId)
                 .stream()
                 .map(DonationRegistrationDTO::toDTO)
                 .collect(Collectors.toList());
+
+        if (result.isEmpty()) {
+            throw new EntityNotFoundException("Tài khoản \"" + accountId + "\" chưa đăng ký cho sự kiện \"" + eventId + "\".");
+        }
+
+        return result;
     }
+
+
 
 
     @Transactional
@@ -150,8 +203,10 @@ public class DonationRegistrationService {
                 deleted.add(id);
             } catch (EntityNotFoundException e) {
                 errors.put(id, "Không tìm thấy đơn đăng ký");
+                throw e; // ❗ phải ném ra lại nếu dùng @Transactional
             } catch (Exception e) {
                 errors.put(id, "Lỗi không xác định: " + e.getMessage());
+                throw e; // ❗ nếu không rollback-only sẽ xảy ra ngầm
             }
         }
 
@@ -160,5 +215,6 @@ public class DonationRegistrationService {
         result.put("errors", errors);
         return result;
     }
+
 
 }
