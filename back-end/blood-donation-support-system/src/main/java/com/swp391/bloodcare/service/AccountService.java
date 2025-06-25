@@ -72,7 +72,7 @@ public class AccountService {
             Profile profile = new Profile();
             String profileId = generateProfileId();
             profile.setProfileId(profileId);
-            profile.setAccountId(savedAccount);
+            profile.setAccount(savedAccount);
 
             profile.setName(accountRegistration.getName());
             profile.setPhone(accountRegistration.getPhone());
