@@ -9,10 +9,17 @@ import LoginPage from './features/auth/pages/LoginPages';
 import RegisterPage from './features/auth/pages/RegisterPage';
 //admin
 import AdminPage from './features/admin/pages/adminPage';
+
 //homePages
 import HomePage from './pages/HomePage';
 //health-check
-import HealthCheckPage from './features/health-checks/pages/HealthCheckPage';
+import HealthCheckPage from './features/health-checks/pages/HealthCheckPage'
+//donation
+import DonationPages from './features/donation-register/pages/donationpages';
+//staff
+import StaffPage from './features/staff/pages/staffPage';
+
+
 function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -34,10 +41,12 @@ function App() {
         <Route path= "health-check" element={<HealthCheckPage />} />
         <Route path="/login" element={<LoginPage showToast={showToast} />} />
         <Route path="/register" element={<RegisterPage showToast={showToast} />} />
+        <Route path="/donation" element={<DonationPages />} />
+        <Route path="/donation/:eventId" element={<DonationPages />} />
         <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}> 
           <Route path="/admin" element={<AdminPage showToast={showToast} />} />        </Route>
         <Route element={<ProtectedRoute allowedRoles={['STAFF']} />}> 
-          <Route path="/staff" element={<h1>Staff Page</h1>} />
+          <Route path="/staff" element={<StaffPage />} />
         </Route>
       </Routes>
     </Router>
