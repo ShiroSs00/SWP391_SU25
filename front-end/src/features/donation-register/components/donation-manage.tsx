@@ -29,7 +29,9 @@ const DonationManage: React.FC = () => {
       try {
         const parsed = JSON.parse(user);
         setRole(parsed.role || '');
-      } catch {}
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
     }
     fetchAll();
   }, []);
@@ -108,11 +110,11 @@ const DonationManage: React.FC = () => {
     setError('');
     try {
       await deleteMultipleDonations(ids);
-      setToast({ msg: 'Xóa nhiều đơn thành công', type: 'success' });
+      setToast({ msg: 'Xóa đơn thành công', type: 'success' });
       fetchAll();
     } catch {
-      setError('Xóa nhiều đơn thất bại');
-      setToast({ msg: 'Xóa nhiều đơn thất bại', type: 'error' });
+      setError('Xóa đơn thất bại');
+      setToast({ msg: 'Xóa đơn thất bại', type: 'error' });
     } finally {
       setLoading(false);
     }
