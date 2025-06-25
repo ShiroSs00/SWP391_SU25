@@ -62,8 +62,10 @@ public class AuthService {
 //                return new LoginResponse(null,"Password is incorrect", null, null);
 //            }
 
-            // ✅ Sinh JWT token nếu đúng mật khẩu
-            String token = jwtUtil.generateToken(account.getUserName());
+
+            //tạo jwt token
+            String token = jwtUtil.generateToken(account);
+
 
             return new LoginResponse(token, "Login successful", account.getUserName(), account.getRole().getRole());
 

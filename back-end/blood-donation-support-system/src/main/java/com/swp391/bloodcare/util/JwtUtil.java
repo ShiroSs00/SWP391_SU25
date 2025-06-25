@@ -1,5 +1,6 @@
 package com.swp391.bloodcare.util;
 
+import com.swp391.bloodcare.entity.Account;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -28,10 +29,18 @@ public class JwtUtil {
     }
 
     // tạo jwt token từ username
-    public String generateToken(String username){
+    public String generateToken(Account account) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("username", account.getUserName());
+        claims.put("role", account.getRole().getRole());
 
-        return createToken(claims, username);
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(account.getAccountId()) // ✅ set subject là accountId
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration)) // ví dụ 24h
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public String createToken(Map<String, Object> claims, String subject){
@@ -60,6 +69,12 @@ public class JwtUtil {
     public String extractUsername(String token){
         return extractClaim(token, Claims::getSubject);
     }
+
+    //Lấy accountId
+    public String extractAccountId(String token) {
+        return extractAllClaims(token).getSubject(); // subject là accountId
+    }
+
 
 
     // lấy expiration date từ token

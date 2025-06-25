@@ -20,43 +20,43 @@ public class BloodRequest {
     @JoinColumn(name = "hospital_id")
     private Hospital hospitalId;
 
-    @Column(name ="request_date")
+    @Column(name = "patient_name")
+    private String patientName;
+
+    @Column(name ="request_date") //ngày mong muốn
     private LocalDate requestDate;
 
     @ManyToOne()
     @JoinColumn(name ="blood_code")
     private Blood bloodCode;
 
-    @Column(name ="urgency")
-    private boolean urgency;
+    @Column(name ="is_emergency")
+    private boolean isEmergency;
 
     @Column(name ="status")
     private String status;
 
-    @Column(name ="volumn")
-    private long volumn;
+    @Column(name ="volume")
+    private int volume;
 
-    @Column(name ="quantity")
-    private long quatity;
-
-    @Column(name ="request_Creation_date")
+    @Column(name ="request_Creation_date") // ngày tạo đơn
     private LocalDate requestCreationDate;
-
 
 
     public BloodRequest() {
     }
 
-    public BloodRequest(String idBloodRequest, Account account, Hospital hospitalId, LocalDate requestDate, Blood bloodCode, boolean urgency, String status, long volumn, long quatity) {
+    public BloodRequest(String idBloodRequest, Account account, Hospital hospitalId, String patientName, LocalDate requestDate, Blood bloodCode, boolean isEmergency, String status, int volume, LocalDate requestCreationDate) {
         this.idBloodRequest = idBloodRequest;
         this.account = account;
         this.hospitalId = hospitalId;
+        this.patientName = patientName;
         this.requestDate = requestDate;
         this.bloodCode = bloodCode;
-        this.urgency = urgency;
+        this.isEmergency = isEmergency;
         this.status = status;
-        this.volumn = volumn;
-        this.quatity = quatity;
+        this.volume = volume;
+        this.requestCreationDate = requestCreationDate;
     }
 
     public String getIdBloodRequest() {
@@ -83,6 +83,14 @@ public class BloodRequest {
         this.hospitalId = hospitalId;
     }
 
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
     public LocalDate getRequestDate() {
         return requestDate;
     }
@@ -99,12 +107,12 @@ public class BloodRequest {
         this.bloodCode = bloodCode;
     }
 
-    public boolean isUrgency() {
-        return urgency;
+    public boolean isEmergency() {
+        return isEmergency;
     }
 
-    public void setUrgency(boolean urgency) {
-        this.urgency = urgency;
+    public void setEmergency(boolean emergency) {
+        isEmergency = emergency;
     }
 
     public String getStatus() {
@@ -115,34 +123,37 @@ public class BloodRequest {
         this.status = status;
     }
 
-    public long getVolumn() {
-        return volumn;
+
+    public int getVolume() {
+        return volume;
     }
 
-    public void setVolumn(long volumn) {
-        this.volumn = volumn;
+    public void setVolume(int volume) {
+        this.volume = volume;
     }
 
-    public long getQuatity() {
-        return quatity;
+    public LocalDate getRequestCreationDate() {
+        return requestCreationDate;
     }
 
-    public void setQuatity(long quatity) {
-        this.quatity = quatity;
+    public void setRequestCreationDate(LocalDate requestCreationDate) {
+        this.requestCreationDate = requestCreationDate;
+
     }
 
     @Override
     public String toString() {
         return "BloodRequest{" +
                 "idBloodRequest=" + idBloodRequest +
-                ", accountId=" + account.getUserName() +
-                ", hospitalId=" + hospitalId.getHospitalName() +
+                ", account=" + account +
+                ", hospitalId=" + hospitalId +
+                ", patientName='" + patientName + '\'' +
                 ", requestDate=" + requestDate +
                 ", bloodCode=" + bloodCode +
-                ", urgency=" + urgency +
+                ", isEmergency=" + isEmergency +
                 ", status='" + status + '\'' +
-                ", volumn=" + volumn +
-                ", quatity=" + quatity +
+                ", volumn=" + volume +
+                ", requestCreationDate=" + requestCreationDate +
                 '}';
     }
 }
