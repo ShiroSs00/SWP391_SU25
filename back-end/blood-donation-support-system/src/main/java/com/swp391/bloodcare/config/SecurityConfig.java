@@ -38,33 +38,45 @@ public class SecurityConfig {
     @Bean
 
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .authorizeHttpRequests(auth -> auth
+//                        // Public
+//                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
+//                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                        .requestMatchers("/api/auth/**").permitAll()
+//                        .requestMatchers("/api/feedback/**").permitAll()
+//                        .requestMatchers("/api/donation/**").permitAll()
+//                        .requestMatchers("/api/role/**").hasRole("ADMIN")
+//                        .requestMatchers("/api/auth/set-role/**").hasRole("ADMIN")
+//
+//                        // Public GET
+//                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+//
+//                        // STAFF & ADMIN
+//                        .requestMatchers("/api/event/**").hasAnyRole("STAFF", "ADMIN")
+//                        .requestMatchers("/api/healthcheck/**").hasAnyRole("STAFF", "ADMIN")
+//                        .requestMatchers("/api/after-donation/**").hasAnyRole("STAFF", "ADMIN")
+//                        .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")
+//                        // ADMIN-only (nên để cuối cùng)
+//                        .requestMatchers("/**").hasRole("ADMIN")
+//                        .anyRequest().authenticated()
+//                )
+//
+//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//        return http.build();
+
+
+
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/feedback/**").permitAll()
-                        .requestMatchers("/api/donation/**").permitAll()
-                        .requestMatchers("/api/role/**").hasRole("ADMIN")
-                        .requestMatchers("/api/auth/set-role/**").hasRole("ADMIN")
-
-                        // Public GET
-                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-
-                        // STAFF & ADMIN
-                        .requestMatchers("/api/event/**").hasAnyRole("STAFF", "ADMIN")
-                        .requestMatchers("/api/healthcheck/**").hasAnyRole("STAFF", "ADMIN")
-                        .requestMatchers("/api/after-donation/**").hasAnyRole("STAFF", "ADMIN")
-                        .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")
-                        // ADMIN-only (nên để cuối cùng)
-                        .requestMatchers("/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // Cho phép tất cả request truy cập
                 )
-
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

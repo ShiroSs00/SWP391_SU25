@@ -33,8 +33,9 @@ public class BloodBag {
     @Column(name = "expiration_Date")
     private Date expirationDate;
 
-    @Column(nullable = false)
-    private boolean isUsed;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private statusBloodBag status;
 
     @OneToOne(mappedBy = "bloodBag", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "after_donation_id")
@@ -46,4 +47,9 @@ public class BloodBag {
     @JoinColumn(name = "match_request_id")
     private BloodMatchRequest bloodMatchRequest;
     */
+
+
+    public enum statusBloodBag{
+        AVAILABLE, USED, EXPIRED, DISCARDED
+    }
 }

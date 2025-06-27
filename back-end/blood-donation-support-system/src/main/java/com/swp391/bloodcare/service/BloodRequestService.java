@@ -46,6 +46,9 @@ public class BloodRequestService {
     @Autowired
     private BloodRepository bloodRepository;
 
+    @Autowired
+    private WaitingListService waitingListService;
+
 
     // tạo đơn xin máu
     public BloodRequest createBloodRequest(BloodRequestDTO bloodRequestDTO, String accountId) {
@@ -109,8 +112,13 @@ br.setEmergency(bloodRequestDTO.isEmergency());
     public BloodRequestResponseDTO updateStatus(String id, String nStatus){
         BloodRequest request = bloodRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu: " + id));
+        String oldStatus = request.getStatus();
         request.setStatus(nStatus);
         BloodRequest saved = bloodRequestRepository.save(request);
+
+        if("APPROVED".equals(nStatus) && !"APPROVED".equals(oldStatus)){
+            waitingListService.createWaitingList(saved);
+        }
         return convertToResponseDTO(saved);
     }
 

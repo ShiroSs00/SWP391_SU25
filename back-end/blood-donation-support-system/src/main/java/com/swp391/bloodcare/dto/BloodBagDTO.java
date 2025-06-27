@@ -22,23 +22,23 @@ public class BloodBagDTO {
 
     private boolean isUsed;
 
-    public static BloodBagDTO fromEntity(com.swp391.bloodcare.entity.BloodBag bag) {
-        return BloodBagDTO.builder()
-                .bagId(bag.getBagId())
-                .volume(bag.getVolume())
-                .collectedDate(bag.getCollectedDate())
-                .expirationDate(bag.getExpirationDate())
-                .isUsed(bag.isUsed())
-                .build();
-    }
-
-    public static com.swp391.bloodcare.entity.BloodBag toEntity(BloodBagDTO dto) {
-        return com.swp391.bloodcare.entity.BloodBag.builder()
-                .bagId(dto.getBagId())
-                .volume(dto.getVolume())
-                .collectedDate(dto.getCollectedDate())
-                .expirationDate(dto.getExpirationDate())
-                .isUsed(dto.isUsed())
-                .build();
-    }
+//    public static BloodBagDTO fromEntity(com.swp391.bloodcare.entity.BloodBag bag) {
+//        return BloodBagDTO.builder()
+//                .bagId(bag.getBagId())
+//                .volume(bag.getVolume())
+//                .collectedDate(bag.getCollectedDate())
+//                .expirationDate(bag.getExpirationDate())
+//                .isUsed(bag.isUsed())
+//                .build();
+//    }
+//
+//    public static com.swp391.bloodcare.entity.BloodBag toEntity(BloodBagDTO dto) {
+//        return com.swp391.bloodcare.entity.BloodBag.builder()
+//                .bagId(dto.getBagId())
+//                .volume(dto.getVolume())
+//                .collectedDate(dto.getCollectedDate())
+//                .expirationDate(dto.getExpirationDate())
+//                .isUsed(dto.isUsed())
+//                .build();
+//    }
 }

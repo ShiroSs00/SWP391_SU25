@@ -33,6 +33,9 @@ public class DonorFeedback {
     private String description;
 
     @OneToOne
-    @JoinColumn(name = "registration_id")
+    @JoinColumn(
+            name = "registration_id",
+            foreignKey = @ForeignKey(name = "FK_DONOR_FEEDBACK_REGISTRATION")
+    )
     private DonationRegistration donationRegistration;
 }

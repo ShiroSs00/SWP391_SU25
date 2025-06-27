@@ -103,6 +103,8 @@ public class WaitingList {
     }
 
     public enum StatusEnum{
-
+        PENDING,
+        APPROVED,
+        REJECTED
     }
 }
