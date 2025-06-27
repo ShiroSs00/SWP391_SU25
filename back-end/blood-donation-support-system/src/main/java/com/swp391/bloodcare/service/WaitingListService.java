@@ -87,7 +87,7 @@ public class WaitingListService {
 
     //Cập nhật trạng thái waitling lists
     public WaitingListResponseDTO updateWaitingListStatus(String waitListId, WaitingList.StatusEnum newStatus) {
-        WaitingList wl = waitingListRepository.findByWaitListId(waitListId)
+        WaitingList wl = waitingListRepository.findById(waitListId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy waiting list: " + waitListId));
 
         WaitingList.StatusEnum oldStatus = wl.getStatus();
@@ -102,7 +102,7 @@ public class WaitingListService {
 
     //tìm waiting list theo id
     public WaitingListResponseDTO getWaitingListById(String waitListId) {
-        WaitingList wl = waitingListRepository.findByWaitListId(waitListId)
+        WaitingList wl = waitingListRepository.findById(waitListId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy waiting list: " + waitListId));
         return convertToResponseDTO(wl);
     }
@@ -132,9 +132,10 @@ public class WaitingListService {
 
         WaitingListResponseDTO dto = new WaitingListResponseDTO();
         dto.setWaitListId(wl.getWaitListId());
-        dto.setBloodRequestId(wl.getBloodRequest().getIdBloodRequest());
+
         dto.setPatientName(wl.getBloodRequest().getPatientName());
         dto.setBloodCode(wl.getBloodRequest().getBloodCode().getBloodCode());
+        dto.setVolume(wl.getBloodRequest().getVolume());
         dto.setMatchDate(wl.getMatchDate());
         dto.setStatus(wl.getStatus().name());
         dto.setNote(wl.getNote());

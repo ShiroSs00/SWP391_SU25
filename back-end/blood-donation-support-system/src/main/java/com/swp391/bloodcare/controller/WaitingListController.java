@@ -76,12 +76,16 @@ public class WaitingListController {
 
     //Gắn túi máu cho wl
     @PutMapping("/{waitListId}/assign-blood-bag")
-    public ResponseEntity<ApiResponse<WaitingListResponseDTO>> assignBloodBag(String waitingListId, BloodBag bloodBag) {
+    public ResponseEntity<ApiResponse<WaitingListResponseDTO>> assignBloodBag(
+            @PathVariable String waitListId,
+            @RequestBody Map<String, String> body
+    ) {
         try {
-            WaitingListResponseDTO updateWL = waitingListService.assignBloodBag(waitingListId, bloodBag.getBagId());
+            String bagId = body.get("bagId");
+            WaitingListResponseDTO updateWL = waitingListService.assignBloodBag(waitListId, bagId);
             ApiResponse<WaitingListResponseDTO> response = new ApiResponse<>(
                     true,
-                    "Gắn tui máu thành công",
+                    "Gắn túi máu thành công",
                     updateWL
             );
             return ResponseEntity.ok(response);
@@ -94,6 +98,7 @@ public class WaitingListController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
 
     //cập nhật trạng thái wl
     @PutMapping("/{waitListId}/status")

@@ -10,8 +10,6 @@ import java.util.Optional;
 
 public interface WaitingListRepository extends JpaRepository<WaitingList, String> {
 
-    Optional<WaitingList> findByWaitListId(String waitListId);
-
     //Tìm theo trạng thái
     List<WaitingList> findByStatus(WaitingList.StatusEnum status);
 

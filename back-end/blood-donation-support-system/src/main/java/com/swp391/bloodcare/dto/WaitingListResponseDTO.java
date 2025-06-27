@@ -12,9 +12,10 @@ import java.util.Date;
 @AllArgsConstructor
 public class WaitingListResponseDTO {
     private String waitListId;
-    private String bloodRequestId;
+
     private String patientName;
     private String bloodCode;
+    private int volume;
     private String bloodBagId;
     private Date matchDate;
     private String status;
