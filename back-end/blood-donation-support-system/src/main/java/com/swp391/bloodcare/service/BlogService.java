@@ -2,6 +2,7 @@ package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.BlogDTO;
 import com.swp391.bloodcare.entity.Blog;
+import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.BlogRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -14,13 +15,12 @@ import java.util.*;
 public class BlogService {
 
     private final BlogRepository blogRepository;
-    private final AccountService accountService;
+    private final AccountRepository accountRepository;
 
-    public BlogService(BlogRepository blogRepository, AccountService accountService) {
+    public BlogService(BlogRepository blogRepository, AccountRepository accountRepository) {
         this.blogRepository = blogRepository;
-        this.accountService = accountService;
+        this.accountRepository = accountRepository;
     }
-
 
     public BlogDTO getBlogById(String blogId) {
         Blog blog = blogRepository.findBlogByBlogId(blogId)
@@ -58,7 +58,7 @@ public class BlogService {
         return BlogDTO.toDTO(blog);
     }
 
-    public BlogDTO createBlogByUserName(BlogDTO dto, String userName) {
+    public BlogDTO createBlogByUserName(BlogDTO dto, String accountId) {
         if (dto.getContent() == null || dto.getContent().isBlank()) {
             throw new IllegalArgumentException("Nội dung blog không được để trống");
         }
@@ -70,7 +70,7 @@ public class BlogService {
         blog.setBlogId(generateUniqueBlogId());
         blog.setPostDate(new Date());
 
-        blog.setAccount(accountService.findAccountByUserName(userName));
+        blog.setAccount(accountRepository.findAccountByAccountId(accountId));
 
         return BlogDTO.toDTO(blogRepository.save(blog));
     }

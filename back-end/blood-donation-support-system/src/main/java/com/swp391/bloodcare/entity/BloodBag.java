@@ -34,16 +34,14 @@ public class BloodBag {
     private Date expirationDate;
 
     @Column(nullable = false)
-    private boolean isUsed;
+    private String status;
 
     @OneToOne(mappedBy = "bloodBag", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "after_donation_id")
     private AfterDonationBlood afterDonationBlood;
 
     // Nếu sau này bạn muốn dùng cho việc matching máu:
-    /*
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "match_request_id")
-    private BloodMatchRequest bloodMatchRequest;
-    */
+    @JoinColumn(name = "wait_list_id")
+    private WaitingList waitingList;
 }

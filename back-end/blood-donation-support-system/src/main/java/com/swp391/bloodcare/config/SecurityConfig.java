@@ -43,28 +43,31 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public
+                        // Swagger & public
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/feedback/**").permitAll()
-                        .requestMatchers("/api/donation/**").permitAll()
+
+                        // Public GET cụ thể
+                        .requestMatchers(HttpMethod.GET, "/api/blog/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/event/**").permitAll()
+
+
+                        // Role-based
                         .requestMatchers("/api/role/**").hasRole("ADMIN")
                         .requestMatchers("/api/achievements/**").hasAnyRole("ADMIN", "STAFF")
-                        .requestMatchers("/api/auth/set-role/**").hasRole("ADMIN")
-
-                        // Public GET
-                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-
-                        // STAFF & ADMIN
+                        .requestMatchers("/api/blood-bags/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/event/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/healthcheck/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/after-donation/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")
-                        // ADMIN-only (nên để cuối cùng)
-                        .requestMatchers("/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/set-role/**").hasRole("ADMIN")
+
+                        // Tất cả còn lại yêu cầu login
                         .anyRequest().authenticated()
                 )
+
+
 
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
