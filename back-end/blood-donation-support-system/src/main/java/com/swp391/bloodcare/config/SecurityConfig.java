@@ -62,6 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/after-donation/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/auth/set-role/**").hasRole("ADMIN")
+                        .requestMatchers("/api/gmail/**").hasAnyRole("STAFF", "ADMIN")
 
                         // Tất cả còn lại yêu cầu login
                         .anyRequest().authenticated()
@@ -99,6 +100,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
 
 
