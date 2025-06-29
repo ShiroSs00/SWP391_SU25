@@ -1,12 +1,8 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.DonationRegistrationDTO;
-import com.swp391.bloodcare.entity.Account;
-import com.swp391.bloodcare.entity.BloodDonationEvent;
-import com.swp391.bloodcare.entity.DonationRegistration;
-import com.swp391.bloodcare.repository.AccountRepository;
-import com.swp391.bloodcare.repository.DonationRegistrationRepository;
-import com.swp391.bloodcare.repository.EventRepository;
+import com.swp391.bloodcare.entity.*;
+import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -26,12 +22,21 @@ public class DonationRegistrationService {
 
     private final AccountRepository accountRepository;
 
+    private final HealthCheckRepository healthCheckRepository;
+
+    private final ComponentRepository componentRepository;
+
     private final EventRepository eventRepository;
 
-    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository) {
+    public final FeedbackRepository feedbackRepository;
+
+    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, HealthCheckRepository healthCheckRepository, ComponentRepository componentRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
         this.donationRegistrationRepository = donationRegistrationRepository;
         this.accountRepository = accountRepository;
+        this.healthCheckRepository = healthCheckRepository;
+        this.componentRepository = componentRepository;
         this.eventRepository = eventRepository;
+        this.feedbackRepository = feedbackRepository;
     }
 
     public DonationRegistrationDTO createDonationByUsername(String accountId, String eventId) {
@@ -63,38 +68,52 @@ public class DonationRegistrationService {
     }
 
 
-    public DonationRegistrationDTO updateDonationRegistration(String id, DonationRegistration updatedData) {
+    public DonationRegistrationDTO updateDonationRegistration(String id, DonationRegistrationDTO dto) {
         DonationRegistration existing = donationRegistrationRepository.findByRegistrationId(id)
-                .orElseThrow(() -> new EntityNotFoundException("DonationRegistration not found with id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đăng ký với ID: " + id));
 
-        // Cập nhật các field nếu có truyền vào
-        if (updatedData.getDateCreated() != null) {
-            existing.setDateCreated(updatedData.getDateCreated());
+        if (dto.getDateCreated() != null) {
+            existing.setDateCreated(dto.getDateCreated());
         }
 
-        if (updatedData.getStatus() != null && !updatedData.getStatus().isBlank()) {
-            existing.setStatus(updatedData.getStatus());
+        if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
+            existing.setStatus(dto.getStatus());
         }
 
-        if (updatedData.getEvent() != null) {
-            existing.setEvent(updatedData.getEvent());
+        if (dto.getEventId() != null) {
+            BloodDonationEvent event = eventRepository.findByEventId(dto.getEventId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện"));
+            existing.setEvent(event);
         }
 
-        if (updatedData.getHealthCheck() != null) {
-            existing.setHealthCheck(updatedData.getHealthCheck());
+        if (dto.getAccountId() != null) {
+            Account account = accountRepository.findByAccountId(dto.getAccountId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tài khoản"));
+            existing.setAccount(account);
         }
 
-        if (updatedData.getDonorFeedback() != null) {
-            existing.setDonorFeedback(updatedData.getDonorFeedback());
+        if (dto.getComponentId() != null) {
+            Component component = componentRepository.findComponentByComponent(dto.getComponentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thành phần"));
+            existing.setComponent(component);
         }
 
-        if (updatedData.getComponent() != null) {
-            existing.setComponent(updatedData.getComponent());
+        if (dto.getHealthCheckId() != null) {
+            HealthCheck healthCheck = healthCheckRepository.findByHealthCheckId(dto.getHealthCheckId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khám sức khỏe"));
+            existing.setHealthCheck(healthCheck);
         }
 
-        // Lưu và trả về DTO
-        return toDTO(donationRegistrationRepository.save(existing));
+        if (dto.getDonorFeedbackId() != null) {
+            DonorFeedback feedback = feedbackRepository.findDonorFeedbackByFeedbackID(dto.getDonorFeedbackId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phản hồi người hiến"));
+            existing.setDonorFeedback(feedback);
+        }
+
+        DonationRegistration saved = donationRegistrationRepository.save(existing);
+        return DonationRegistrationDTO.toDTO(saved);
     }
+
 
 
     public void deleteDonationRegistration(String id) {

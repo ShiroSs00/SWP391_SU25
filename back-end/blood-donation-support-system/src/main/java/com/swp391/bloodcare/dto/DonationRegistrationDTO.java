@@ -1,93 +1,35 @@
 package com.swp391.bloodcare.dto;
 
 import com.swp391.bloodcare.entity.DonationRegistration;
+import lombok.*;
 
 import java.util.Date;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class DonationRegistrationDTO {
     private String registrationId;
-    private String eventId;
-    private String accountId;
     private Date dateCreated;
     private String status;
 
-    public DonationRegistrationDTO() {
-    }
+    private String eventId;
+    private String accountId;
+    private String componentId;
+    private String healthCheckId;
+    private String donorFeedbackId;
 
-    public DonationRegistrationDTO(String registrationId, String status, Date dateCreated, String accountId, String eventId) {
-        this.registrationId = registrationId;
-        this.status = status;
-        this.dateCreated = dateCreated;
-        this.accountId = accountId;
-        this.eventId = eventId;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Date getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public String getAccountId() {
-        return accountId;
-    }
-
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
-    public String getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
-
-    public String getRegistrationId() {
-        return registrationId;
-    }
-
-    public void setRegistrationId(String registrationId) {
-        this.registrationId = registrationId;
-    }
-
-    @Override
-    public String toString() {
-        return "DonationRegistrationDTO{" +
-                "registrationId='" + registrationId + '\'' +
-                ", eventId='" + eventId + '\'' +
-                ", accountId='" + accountId + '\'' +
-                ", dateCreated=" + dateCreated +
-                '}';
-    }
     public static DonationRegistrationDTO toDTO(DonationRegistration reg) {
-        DonationRegistrationDTO dto = new DonationRegistrationDTO();
-        dto.setRegistrationId(reg.getRegistrationId());
-        if (reg.getEvent() != null) {
-            dto.setEventId(reg.getEvent().getEventId());
-        } else {
-            dto.setEventId(null);
-        }
-        if (reg.getAccount() != null) {
-            dto.setAccountId(reg.getAccount().getAccountId());
-        } else {
-            dto.setAccountId(null);
-        }
-
-        dto.setDateCreated(reg.getDateCreated());
-        dto.setStatus(reg.getStatus());
-        return dto;
+        return DonationRegistrationDTO.builder()
+                .registrationId(reg.getRegistrationId())
+                .dateCreated(reg.getDateCreated())
+                .status(reg.getStatus())
+                .eventId(reg.getEvent() != null ? reg.getEvent().getEventId() : null)
+                .accountId(reg.getAccount() != null ? reg.getAccount().getAccountId() : null)
+                .componentId(reg.getComponent() != null ? reg.getComponent().getComponent() : null)
+                .healthCheckId(reg.getHealthCheck() != null ? reg.getHealthCheck().getHealthCheckId() : null)
+                .donorFeedbackId(reg.getDonorFeedback() != null ? reg.getDonorFeedback().getFeedbackID() : null)
+                .build();
     }
 }
-

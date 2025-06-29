@@ -43,13 +43,12 @@ public class DonationRegistrationController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<DonationRegistrationDTO> updateDonationRegistration(
-            @PathVariable String id,
-            @RequestBody DonationRegistration donationRegistration
-    ) {
-        DonationRegistrationDTO result = donationRegistrationService.updateDonationRegistration(id, donationRegistration);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<DonationRegistrationDTO> update(@PathVariable String id,
+                                                          @RequestBody DonationRegistrationDTO dto) {
+        return ResponseEntity.ok(donationRegistrationService.updateDonationRegistration(id, dto));
     }
+
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteDonationRegistration(@PathVariable String id) {
