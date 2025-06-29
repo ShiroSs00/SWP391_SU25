@@ -18,7 +18,8 @@ import HealthCheckPage from './features/health-checks/pages/HealthCheckPage'
 import DonationPages from './features/donation-register/pages/donationpages';
 //staff
 import StaffPage from './features/staff/pages/staffPage';
-
+//profile
+import ProfilePage from './features/accounts/pages/profilePage';
 
 function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -48,6 +49,7 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={['STAFF']} />}> 
           <Route path="/staff" element={<StaffPage />} />
         </Route>
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Router>
   );

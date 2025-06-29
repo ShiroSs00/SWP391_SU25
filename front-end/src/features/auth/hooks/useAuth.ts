@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import api from '../../../services/axios/api';
 import { type LoginFormData, type AuthResponse, type RegisterFormData } from '../types/auth.types';
+import { triggerUserStateChange } from '../../../lib/userUtils';
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +15,10 @@ export const useAuth = () => {
       const res = await api.post<AuthResponse>('/auth/login', data);
       const result = res.data;
       localStorage.setItem('authToken', result.token || '');
+      
+      // Trigger user state change event after successful login
+      triggerUserStateChange();
+      
       return result;
     } catch (err: unknown) {
       let message = 'Lỗi không xác định';
@@ -81,6 +86,10 @@ export const useAuth = () => {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       localStorage.removeItem('role'); // nếu có lưu role
+      
+      // Trigger user state change event after logout
+      triggerUserStateChange();
+      
       setIsLoading(false);
     }
   };

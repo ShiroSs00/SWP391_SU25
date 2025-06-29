@@ -10,6 +10,8 @@ export interface AuthResponse {
   message: string;
   token?: string;
   role?: string;
+  name?: string;
+  email?: string;
 }
 
 export interface LoginFormProps {

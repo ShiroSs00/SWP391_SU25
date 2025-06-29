@@ -2,7 +2,6 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
 import LoginForm from '../components/LoginForm';
-import { type Toast } from '../types/auth.types';
 
 interface LoginPageProps {
   showToast: (message: string, type: 'success' | 'error') => void;

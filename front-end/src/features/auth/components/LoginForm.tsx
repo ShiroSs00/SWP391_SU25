@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { LoginFormProps } from '../types/auth.types';
 import { useNavigate } from 'react-router-dom';
+import { setUserInLocalStorage } from '../../../lib/userUtils';
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLogin, showToast, isLoading }) => {
   const [formData, setFormData] = useState({ username: '', password: '' });
@@ -34,8 +35,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, showToast, isLoading }) 
     const response = await onLogin(formData);
     console.log('Full login response:', response);
     if (response.token && response.role) {
-      // Lưu user vào localStorage để ProtectedRoute kiểm tra
-      localStorage.setItem('user', JSON.stringify({ role: response.role }));
+      // Lưu user vào localStorage và trigger event để Header cập nhật
+      const userInfo = {
+        role: response.role,
+        name: response.name || formData.username, // Fallback to username if name not provided
+        email: response.email || formData.username, // Fallback to username if email not provided
+      };
+      console.log('LoginForm - Saving user info:', userInfo);
+      setUserInLocalStorage(userInfo);
       showToast(response.message, 'success');
       const role = response.role.toUpperCase();
       console.log('Login response role:', role);

@@ -1,8 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, Bell, Shield, User, Settings, LogOut, Menu } from "lucide-react";
+import { Heart, Shield, User, Settings, LogOut, Menu } from "lucide-react";
 import { Button } from "../ui/Button";
-// import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -13,6 +12,7 @@ import {
 } from "../ui/dropdown-menu/dropdown-menu";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { cn } from "../../lib/utils";
+import { getUserFromLocalStorage, triggerUserStateChange } from "../../lib/userUtils";
 
 export interface HeaderProps {
     onMenuClick?: () => void
@@ -20,23 +20,42 @@ export interface HeaderProps {
     className?: string
 }
 
-function getUserFromLocalStorage() {
-    const userStr = localStorage.getItem("user");
-    if (!userStr) return null;
-    try {
-        return JSON.parse(userStr);
-    } catch {
-        return null;
-    }
+// Custom hook to track user state changes
+function useUserState() {
+    const [user, setUser] = useState(getUserFromLocalStorage);
+
+    useEffect(() => {
+        // Function to update user state when localStorage changes
+        const updateUserState = () => {
+            setUser(getUserFromLocalStorage());
+        };
+
+        // Listen for storage events (when localStorage changes in other tabs)
+        window.addEventListener('storage', updateUserState);
+
+        // Custom event for same-tab localStorage changes
+        window.addEventListener('userStateChange', updateUserState);
+
+        return () => {
+            window.removeEventListener('storage', updateUserState);
+            window.removeEventListener('userStateChange', updateUserState);
+        };
+    }, []);
+
+    return user;
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, className }) => {
-    const {  logout } = useAuth();
+    const { logout } = useAuth();
     const navigate = useNavigate();
-    const user = getUserFromLocalStorage();
+    const user = useUserState(); // Use the custom hook instead of direct localStorage read
+
+    // Debug logging
+    console.log('Header - Current user state:', user);
 
     const handleLogout = async () => {
         await logout();
+        triggerUserStateChange(); // Trigger state update after logout
         navigate("/");
     };
 
@@ -66,11 +85,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
     return (
         <header
             className={cn(
-                "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+                "sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/80 shadow-sm",
                 className,
             )}
         >
-            <div className="container flex h-16 items-center justify-between px-4">
+            <div className="container flex h-20 items-center justify-between px-6">
                 {/* Left side */}
                 <div className="flex items-center space-x-4">
                     {showMenuButton && (
@@ -79,9 +98,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
                         </Button>
                     )}
 
-                    <Link to="/" className="flex items-center space-x-2">
-                        <Heart className="h-6 w-6 text-red-600" />
-                        <span className="font-bold text-xl text-[#222222]">BloodDonation</span>
+                    <Link to="/" className="flex items-center space-x-3 group">
+                        <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                            <Heart className="h-7 w-7 text-blue-600" />
+                        </div>
+                        <span className="font-bold text-2xl text-gray-800 group-hover:text-blue-600 transition-colors" style={{ fontFamily: 'Inter, sans-serif' }}>
+                            BloodDonation
+                        </span>
                     </Link>
                 </div>
 
@@ -92,59 +115,86 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
                             {/* User Menu */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-56" align="end" forceMount>
-                                    <DropdownMenuLabel className="font-normal">
-                                        <div className="flex flex-col space-y-1">
-                                            <p className="text-sm font-medium leading-none">{user.name}</p>
-                                            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-                                            <div className="flex items-center space-x-1 mt-1">
-                                                <Shield className="h-3 w-3" />
-                                                <span className={cn("text-xs font-medium", getRoleColor(user.role))}>
-                                                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                    <Button variant="ghost" className="relative h-12 px-4 rounded-full hover:bg-gray-50 transition-all duration-200 border border-gray-200 hover:border-gray-300 hover:shadow-md">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg">
+                                                <span className="text-lg font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>{getUserInitials(user.name)}</span>
+                                            </div>
+                                            <div className="hidden md:flex flex-col items-start">
+                                                <span className="text-sm font-semibold text-gray-800 leading-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                    {user.name}
                                                 </span>
+                                                <div className="flex items-center space-x-1">
+                                                    <Shield className="h-3 w-3" />
+                                                    <span className={cn("text-xs font-medium", getRoleColor(user.role))} style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-72 mr-4" align="end" forceMount>
+                                    <DropdownMenuLabel className="font-normal p-4">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg">
+                                                <span className="text-lg font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>{getUserInitials(user.name)}</span>
+                                            </div>
+                                            <div className="flex flex-col space-y-1">
+                                                <p className="text-base font-semibold leading-none text-gray-900" style={{ fontFamily: 'Inter, sans-serif' }}>{user.name}</p>
+                                                <p className="text-sm leading-none text-gray-500" style={{ fontFamily: 'Inter, sans-serif' }}>{user.email}</p>
+                                                <div className="flex items-center space-x-1 mt-2">
+                                                    <Shield className="h-4 w-4" />
+                                                    <span className={cn("text-sm font-medium px-2 py-1 rounded-full bg-gray-100", getRoleColor(user.role))} style={{ fontFamily: 'Inter, sans-serif' }}>
+                                                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
+                                    <DropdownMenuSeparator className="my-2" />
 
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/profile" className="cursor-pointer">
-                                            <User className="mr-2 h-4 w-4" />
-                                            <span>Hồ sơ cá nhân</span>
+                                    <DropdownMenuItem asChild className="py-3 px-4 hover:bg-blue-50 focus:bg-blue-50">
+                                        <Link to="/profile" className="cursor-pointer flex items-center">
+                                            <User className="mr-3 h-5 w-5 text-blue-600" />
+                                            <span className="text-base font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>Hồ sơ cá nhân</span>
                                         </Link>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/dashboard" className="cursor-pointer">
-                                            <Heart className="mr-2 h-4 w-4" />
-                                            <span>Bảng điều khiển</span>
+                                    <DropdownMenuItem asChild className="py-3 px-4 hover:bg-green-50 focus:bg-green-50">
+                                        <Link to="/dashboard" className="cursor-pointer flex items-center">
+                                            <Heart className="mr-3 h-5 w-5 text-green-600" />
+                                            <span className="text-base font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>Bảng điều khiển</span>
                                         </Link>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/settings" className="cursor-pointer">
-                                            <Settings className="mr-2 h-4 w-4" />
-                                            <span>Cài đặt</span>
+                                    <DropdownMenuItem asChild className="py-3 px-4 hover:bg-purple-50 focus:bg-purple-50">
+                                        <Link to="/settings" className="cursor-pointer flex items-center">
+                                            <Settings className="mr-3 h-5 w-5 text-purple-600" />
+                                            <span className="text-base font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>Cài đặt</span>
                                         </Link>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuSeparator />
+                                    <DropdownMenuSeparator className="my-2" />
 
-                                    <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600" onClick={handleLogout}>
-                                        <LogOut className="mr-2 h-4 w-4" />
-                                        <span>Đăng xuất</span>
+                                    <DropdownMenuItem className="py-3 px-4 cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 focus:bg-red-50 focus:text-red-700" onClick={handleLogout}>
+                                        <LogOut className="mr-3 h-5 w-5" />
+                                        <span className="text-base font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>Đăng xuất</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </>
                     ) : (
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3">
                             <Link to="/login">
-                                <Button variant="ghost">Đăng nhập</Button>
+                                <Button variant="outline" className="px-6 py-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                    Đăng nhập
+                                </Button>
                             </Link>
                             <Link to="/register">
-                                <Button>Đăng ký</Button>
+                                <Button className="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                    Đăng ký
+                                </Button>
                             </Link>
                         </div>
                     )}
