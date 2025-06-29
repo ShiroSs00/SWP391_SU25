@@ -115,6 +115,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
                             {/* User Menu */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant='default'
+                                        size="icon"
+                                        className="rounded-full bg-blood-500 text-white font-bold uppercase shadow-md border-2 border-white"
+                                        title={user.name}
+                                    >
+                                        {getUserInitials(user.name)}
+                                    </Button>
                                     <Button variant="ghost" className="relative h-12 px-4 rounded-full hover:bg-gray-50 transition-all duration-200 border border-gray-200 hover:border-gray-300 hover:shadow-md">
                                         <div className="flex items-center space-x-3">
                                             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg">

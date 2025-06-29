@@ -29,8 +29,8 @@ export function HeroSection() {
                     {/* Content */}
                     <div className="text-center lg:text-left animate-slide-up">
                         <div className="mb-6">
-                            <span className="inline-flex items-center px-4 py-2 rounded-full bg-blood-500/20 text-blood-300 text-sm font-medium backdrop-blur-sm border border-blood-500/30">
-                                <HeartSolidIcon className="w-4 h-4 mr-2 animate-heartbeat" />
+                            <span className="inline-flex items-center px-4 py-2 rounded-full bg-blood-500/20 text-blood-600 text-sm font-medium backdrop-blur-sm border border-blood-500/30">
+                                <HeartSolidIcon className="w-4 h-4 mr-2 animate-heartbeat text-blood-600" />
                                 Cứu sống - Kết nối - Hy vọng
                             </span>
                         </div>

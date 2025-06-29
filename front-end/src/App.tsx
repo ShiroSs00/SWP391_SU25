@@ -18,9 +18,15 @@ import HealthCheckPage from './features/health-checks/pages/HealthCheckPage'
 import DonationPages from './features/donation-register/pages/donationpages';
 //staff
 import StaffPage from './features/staff/pages/staffPage';
-//profile
-import ProfilePage from './features/accounts/pages/profilePage';
 
+// BlogPage
+import BlogPage from './features/blog/pages/BlogPage';
+// Feedback Page
+import { FeedbackPage } from "./features/donor-feedback/pages/FeedbackPage.tsx";
+import { SurveyPage } from './features/donor-feedback/pages/SurveyPage.tsx';
+import { FeedbackForm } from './features/donor-feedback/components/FeedbackForm.tsx';
+import { GeneralFeedback } from './features/donor-feedback/pages/GeneralFeedback.tsx';
+import { PersonalInfo } from './features/donor-feedback/components/PersonalInfo.tsx';
 function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -39,14 +45,20 @@ function App() {
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path= "health-check" element={<HealthCheckPage />} />
+        <Route path="health-check" element={<HealthCheckPage />} />
+        <Route path="feedback" element={<FeedbackPage />} />
+        <Route path="/profile" element={<PersonalInfo />} />
+        <Route path="survey" element={<SurveyPage />} />
+        <Route path="feedback-form" element={<FeedbackForm registrationId="" onSubmit={async () => { }} />} />
+        <Route path="general-feedback" element={<GeneralFeedback />} />
+        <Route path="blog-page" element={<BlogPage />} />
         <Route path="/login" element={<LoginPage showToast={showToast} />} />
         <Route path="/register" element={<RegisterPage showToast={showToast} />} />
         <Route path="/donation" element={<DonationPages />} />
         <Route path="/donation/:eventId" element={<DonationPages />} />
-        <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}> 
+        <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="/admin" element={<AdminPage showToast={showToast} />} />        </Route>
-        <Route element={<ProtectedRoute allowedRoles={['STAFF']} />}> 
+        <Route element={<ProtectedRoute allowedRoles={['STAFF']} />}>
           <Route path="/staff" element={<StaffPage />} />
         </Route>
         <Route path="/profile" element={<ProfilePage />} />
