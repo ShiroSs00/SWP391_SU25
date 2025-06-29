@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { getAllEvents, createEvent, updateEvent, deleteEvent, filterEventsByDate } from '../hooks/useEvents';
+import React, { useCallback, useEffect, useState } from 'react';
+import { getAllEvents, createEvent, updateEvent, deleteEvent, deleteMultipleEvents, filterEventsByEndDateRange } from '../hooks/useEvents';
 import type { AdminEvent } from '../types/admin.types';
 import { FaRegEdit, FaTrashAlt, FaPlus, FaCalendarAlt } from 'react-icons/fa';
 
@@ -37,8 +37,9 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
   const [form, setForm] = useState(initialForm);
   const [editId, setEditId] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
+  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -50,11 +51,11 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -98,7 +99,7 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
     setLoading(true);
     setError('');
     try {
-      const data = await filterEventsByDate(dateFilter.start, dateFilter.end);
+      const data = await filterEventsByEndDateRange(dateFilter.start, dateFilter.end);
       setEvents(data);
       if (showToast) showToast('Lọc sự kiện thành công', 'success');
     } catch {
@@ -126,84 +127,128 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
     }
   };
 
+  const toggleEventSelection = (eventId: string) => {
+    setSelectedEvents(prev =>
+      prev.includes(eventId) ? prev.filter(id => id !== eventId) : [...prev, eventId]
+    );
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedEvents.length === 0) {
+      if (showToast) showToast('Vui lòng chọn ít nhất một sự kiện để xóa', 'error');
+      return;
+    }
+    if (window.confirm('Bạn chắc chắn muốn xóa các sự kiện đã chọn?')) {
+      try {
+        await deleteMultipleEvents(selectedEvents);
+        if (showToast) showToast('Xóa các sự kiện thành công', 'success');
+        fetchEvents();
+        setSelectedEvents([]);
+      } catch {
+        if (showToast) showToast('Xóa các sự kiện thất bại', 'error');
+      }
+    }
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-8 mt-8 animate-fade-in">
-      <h2 className="text-2xl font-extrabold mb-6 text-[#b71c1c] tracking-tight animate-fade-in-down">Quản lý sự kiện</h2>
-      <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6 animate-fade-in-up">
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-[#e53935] text-white rounded-full font-semibold shadow hover:bg-[#b71c1c] transition-all duration-200 animate-bounce hover:scale-105" onClick={handleAdd}>
+    <div className="bg-gray-100 rounded-lg shadow-md p-6 mt-6">
+      <h2 className="text-3xl font-bold mb-4 text-red-600">Quản lý sự kiện</h2>
+      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
+        <button className="flex items-center gap-2 px-6 py-3 bg-red-500 text-white rounded-lg font-medium" onClick={handleAdd}>
           <FaPlus className="w-5 h-5" /> Thêm sự kiện
         </button>
-        <div className="flex gap-2 items-center bg-gray-50 px-3 py-2 rounded-full border border-gray-200 animate-fade-in">
+        <div className="flex gap-2 items-center bg-white px-4 py-3 rounded-lg border border-gray-300">
           <span className="text-gray-500"><FaCalendarAlt className="w-5 h-5" /></span>
           <input type="date" name="start" value={dateFilter.start} onChange={handleDateFilterChange} className="border-none outline-none bg-transparent p-1 text-sm" />
-          <span className="mx-1 text-gray-400">-</span>
+          <span className="mx-2 text-gray-400">-</span>
           <input type="date" name="end" value={dateFilter.end} onChange={handleDateFilterChange} className="border-none outline-none bg-transparent p-1 text-sm" />
-          <button type="button" className="ml-2 px-4 py-1.5 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-all duration-200 animate-pulse" onClick={handleDateSearch}>Tìm kiếm</button>
+          <button type="button" className="ml-3 px-5 py-2 bg-blue-500 text-white rounded-lg font-medium" onClick={handleDateSearch}>Tìm kiếm</button>
         </div>
       </div>
       {showForm && (
-        <form className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-6 rounded-xl shadow animate-fade-in-up" onSubmit={handleSubmit}>
-          <input name="nameOfEvent" value={form.nameOfEvent} onChange={handleInputChange} placeholder="Tên sự kiện" className="border p-2 rounded focus:ring-2 focus:ring-[#e53935]" required />
-          <input name="location" value={form.location} onChange={handleInputChange} placeholder="Địa điểm" className="border p-2 rounded focus:ring-2 focus:ring-[#e53935]" required />
-          <input name="startDate" value={form.startDate} onChange={handleInputChange} type="date" className="border p-2 rounded focus:ring-2 focus:ring-[#e53935]" required />
-          <input name="endDate" value={form.endDate} onChange={handleInputChange} type="date" className="border p-2 rounded focus:ring-2 focus:ring-[#e53935]" required />
-          <input name="expectedBloodVolume" value={form.expectedBloodVolume} onChange={handleInputChange} type="number" min={0} placeholder="Dự kiến (đv máu)" className="border p-2 rounded focus:ring-2 focus:ring-[#e53935]" required />
-          <input name="actualVolume" value={form.actualVolume} onChange={handleInputChange} type="number" min={0} placeholder="Đã nhận" className="border p-2 rounded focus:ring-2 focus:ring-[#e53935]" />
-          <select name="status" value={form.status} onChange={handleInputChange} className="border p-2 rounded focus:ring-2 focus:ring-[#e53935]" required>
+        <form className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-lg shadow" onSubmit={handleSubmit}>
+          <input name="nameOfEvent" value={form.nameOfEvent} onChange={handleInputChange} placeholder="Tên sự kiện" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" required />
+          <input name="location" value={form.location} onChange={handleInputChange} placeholder="Địa điểm" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" required />
+          <input name="startDate" value={form.startDate} onChange={handleInputChange} type="date" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" />
+          <input name="endDate" value={form.endDate} onChange={handleInputChange} type="date" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" />
+          <input name="expectedBloodVolume" value={form.expectedBloodVolume} onChange={handleInputChange} type="number" min={0} placeholder="Dự kiến (đv máu)" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" />
+          {editId && (
+            <input name="actualVolume" value={form.actualVolume} onChange={handleInputChange} type="number" min={0} placeholder="Máu đã nhận (đv máu)" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" />
+          )}
+          <select name="status" value={form.status} onChange={handleInputChange} className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" required>
             {EVENT_STATUSES.map(status => (
               <option key={status} value={status}>{status}</option>
             ))}
           </select>
-          <input name="accountId" value={form.accountId} readOnly className="border p-2 rounded bg-gray-100 text-gray-500" required />
-          <div className="col-span-full flex gap-3 mt-2 justify-end">
-            <button type="submit" className="flex items-center gap-1 px-5 py-2 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-all duration-200 animate-fade-in-up">{editId ? 'Cập nhật' : 'Tạo mới'}</button>
-            <button type="button" className="px-5 py-2 bg-gray-300 rounded-full font-semibold hover:bg-gray-400 transition-all duration-200 animate-fade-in-up" onClick={() => setShowForm(false)}>Hủy</button>
+          <div className="col-span-full flex gap-4 mt-4 justify-end">
+            <button type="submit" className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium">{editId ? 'Cập nhật' : 'Tạo mới'}</button>
+            <button type="button" className="px-6 py-3 bg-gray-400 text-white rounded-lg font-medium" onClick={() => setShowForm(false)}>Hủy</button>
           </div>
         </form>
       )}
+      <div className="flex justify-end mb-4">
+        <button
+          className="px-6 py-3 bg-red-500 text-white rounded-lg font-medium"
+          onClick={handleDeleteSelected}
+        >
+          Xóa các sự kiện đã chọn
+        </button>
+      </div>
       {loading ? (
-        <div className="animate-pulse">Đang tải...</div>
+        <div className="text-center text-gray-500">Đang tải...</div>
       ) : error ? (
-        <div className="text-red-600 animate-fade-in-down">{error}</div>
+        <div className="text-center text-red-500">{error}</div>
       ) : (
-        <div className="overflow-x-auto animate-fade-in">
-          <table className="min-w-full border-separate border-spacing-y-2">
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-separate border-spacing-y-3">
             <thead>
-              <tr className="bg-gray-100 text-base text-[#b71c1c]">
-                <th className="px-4 py-2 border-b font-bold">Tên sự kiện</th>
-                <th className="px-4 py-2 border-b font-bold">Thời gian</th>
-                <th className="px-4 py-2 border-b font-bold">Địa điểm</th>
-                <th className="px-4 py-2 border-b font-bold">Dự kiến (đv máu)</th>
-                <th className="px-4 py-2 border-b font-bold">Đã nhận</th>
-                <th className="px-4 py-2 border-b font-bold">Trạng thái</th>
-                <th className="px-4 py-2 border-b font-bold">Hành động</th>
+              <tr className="bg-gray-200 text-lg text-red-600">
+                <th className="px-6 py-3 border-b font-bold">Chọn</th>
+                <th className="px-6 py-3 border-b font-bold">Tên sự kiện</th>
+                <th className="px-6 py-3 border-b font-bold">Thời gian</th>
+                <th className="px-6 py-3 border-b font-bold">Địa điểm</th>
+                <th className="px-6 py-3 border-b font-bold">Dự kiến (đv máu)</th>
+                <th className="px-6 py-3 border-b font-bold">Máu đã nhận</th>
+                <th className="px-6 py-3 border-b font-bold">Trạng thái</th>
+                <th className="px-6 py-3 border-b font-bold">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {events.map(event => (
-                <tr key={event.eventId} className="hover:bg-[#fff3f3] transition-all animate-fade-in-up">
-                  <td className="px-4 py-2 border-b font-semibold">{event.nameOfEvent}</td>
-                  <td className="px-4 py-2 border-b">{new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}</td>
-                  <td className="px-4 py-2 border-b">{event.location}</td>
-                  <td className="px-4 py-2 border-b text-center">{event.expectedBloodVolume}</td>
-                  <td className="px-4 py-2 border-b text-center">{event.actualVolume}</td>
-                  <td className="px-4 py-2 border-b">
+                <tr key={event.eventId}>
+                  <td className="px-6 py-3 border-b text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedEvents.includes(event.eventId)}
+                      onChange={() => toggleEventSelection(event.eventId)}
+                    />
+                  </td>
+                  <td className="px-6 py-3 border-b font-medium text-gray-700">{event.nameOfEvent}</td>
+                  <td className="px-6 py-3 border-b text-gray-700">{
+                    event.startDate ? new Date(event.startDate).toLocaleDateString() : 'Chưa xác định'
+                  } - {
+                    event.endDate ? new Date(event.endDate).toLocaleDateString() : 'Chưa xác định'
+                  }</td>
+                  <td className="px-6 py-3 border-b text-gray-700">{event.location}</td>
+                  <td className="px-6 py-3 border-b text-center text-gray-700">{event.expectedBloodVolume}</td>
+                  <td className="px-6 py-3 border-b text-center text-gray-700">{event.actualVolume}</td>
+                  <td className="px-6 py-3 border-b">
                     {event.status === 'Sắp diễn ra' && (
-                      <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold animate-fade-in">{event.status}</span>
+                      <span className="px-4 py-2 rounded-lg bg-blue-100 text-blue-700 text-sm font-medium">{event.status}</span>
                     )}
                     {event.status === 'Đang diễn ra' && (
-                      <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold animate-fade-in">{event.status}</span>
+                      <span className="px-4 py-2 rounded-lg bg-green-100 text-green-700 text-sm font-medium">{event.status}</span>
                     )}
                     {event.status === 'Đã kết thúc' && (
-                      <span className="px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-xs font-semibold animate-fade-in">{event.status}</span>
+                      <span className="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 text-sm font-medium">{event.status}</span>
                     )}
                   </td>
-                  <td className="px-4 py-2 border-b text-center flex gap-2 justify-center">
-                    <button className="flex items-center gap-1 px-3 py-1 bg-yellow-400 text-white rounded-full hover:bg-yellow-500 transition-all animate-fade-in-up hover:scale-105" onClick={() => handleEdit(event)}>
-                      <FaRegEdit className="w-4 h-4" /> Sửa
+                  <td className="px-6 py-3 border-b text-center flex gap-3 justify-center">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-white rounded-lg" onClick={() => handleEdit(event)}>
+                      <FaRegEdit className="w-5 h-5" /> Sửa
                     </button>
-                    <button className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all animate-fade-in-up hover:scale-105" onClick={() => handleDelete(event.eventId)}>
-                      <FaTrashAlt className="w-4 h-4" /> Xóa
+                    <button className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg" onClick={() => handleDelete(event.eventId)}>
+                      <FaTrashAlt className="w-5 h-5" /> Xóa
                     </button>
                   </td>
                 </tr>

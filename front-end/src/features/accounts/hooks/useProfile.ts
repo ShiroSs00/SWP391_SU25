@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { getProfile } from "../services/accounts.services";
 import { type ProfileData } from "../types/accounts.types";
-
 export const useProfile = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

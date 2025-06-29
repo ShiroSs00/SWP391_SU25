@@ -68,3 +68,11 @@ export const getUserToken = () => {
     return null;
   }
 };
+
+export interface DonationItem {
+  registrationId: string;
+  eventId: string;
+  accountId: string;
+  dateCreated: string;
+  status: string;
+}

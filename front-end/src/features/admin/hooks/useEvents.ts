@@ -8,14 +8,53 @@ export const getAllEvents = async (): Promise<AdminEvent[]> => {
 };
 
 // Tạo mới event
-export const createEvent = async (event: Omit<AdminEvent, 'eventId' | 'creationDate'>): Promise<AdminEvent> => {
-  const res = await api.post<AdminEvent>('/event/create', event);
+export const createEvent = async (event: {
+  nameOfEvent: string;
+  startDate?: string; // Made optional
+  endDate?: string;   // Made optional
+  expectedBloodVolume?: number; // Made optional
+  location: string;
+  status: string;
+  accountId: string;
+}): Promise<{
+  eventId: string;
+  nameOfEvent: string;
+  creationDate: string;
+  startDate?: string; // Made optional
+  endDate?: string;   // Made optional
+  expectedBloodVolume?: number; // Made optional
+  location: string;
+  status: string;
+  accountId: string;
+}> => {
+  const res = await api.post('/event/create', event);
   return res.data;
 };
 
 // Cập nhật event
-export const updateEvent = async (id: string, event: Partial<AdminEvent>): Promise<AdminEvent> => {
-  const res = await api.put<AdminEvent>(`/event/update/${id}`, event);
+export const updateEvent = async (
+  id: string,
+  event: {
+    nameOfEvent?: string;
+    startDate?: string;
+    endDate?: string;
+    expectedBloodVolume?: number;
+    location?: string;
+    status?: string;
+    accountId?: string;
+  }
+): Promise<{
+  eventId: string;
+  nameOfEvent: string;
+  creationDate: string;
+  startDate: string;
+  endDate: string;
+  expectedBloodVolume: number;
+  location: string;
+  status: string;
+  accountId: string;
+}> => {
+  const res = await api.put(`/event/update/${id}`, event);
   return res.data;
 };
 
@@ -24,8 +63,15 @@ export const deleteEvent = async (id: string): Promise<void> => {
   await api.delete(`/event/delete/${id}`);
 };
 
-// Lọc event theo ngày
-export const filterEventsByDate = async (start: string, end: string): Promise<AdminEvent[]> => {
-  const res = await api.get<AdminEvent[]>(`/event/filter/by-date?start=${start}&end=${end}`);
+// Xóa nhiều sự kiện
+export const deleteMultipleEvents = async (ids: string[]): Promise<void> => {
+  await api.delete(`/event/delete-multiple`, {
+    data: ids,
+  });
+};
+
+// Lọc event theo ngày kết thúc
+export const filterEventsByEndDateRange = async (from: string, to: string): Promise<AdminEvent[]> => {
+  const res = await api.get<AdminEvent[]>(`/event/by-end-date-range?from=${from}&to=${to}`);
   return res.data;
 };

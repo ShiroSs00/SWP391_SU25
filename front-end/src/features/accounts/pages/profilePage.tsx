@@ -2,6 +2,7 @@ import React from "react";
 import { Award, MapPin, Phone, Mail, Calendar, User, Camera, Trophy, Heart, Droplet } from "lucide-react";
 import { useProfile } from "../hooks/useProfile";
 import { Header } from "../../../components/layouts/Header"; // Adjust the path if Header is in src/components/layouts/Header.tsx
+import ProfileDonationHistory from "../components/ProfileDonationHistory";
 
 const ProfilePage = () => {
   const { profile, loading, error } = useProfile();
@@ -222,6 +223,11 @@ const ProfilePage = () => {
                 ) : (
                   <p className="text-gray-500">No recent activities available.</p>
                 )}
+              </div>
+
+              {/* Add Blood Donation History */}
+              <div className="mt-6">
+                <ProfileDonationHistory accountId={profile.profileId || ""} />
               </div>
             </div>
           </div>

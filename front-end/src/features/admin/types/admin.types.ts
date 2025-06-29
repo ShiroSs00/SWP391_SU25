@@ -1,9 +1,9 @@
 export interface AdminEvent {
   nameOfEvent: string;
-  startDate: string; // ISO date string
-  endDate: string;   // ISO date string
-  expectedBloodVolume: number;
-  actualVolume: number;
+  startDate?: string; // ISO date string
+  endDate?: string;   // ISO date string
+  expectedBloodVolume?: number; // Made optional
+  actualVolume?: number; // Made optional
   location: string;
   status: string;
   eventId: string;

@@ -25,14 +25,10 @@ const DonationCreate: React.FC<DonationCreateProps> = ({ events, accountId, onSu
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!eventId) {
-      if (showToast) showToast('Vui lòng chọn sự kiện!', 'error');
-      return setLoading(false);
-    }
     setLoading(true);
     try {
-      const payload: DonationCreatePayload = { eventId, accountId, status };
-      await createDonation(eventId, payload);
+      const payload: DonationCreatePayload = { eventId: eventId || 'default-event', accountId, status };
+      await createDonation(eventId || 'default-event', payload);
       if (showToast) showToast('Tạo đăng ký thành công', 'success');
       if (onSuccess) onSuccess();
       setEventId('');
