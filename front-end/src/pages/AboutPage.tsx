@@ -1,7 +1,8 @@
-import { Navigation } from "../components/ui/navigation";
-import { Footer } from "../components/layouts/Footer";
-import { Card, CardContent } from "../components/ui/card";
-import { Heart, Target, Users, Award, Shield, Globe, ArrowRight, CheckCircle, Star } from "lucide-react";
+import { NavigationMenu } from "../components/ui/navigation";
+import Footer from "../components/layouts/Footer";
+import { Card } from "../components/ui/card";
+import { CardContent } from "../components/ui/card";
+import { Heart, Users, Shield, Globe, ArrowRight, CheckCircle, Star } from "lucide-react";
 
 const AboutPage = () => {
   const values = [
@@ -81,7 +82,7 @@ const AboutPage = () => {
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      <Navigation />
+      <NavigationMenu />
       
       {/* Hero Section with Animation */}
       <section className="relative bg-gradient-to-br from-red-600 via-red-700 to-red-800 text-white py-32 overflow-hidden">

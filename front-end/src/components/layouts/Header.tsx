@@ -116,30 +116,12 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
-                                        variant='default'
+                                        variant="default"
                                         size="icon"
                                         className="rounded-full bg-blood-500 text-white font-bold uppercase shadow-md border-2 border-white"
                                         title={user.name}
                                     >
                                         {getUserInitials(user.name)}
-                                    </Button>
-                                    <Button variant="ghost" className="relative h-12 px-4 rounded-full hover:bg-gray-50 transition-all duration-200 border border-gray-200 hover:border-gray-300 hover:shadow-md">
-                                        <div className="flex items-center space-x-3">
-                                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg">
-                                                <span className="text-lg font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>{getUserInitials(user.name)}</span>
-                                            </div>
-                                            <div className="hidden md:flex flex-col items-start">
-                                                <span className="text-sm font-semibold text-gray-800 leading-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                    {user.name}
-                                                </span>
-                                                <div className="flex items-center space-x-1">
-                                                    <Shield className="h-3 w-3" />
-                                                    <span className={cn("text-xs font-medium", getRoleColor(user.role))} style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-72 mr-4" align="end" forceMount>

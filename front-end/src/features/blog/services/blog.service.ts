@@ -9,7 +9,7 @@ import type {
 import api from '../../../services/axios/api';
 
 class BlogService {
-    private baseUrl = '/api/blog';
+    private baseUrl = '/blog';
     private localState: LocalBlogState = {
         postLikes: {},
         commentLikes: {},

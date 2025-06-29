@@ -18,7 +18,7 @@ const BlogPage: React.FC = () => {
         try {
             const token = localStorage.getItem('authToken');
             if (!token) return 'user';
-            const response = await api.get('/api/user/role', {
+            const response = await api.get('/user/role', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             return response.data.role || 'user';

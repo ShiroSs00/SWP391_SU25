@@ -13,12 +13,10 @@ import AdminPage from './features/admin/pages/adminPage';
 //homePages
 import HomePage from './pages/HomePage';
 //health-check
-import HealthCheckPage from './features/health-checks/pages/HealthCheckPage'
 //donation
 import DonationPages from './features/donation-register/pages/donationpages';
 //staff
 import StaffPage from './features/staff/pages/staffPage';
-
 // BlogPage
 import BlogPage from './features/blog/pages/BlogPage';
 // Feedback Page
@@ -26,7 +24,9 @@ import { FeedbackPage } from "./features/donor-feedback/pages/FeedbackPage.tsx";
 import { SurveyPage } from './features/donor-feedback/pages/SurveyPage.tsx';
 import { FeedbackForm } from './features/donor-feedback/components/FeedbackForm.tsx';
 import { GeneralFeedback } from './features/donor-feedback/pages/GeneralFeedback.tsx';
-import { PersonalInfo } from './features/donor-feedback/components/PersonalInfo.tsx';
+//profile
+import ProfilePage from './features/accounts/pages/profilePage';
+
 function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -45,9 +45,7 @@ function App() {
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="health-check" element={<HealthCheckPage />} />
         <Route path="feedback" element={<FeedbackPage />} />
-        <Route path="/profile" element={<PersonalInfo />} />
         <Route path="survey" element={<SurveyPage />} />
         <Route path="feedback-form" element={<FeedbackForm registrationId="" onSubmit={async () => { }} />} />
         <Route path="general-feedback" element={<GeneralFeedback />} />
