@@ -16,6 +16,7 @@ public class BloodDonationEventDTO {
     private Date startDate;
     private Date endDate;
     private Long expectedBloodVolume;
+    private Long actualVolume;
     private String location;
     private String status;
     private String accountId;
@@ -28,6 +29,7 @@ public class BloodDonationEventDTO {
                 .startDate(event.getStartDate())
                 .endDate(event.getEndDate())
                 .expectedBloodVolume(event.getExpectedBloodVolume())
+                .expectedBloodVolume(event.getActualVolume())
                 .location(event.getLocation())
                 .status(event.getStatus())
                 .accountId(event.getAccount() != null ? event.getAccount().getAccountId() : null) // 👈
