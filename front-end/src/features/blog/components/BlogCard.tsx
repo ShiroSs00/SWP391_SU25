@@ -1,14 +1,8 @@
 import React from 'react';
 import { Calendar, User, Eye, Heart, MessageCircle, Clock } from 'lucide-react';
-import type { BlogPost } from '../types/blog.types';
-import { formatDate, formatRelativeTime, truncateText } from '../../../utils/helpers';
+import type { BlogCardProps } from '../types/blog.types';
+import { truncateText, formatRelativeTime } from '../../../utils/formatters';
 
-interface BlogCardProps {
-  post: BlogPost;
-  onClick?: () => void;
-  showExcerpt?: boolean;
-  size?: 'small' | 'medium' | 'large';
-}
 
 const categoryLabels = {
   blood_education: 'Giáo dục về máu',
@@ -50,12 +44,27 @@ const BlogCard: React.FC<BlogCardProps> = ({
     large: 'text-2xl'
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <article 
+    <article
       className={`bg-white rounded-lg shadow-md border border-gray-200 transition-all duration-200 ${
         onClick ? 'cursor-pointer hover:shadow-lg hover:border-red-300' : ''
       } ${sizeClasses[size]}`}
-      onClick={onClick}
+      {...(onClick
+        ? {
+            role: 'button',
+            tabIndex: 0,
+            onClick,
+            onKeyDown: handleKeyDown,
+            'aria-pressed': false,
+          }
+        : {})}
     >
       {/* Featured Image */}
       {post.featuredImage && (

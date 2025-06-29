@@ -31,7 +31,7 @@ function getUserFromLocalStorage() {
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, className }) => {
-    const {  logout } = useAuth();
+    const { logout } = useAuth();
     const navigate = useNavigate();
     const user = getUserFromLocalStorage();
 
@@ -92,6 +92,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
                             {/* User Menu */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant='default'
+                                        size="icon"
+                                        className="rounded-full bg-blood-500 text-white font-bold uppercase shadow-md border-2 border-white"
+                                        title={user.name}
+                                    >
+                                        {getUserInitials(user.name)}
+                                    </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-56" align="end" forceMount>
                                     <DropdownMenuLabel className="font-normal">

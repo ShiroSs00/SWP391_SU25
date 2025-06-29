@@ -105,3 +105,37 @@ export interface LocalBlogState {
   commentLikes: Record<string, { count: number; isLiked: boolean }>;
   localComments: Record<string, BlogComment[]>;
 }
+
+
+export interface BlogCardProps {
+  post: BlogPost;
+  onClick?: () => void;
+  showExcerpt?: boolean;
+  size?: 'small' | 'medium' | 'large';
+}
+
+export interface BlogListProps {
+    onPostClick?: (slug: string) => void;
+    showFilters?: boolean;
+    category?: BlogCategory;
+    limit?: number;
+} 
+
+export interface BlogCommentsProps {
+  postId: string;
+}
+
+export interface BlogEditorProps {
+  initialData?: Partial<BlogForm>;
+  onSave: (data: BlogForm) => Promise<void>;
+  onPreview?: (data: BlogForm) => void;
+  loading?: boolean;
+}
+
+export interface BlogPostPageProps {
+    slug: string;
+}
+
+export interface EditPostPageProps {
+    postId: string;
+}
