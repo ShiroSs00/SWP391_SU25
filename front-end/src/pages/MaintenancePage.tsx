@@ -3,8 +3,8 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Wrench, Clock, RefreshCw, AlertCircle, Twitter, Facebook, Mail } from "lucide-react"
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "../components/ui/Button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 
 const MaintenancePage: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState({

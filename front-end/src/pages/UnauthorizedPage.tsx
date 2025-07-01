@@ -1,12 +1,7 @@
 import React from 'react';
-import { AlertTriangle, Home, ArrowLeft, Mail, Sheild } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-"use client"
-
-import type React from "react"
-import { AlertTriangle, Home, ArrowLeft, Mail, Shield } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { AlertTriangle, Home, ArrowLeft, Mail, Shield } from 'lucide-react';
+import { Button } from "../components/ui/Button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import { useNavigate } from "react-router-dom"
 
 const UnauthorizedPage: React.FC = () => {
