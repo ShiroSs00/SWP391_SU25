@@ -14,7 +14,6 @@ public class BloodRequestResponseDTO {
     private String idBloodRequest;
     private String requesterName; // Tên người đăng ký từ profile
     private String accountName; // Tên tài khoản
-    private String hospitalName;
     private String patientName;
     private LocalDate requestDate;
     private String bloodType;

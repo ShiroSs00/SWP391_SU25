@@ -5,11 +5,9 @@ import com.swp391.bloodcare.dto.request.BloodRequestResponseDTO;
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.Blood;
 import com.swp391.bloodcare.entity.BloodRequest;
-import com.swp391.bloodcare.entity.Hospital;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.BloodRequestRepository;
-import com.swp391.bloodcare.repository.HospitalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +30,7 @@ Các chức năng:
 
 @Service
 @Transactional
-public class BloodRequestService {
+public class  BloodRequestService {
 
     @Autowired
     private BloodRequestRepository bloodRequestRepository;
@@ -40,8 +38,6 @@ public class BloodRequestService {
     @Autowired
     private AccountRepository accountRepository;
 
-    @Autowired
-    private HospitalRepository hospitalRepository;
 
     @Autowired
     private BloodRepository bloodRepository;
@@ -62,7 +58,7 @@ public class BloodRequestService {
 
         br.setIdBloodRequest(generateBloodRequestId());
         br.setAccount(account);
-        Hospital hospital = hospitalRepository.findById(bloodRequestDTO.getHospitalName()).orElseThrow(()-> new RuntimeException("Không tìm thấy bệnh viện: " + bloodRequestDTO.getHospitalName()));
+
 
         Blood blood = bloodRepository.findByBloodCode(bloodRequestDTO.getBloodCode()).orElseThrow(()-> new RuntimeException("Không tìm thấy loại máu: " + bloodRequestDTO.getBloodCode()));
         br.setBloodCode(blood);
@@ -85,7 +81,6 @@ br.setEmergency(bloodRequestDTO.isEmergency());
         dto.setIdBloodRequest(request.getIdBloodRequest());
         dto.setRequesterName(request.getAccount().getProfile().getName()); // Tên người đăng ký
         dto.setAccountName(request.getAccount().getUserName()); // Tên tài khoản
-        dto.setHospitalName(request.getAccount().getHospital().getHospitalName()); // Assuming Hospital has getName()
         dto.setPatientName(request.getPatientName());
         dto.setRequestDate(request.getRequestDate());
         dto.setBloodType(request.getBloodCode().getBloodCode()); // Assuming Blood has getBloodType()
@@ -94,6 +89,14 @@ br.setEmergency(bloodRequestDTO.isEmergency());
         dto.setVolume(request.getVolume());
         dto.setRequestCreationDate(request.getRequestCreationDate());
         return dto;
+    }
+
+    // Lấy tất cả đơn xin máu (cho admin hoặc staff)
+    public List<BloodRequestResponseDTO> getAllBloodRequests() {
+        return bloodRequestRepository.findAll()
+                .stream()
+                .map(this::convertToResponseDTO)
+                .collect(Collectors.toList());
     }
 
 
@@ -160,6 +163,7 @@ br.setEmergency(bloodRequestDTO.isEmergency());
            throw new RuntimeException("Hệ thống đã đạt giới hạn đơn xin máu trong ngày");
 
        }
+
 
 
     }

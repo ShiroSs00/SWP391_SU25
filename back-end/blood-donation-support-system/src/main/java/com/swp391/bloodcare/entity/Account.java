@@ -31,9 +31,7 @@ public class Account{
     @JoinColumn(name = "role_name")
     private Role role;
 
-    @ManyToOne
-    @JoinColumn(name ="hospital_id")
-    private Hospital hospital;
+
 
     @OneToMany(mappedBy ="account")
     private List<BloodRequest> bloodRequests;
@@ -112,7 +110,7 @@ public class Account{
     public Account() {
     }
 
-    public Account(String accountId, String userName, String email, String password, boolean isActive, LocalDate creationDate, Role role, Hospital hospital) {
+    public Account(String accountId, String userName, String email, String password, boolean isActive, LocalDate creationDate, Role role) {
         this.accountId = accountId;
         this.userName = userName;
         this.email = email;
@@ -120,7 +118,7 @@ public class Account{
         this.isActive = isActive;
         this.creationDate = creationDate;
         this.role = role;
-        this.hospital = hospital;
+
     }
 
     public String getAccountId() {
@@ -179,14 +177,6 @@ public class Account{
         this.role = role;
     }
 
-    public Hospital getHospital() {
-        return hospital;
-    }
-
-    public void setHospital(Hospital hospital) {
-        this.hospital = hospital;
-    }
-
     @Override
     public String toString() {
         return "Account{" +
@@ -197,7 +187,6 @@ public class Account{
                 ", isActive=" + isActive +
                 ", creationDate=" + creationDate +
                 ", role=" + role.getRole() +
-                ", hospital=" + hospital.getHospitalName() +
                 '}';
     }
 }

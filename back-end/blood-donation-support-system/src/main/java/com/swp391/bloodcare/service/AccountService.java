@@ -236,15 +236,18 @@ public class AccountService {
         dto.setUserName(account.getUserName());
         dto.setEmail(account.getEmail());
 
-        if("ADMIN".equals(currentUserRole)){
+        if ("ADMIN".equals(currentUserRole)) {
             dto.setPassword(account.getPassword());
-
         } else {
-            dto.setPassword(passwordEncoder.encode(account.getPassword()));
+            dto.setPassword("******"); // hoặc để null
         }
 
         dto.setRole(account.getRole().getRole());
-        dto.setProfileId(account.getProfile().getProfileId());
+        if (account.getProfile() != null) {
+            dto.setProfileId(account.getProfile().getProfileId());
+        } else {
+            dto.setProfileId(null); // hoặc "Chưa cập nhật"
+        }
         dto.setCreationDate(account.getCreationDate());
         return dto;
     }
