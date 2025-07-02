@@ -16,10 +16,6 @@ public class BloodRequest {
     @JoinColumn(name ="name")
     private Account account;
 
-    @ManyToOne()
-    @JoinColumn(name = "hospital_id")
-    private Hospital hospitalId;
-
     @Column(name = "patient_name")
     private String patientName;
 
@@ -46,10 +42,9 @@ public class BloodRequest {
     public BloodRequest() {
     }
 
-    public BloodRequest(String idBloodRequest, Account account, Hospital hospitalId, String patientName, LocalDate requestDate, Blood bloodCode, boolean isEmergency, String status, int volume, LocalDate requestCreationDate) {
+    public BloodRequest(String idBloodRequest, Account account, String patientName, LocalDate requestDate, Blood bloodCode, boolean isEmergency, String status, int volume, LocalDate requestCreationDate) {
         this.idBloodRequest = idBloodRequest;
         this.account = account;
-        this.hospitalId = hospitalId;
         this.patientName = patientName;
         this.requestDate = requestDate;
         this.bloodCode = bloodCode;
@@ -75,13 +70,6 @@ public class BloodRequest {
         this.account = account;
     }
 
-    public Hospital getHospitalId() {
-        return hospitalId;
-    }
-
-    public void setHospitalId(Hospital hospitalId) {
-        this.hospitalId = hospitalId;
-    }
 
     public String getPatientName() {
         return patientName;
@@ -146,7 +134,6 @@ public class BloodRequest {
         return "BloodRequest{" +
                 "idBloodRequest=" + idBloodRequest +
                 ", account=" + account +
-                ", hospitalId=" + hospitalId +
                 ", patientName='" + patientName + '\'' +
                 ", requestDate=" + requestDate +
                 ", bloodCode=" + bloodCode +

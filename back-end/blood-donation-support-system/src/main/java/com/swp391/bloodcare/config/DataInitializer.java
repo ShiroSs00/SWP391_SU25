@@ -41,7 +41,7 @@ public class DataInitializer {
         }
 
         // Tạo tài khoản admin nếu chưa tồn tại
-        if (!accountRepository.existsByUserName("admin")) {
+        if (!accountRepository.existsByUserNameIgnoreCase("admin")) {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             int randomCode = ThreadLocalRandom.current().nextInt(1000);
             String randomPart = String.format("%03d", randomCode);
@@ -62,7 +62,7 @@ public class DataInitializer {
         }
 
         // Tạo tài khoản staff nếu chưa tồn tại
-        if (!accountRepository.existsByUserName("staff")) {
+        if (!accountRepository.existsByUserNameIgnoreCase("staff")) {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             int randomCode = ThreadLocalRandom.current().nextInt(1000);
             String randomPart = String.format("%03d", randomCode);
@@ -90,7 +90,7 @@ public class DataInitializer {
         }
 
 // Tạo tài khoản member nếu chưa tồn tại
-        if (!accountRepository.existsByUserName("member")) {
+        if (!accountRepository.existsByUserNameIgnoreCase("member")) {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             int randomCode = ThreadLocalRandom.current().nextInt(1000);
             String randomPart = String.format("%03d", randomCode);

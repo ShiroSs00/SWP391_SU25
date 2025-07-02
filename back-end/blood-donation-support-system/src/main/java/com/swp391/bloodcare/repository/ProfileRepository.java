@@ -17,7 +17,7 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
             "LEFT JOIN FETCH p.bloodCode b " +
             "LEFT JOIN FETCH p.achievement ach " +
             "LEFT JOIN FETCH a.role r " +
-            "LEFT JOIN FETCH a.hospital h " +
+
             "WHERE a.accountId = :accountId")
     Optional<Profile> findProfileWithDetailsByAccount_AccountId(@Param("accountId") String accountId);
 }
