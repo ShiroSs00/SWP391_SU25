@@ -38,7 +38,8 @@ public class BloodDonationHistoryService {
         return repository.save(history);
     }
 
-    public BloodDonationHistory updateFromHeaclCheck(HealthCheck healthCheck){
+    //update from healthCheck
+    public BloodDonationHistory updateFromHealthCheck(HealthCheck healthCheck){
         DonationRegistration registration = healthCheck.getDonationRegistration();
         BloodDonationHistory history = repository
                 .findByDonationRegistration(registration)
@@ -54,6 +55,7 @@ public class BloodDonationHistoryService {
         return repository.save(history);
     }
 
+    //update from after
     public BloodDonationHistory updateFromAfterDonation(AfterDonationBlood afterDonationBlood){
         HealthCheck healthCheck = afterDonationBlood.getHealthCheck();
         DonationRegistration registration = healthCheck.getDonationRegistration();
@@ -65,6 +67,18 @@ public class BloodDonationHistoryService {
         history.setStatus(mapAfterDonationStatusToHistoryStatus(afterDonationBlood));
 
         return repository.save(history);
+    }
+
+    //Toàn bộ lịch sử theo accountId
+    public List<BloodDonationHistoryDTO> getHistoryByAccountId(String id){
+        List<BloodDonationHistory> histories = repository.findAll();
+        return toDTOList(histories);
+    }
+
+    //tìm kiếm theo nhiều tiêu chí
+    public List<BloodDonationHistoryDTO> searchHistoryByAccountId(String accountId, LocalDate startDate, LocalDate endDate, String event, String status){
+        List<BloodDonationHistory> histories = repository.searchByAccountWithFilters(accountId, startDate, endDate, event, status);
+        return toDTOList(histories);
     }
 
 
