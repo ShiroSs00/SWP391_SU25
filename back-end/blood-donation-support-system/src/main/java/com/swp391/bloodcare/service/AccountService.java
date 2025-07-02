@@ -9,6 +9,7 @@ import com.swp391.bloodcare.entity.Role;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
 import com.swp391.bloodcare.repository.RoleRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,8 @@ public class AccountService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+
+    //tạo account
     @Transactional
     public ApiResponse<String> registerAccount(AccountRegistrationDTO accountRegistration) {
         try{
@@ -67,7 +70,10 @@ public class AccountService {
 
             //tạo profile
             Profile profile = new Profile();
+            String profileId = generateProfileId();
+            profile.setProfileId(profileId);
             profile.setAccount(savedAccount);
+
             profile.setName(accountRegistration.getName());
             profile.setPhone(accountRegistration.getPhone());
             profile.setDob(accountRegistration.getDob());
@@ -96,7 +102,30 @@ public class AccountService {
         }
     }
 
-    public Account findAccountByUserName (String id){
-        return accountRepository.findAccountByUserName(id);
+    public Account findAccountByUserName(String id) {
+        Account acc = accountRepository.findAccountByUserName(id);
+        if (acc == null) {
+            throw new EntityNotFoundException("Không tìm thấy tài khoản với username: " + id);
+        }
+        return acc;
     }
+
+    @Transactional
+    public void setRoleForAccount(String username, String roleName) {
+        Account account = findAccountByUserName(username);
+
+        Role role = roleRepository.findById(roleName)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy vai trò với tên: " + roleName));
+
+        account.setRole(role);
+        accountRepository.save(account);
+    }
+
+    private String generateProfileId() {
+        String datePart = LocalDate.now().toString().replace("-", ""); // yyyyMMdd
+        int randomNum = (int)(Math.random() * 900) + 100; // Tạo số từ 100 - 999
+        return "PF-" + datePart + "-" + randomNum;
+    }
+
+
 }

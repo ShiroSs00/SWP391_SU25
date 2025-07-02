@@ -38,9 +38,9 @@ public class DonationRegistration {
     @JoinColumn(name = "component_id")
     private Component component;
 
-    @OneToOne(mappedBy = "donationRegistration", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "donationRegistration", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
     private HealthCheck healthCheck;
 
-    @OneToOne(mappedBy = "donationRegistration", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "donationRegistration", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
     private DonorFeedback donorFeedback;
 }
