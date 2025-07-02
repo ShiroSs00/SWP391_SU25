@@ -14,7 +14,6 @@ import java.util.Optional;
 
 
 public interface BloodDonationHistoryRepository extends JpaRepository<BloodDonationHistory, String> {
-    Optional<BloodDonationHistory> findByBloodDonationId(DonationRegistration donationRegistration);
     Optional<BloodDonationHistory> findByDonationRegistration(DonationRegistration donationRegistration);
 
     List<BloodDonationHistory> findByAccount(Account account);
