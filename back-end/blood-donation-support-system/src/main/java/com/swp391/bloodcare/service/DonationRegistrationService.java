@@ -93,7 +93,7 @@ public class DonationRegistrationService {
         }
 
         if (dto.getComponentId() != null) {
-            Component component = componentRepository.findComponentByComponent(dto.getComponentId())
+            Component component = componentRepository.findByComponent(dto.getComponentId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thành phần"));
             existing.setComponent(component);
         }

@@ -38,7 +38,7 @@ public class BloodBagService {
 
         // Gán WaitingList nếu có
         if (dto.getWaitingListId() != null) {
-            WaitingList waitingList = waitingListRepository.findByWaitListId(dto.getWaitingListId())
+            WaitingList waitingList = waitingListRepository.findById(dto.getWaitingListId())
                     .orElseThrow(() -> new EntityNotFoundException("Waiting list not found"));
             entity.setWaitingList(waitingList);
         }
@@ -72,7 +72,7 @@ public class BloodBagService {
         existing.setStatus(dto.getStatus());
 
         if (dto.getWaitingListId() != null) {
-            WaitingList waitingList = waitingListRepository.findByWaitListId(dto.getWaitingListId())
+            WaitingList waitingList = waitingListRepository.findById(dto.getWaitingListId())
                     .orElseThrow(() -> new EntityNotFoundException("Waiting list not found"));
             existing.setWaitingList(waitingList);
         } else {

@@ -49,12 +49,9 @@ public class BloodDonationEvent {
     @JoinColumn(name = "account_id_create")
     private Account account;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
-    private List<BloodDonationHistory> bloodDonationHistoryList = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
     private List<DonationRegistration> donationRegistrations = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
-    private List<BloodDonationHistory> bloodDonationHistories = new ArrayList<>();
+
 }

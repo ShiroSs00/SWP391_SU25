@@ -88,5 +88,4 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
     boolean existsByAccountId(String accountId);
 
-    List<Account> findByRole_Role(String roleRole);
 }
