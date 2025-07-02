@@ -47,7 +47,7 @@ public interface BloodDonationHistoryRepository extends JpaRepository<BloodDonat
 
     // Lấy donation gần nhất theo account
     @Query("SELECT h FROM BloodDonationHistory h " +
-            "WHERE h.account.id = :accountId " +
+            "WHERE h.account.accountId = :accountId " +
             "ORDER BY h.donationRegistration.dateCreated DESC")
     List<BloodDonationHistory> findRecentByAccountId(@Param("accountId") String accountId);
 }
