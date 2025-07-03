@@ -2,10 +2,7 @@ package com.swp391.bloodcare.dto.account;
 
 import com.swp391.bloodcare.dto.AddressDTO;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,7 +28,7 @@ public class AccountRegistrationDTO {
     @NotBlank(message = "Tên không được để trống")
     private String name;
 
-    @NotBlank(message = "Số điện thoại không được để trống")
+    @Pattern(regexp = "^(0[0-9]{9,10})$", message = "Số điện thoại không hợp lệ")
     private String phone;
 
     @NotNull(message = "Ngày sinh không được bỏ trống")

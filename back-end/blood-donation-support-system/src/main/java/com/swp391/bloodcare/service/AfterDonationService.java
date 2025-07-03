@@ -8,6 +8,7 @@ import com.swp391.bloodcare.repository.AfterDonationRepository;
 import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.HealthCheckRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,12 @@ public class AfterDonationService {
     private final AfterDonationRepository afterRepo;
     private final HealthCheckRepository healthCheckRepo;
     private final BloodRepository bloodRepo;
+
+    @Autowired
+    private BloodDonationHistoryService bloodDonationHistoryService;
+
+    @Autowired
+    private ProfileService profileService;
 
     public AfterDonationService(AfterDonationRepository afterRepo, HealthCheckRepository healthCheckRepo, BloodRepository bloodRepo) {
         this.afterRepo = afterRepo;
@@ -67,6 +74,14 @@ public class AfterDonationService {
             existing.setStatus(dto.getStatus());
         if (dto.getNote() != null && !dto.getNote().isBlank())
             existing.setNote(dto.getNote());
+        //update trạng thái cho lịch sử
+        bloodDonationHistoryService.updateFromAfterDonation(existing);
+
+        //update tăng cho số lần hiến máu
+        if("Đã hoàn thành".equalsIgnoreCase(dto.getStatus())){
+            String accountId = existing.getHealthCheck().getDonationRegistration().getAccount().getAccountId();
+            profileService.increaseBloodDonationCount(accountId);
+        }
 
         return toDTO(afterRepo.save(existing));
     }

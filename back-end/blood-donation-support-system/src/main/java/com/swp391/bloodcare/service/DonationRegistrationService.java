@@ -4,6 +4,7 @@ import com.swp391.bloodcare.dto.DonationRegistrationDTO;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +29,16 @@ public class DonationRegistrationService {
 
     private final EventRepository eventRepository;
 
+
     public final FeedbackRepository feedbackRepository;
 
     public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, HealthCheckRepository healthCheckRepository, ComponentRepository componentRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
+
+    @Autowired
+    private BloodDonationHistoryService bloodDonationHistoryService;
+
+    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository) {
+
         this.donationRegistrationRepository = donationRegistrationRepository;
         this.accountRepository = accountRepository;
         this.healthCheckRepository = healthCheckRepository;
@@ -63,6 +71,8 @@ public class DonationRegistrationService {
                     .orElseThrow(() -> new EntityNotFoundException("Event not found with ID: " + eventId));
             donationRegistration.setEvent(event);
         }
+
+        bloodDonationHistoryService.create(donationRegistration);
 
         return toDTO(donationRegistrationRepository.save(donationRegistration));
     }
@@ -112,6 +122,12 @@ public class DonationRegistrationService {
 
         DonationRegistration saved = donationRegistrationRepository.save(existing);
         return DonationRegistrationDTO.toDTO(saved);
+
+        //update
+        bloodDonationHistoryService.create(existing);
+        // Lưu và trả về DTO
+        return toDTO(donationRegistrationRepository.save(existing));
+
     }
 
 

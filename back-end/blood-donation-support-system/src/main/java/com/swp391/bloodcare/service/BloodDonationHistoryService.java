@@ -1,6 +1,7 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.BloodDonationHistoryDTO;
+import com.swp391.bloodcare.dto.BloodDonationStatisticsDTO;
 import com.swp391.bloodcare.entity.AfterDonationBlood;
 import com.swp391.bloodcare.entity.BloodDonationHistory;
 import com.swp391.bloodcare.entity.DonationRegistration;
@@ -38,7 +39,8 @@ public class BloodDonationHistoryService {
         return repository.save(history);
     }
 
-    public BloodDonationHistory updateFromHeaclCheck(HealthCheck healthCheck){
+    //update from healthCheck
+    public BloodDonationHistory updateFromHealthCheck(HealthCheck healthCheck){
         DonationRegistration registration = healthCheck.getDonationRegistration();
         BloodDonationHistory history = repository
                 .findByDonationRegistration(registration)
@@ -54,6 +56,7 @@ public class BloodDonationHistoryService {
         return repository.save(history);
     }
 
+    //update from after
     public BloodDonationHistory updateFromAfterDonation(AfterDonationBlood afterDonationBlood){
         HealthCheck healthCheck = afterDonationBlood.getHealthCheck();
         DonationRegistration registration = healthCheck.getDonationRegistration();
@@ -66,6 +69,47 @@ public class BloodDonationHistoryService {
 
         return repository.save(history);
     }
+
+    //Toàn bộ lịch sử theo accountId
+    public List<BloodDonationHistoryDTO> getHistoryByAccountId(String id){
+        List<BloodDonationHistory> histories = repository.findAll();
+        return toDTOList(histories);
+    }
+
+    //tìm kiếm theo nhiều tiêu chí
+    public List<BloodDonationHistoryDTO> searchHistoryByAccountId(String accountId, LocalDate startDate, LocalDate endDate, String event, String status){
+        List<BloodDonationHistory> histories = repository.searchByAccountWithFilters(accountId, startDate, endDate, event, status);
+        return toDTOList(histories);
+    }
+
+    //. thông số
+//    public BloodDonationStatisticsDTO getStatisticsByAccountId(String accountId){
+//        List<BloodDonationHistory> histories = repository.findAll();
+//
+//        BloodDonationStatisticsDTO dto = new BloodDonationStatisticsDTO();
+//        dto.setTotalDonations(histories.size());
+//
+//        long completedCount = histories.stream().filter(h ->h.getStatus() != null && h.getStatus().contains("COMPLETED")).count();
+//        dto.setCompletedDonations((int)completedCount);
+//
+//        long failedCount = histories.stream().filter(h->h.getStatus() != null && h.getStatus().contains("FAILED") || h.getStatus().contains("REJECTED")).count();
+//        dto.setFailedDonations((int)failedCount);
+//
+//        long pendingCount = histories.stream().filter(h->h.getStatus() != null && h.getStatus().contains("PENDING")  || h.getStatus().contains("PROCESSING")).count();
+//        dto.setPendingDonations((int)pendingCount);
+//
+//        long totalVolume = histories.stream()
+//                .filter(h -> h.getHealthCheck() != null)
+//                .mapToLong(h -> h.getHealthCheck().getVolumeToTake())
+//                .sum();
+//        dto.setTotalVolumeToTake(totalVolume);
+//
+//        // Most recent donation
+//        histories.stream()
+//                .filter(h -> h.getDonationRegistration() != null && h.getDonationRegistration().getEvent().get != null)
+//                .findFirst()
+//                .ifPresent(h -> stats.setMostRecentDonationDate(h.getDonationRegistration().getRegistrationDate().toString()));
+//    }
 
 
     public BloodDonationHistoryDTO convertToDTO(BloodDonationHistory bloodDonationHistory) {
