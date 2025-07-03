@@ -6,6 +6,7 @@ import com.swp391.bloodcare.entity.HealthCheck;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import com.swp391.bloodcare.repository.HealthCheckRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,9 @@ public class HealthCheckService {
     private final HealthCheckRepository healthCheckRepository;
 
     private final DonationRegistrationRepository donationRegistrationRepository;
+
+    @Autowired
+    private BloodDonationHistoryService bloodDonationHistoryService;
 
     public HealthCheckService(HealthCheckRepository healthCheckRepository, DonationRegistrationRepository donationRegistrationRepository) {
         this.healthCheckRepository = healthCheckRepository;
@@ -66,6 +70,7 @@ public class HealthCheckService {
         healthCheck.setHealthCheckId(generateHealthCheckId());
 
         HealthCheck saved = healthCheckRepository.save(healthCheck);
+
         return toDTO(saved);
     }
 
@@ -85,6 +90,7 @@ public class HealthCheckService {
         if (dto.getVolumeToTake() != null) existing.setVolumeToTake(dto.getVolumeToTake());
         if (dto.getIsFitToDonate() != null) existing.setFitToDonate(dto.getIsFitToDonate());
         if (dto.getNote() != null && !dto.getNote().isBlank()) existing.setNote(dto.getNote());
+        bloodDonationHistoryService.updateFromHealthCheck(existing);
         return toDTO(healthCheckRepository.save(existing));
     }
 

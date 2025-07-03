@@ -8,6 +8,7 @@ import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import com.swp391.bloodcare.repository.EventRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,9 @@ public class DonationRegistrationService {
     private final AccountRepository accountRepository;
 
     private final EventRepository eventRepository;
+
+    @Autowired
+    private BloodDonationHistoryService bloodDonationHistoryService;
 
     public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository) {
         this.donationRegistrationRepository = donationRegistrationRepository;
@@ -58,6 +62,8 @@ public class DonationRegistrationService {
                     .orElseThrow(() -> new EntityNotFoundException("Event not found with ID: " + eventId));
             donationRegistration.setEvent(event);
         }
+
+        bloodDonationHistoryService.create(donationRegistration);
 
         return toDTO(donationRegistrationRepository.save(donationRegistration));
     }
@@ -92,6 +98,8 @@ public class DonationRegistrationService {
             existing.setComponent(updatedData.getComponent());
         }
 
+        //update
+        bloodDonationHistoryService.create(existing);
         // Lưu và trả về DTO
         return toDTO(donationRegistrationRepository.save(existing));
     }

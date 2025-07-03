@@ -82,33 +82,34 @@ public class BloodDonationHistoryService {
         return toDTOList(histories);
     }
 
-    public BloodDonationStatisticsDTO getStatisticsByAccountId(String accountId){
-        List<BloodDonationHistory> histories = repository.findAll();
-
-        BloodDonationStatisticsDTO dto = new BloodDonationStatisticsDTO();
-        dto.setTotalDonations(histories.size());
-
-        long completedCount = histories.stream().filter(h ->h.getStatus() != null && h.getStatus().contains("COMPLETED")).count();
-        dto.setCompletedDonations((int)completedCount);
-
-        long failedCount = histories.stream().filter(h->h.getStatus() != null && h.getStatus().contains("FAILED") || h.getStatus().contains("REJECTED")).count();
-        dto.setFailedDonations((int)failedCount);
-
-        long pendingCount = histories.stream().filter(h->h.getStatus() != null && h.getStatus().contains("PENDING")  || h.getStatus().contains("PROCESSING")).count();
-        dto.setPendingDonations((int)pendingCount);
-
-        long totalVolume = histories.stream()
-                .filter(h -> h.getHealthCheck() != null)
-                .mapToLong(h -> h.getHealthCheck().getVolumeToTake())
-                .sum();
-        dto.setTotalVolumeToTake(totalVolume);
-
-        // Most recent donation
-        histories.stream()
-                .filter(h -> h.getDonationRegistration() != null && h.getDonationRegistration().getEvent().get != null)
-                .findFirst()
-                .ifPresent(h -> stats.setMostRecentDonationDate(h.getDonationRegistration().getRegistrationDate().toString()));
-    }
+    //. thông số
+//    public BloodDonationStatisticsDTO getStatisticsByAccountId(String accountId){
+//        List<BloodDonationHistory> histories = repository.findAll();
+//
+//        BloodDonationStatisticsDTO dto = new BloodDonationStatisticsDTO();
+//        dto.setTotalDonations(histories.size());
+//
+//        long completedCount = histories.stream().filter(h ->h.getStatus() != null && h.getStatus().contains("COMPLETED")).count();
+//        dto.setCompletedDonations((int)completedCount);
+//
+//        long failedCount = histories.stream().filter(h->h.getStatus() != null && h.getStatus().contains("FAILED") || h.getStatus().contains("REJECTED")).count();
+//        dto.setFailedDonations((int)failedCount);
+//
+//        long pendingCount = histories.stream().filter(h->h.getStatus() != null && h.getStatus().contains("PENDING")  || h.getStatus().contains("PROCESSING")).count();
+//        dto.setPendingDonations((int)pendingCount);
+//
+//        long totalVolume = histories.stream()
+//                .filter(h -> h.getHealthCheck() != null)
+//                .mapToLong(h -> h.getHealthCheck().getVolumeToTake())
+//                .sum();
+//        dto.setTotalVolumeToTake(totalVolume);
+//
+//        // Most recent donation
+//        histories.stream()
+//                .filter(h -> h.getDonationRegistration() != null && h.getDonationRegistration().getEvent().get != null)
+//                .findFirst()
+//                .ifPresent(h -> stats.setMostRecentDonationDate(h.getDonationRegistration().getRegistrationDate().toString()));
+//    }
 
 
     public BloodDonationHistoryDTO convertToDTO(BloodDonationHistory bloodDonationHistory) {
