@@ -8,6 +8,7 @@ import com.swp391.bloodcare.dto.profile.ProfileResponseDTO;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,9 +57,6 @@ public class ProfileService {
         }catch(Exception e){
             return new ApiResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
         }
-
-
-
 
     }
 
@@ -145,6 +143,16 @@ public class ProfileService {
 
     }
 
+    public void increaseBloodDonationCount(String accountId){
+        Profile profile = profileRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy profile cho accountId: " + accountId));
+        Long current = profile.getNumberOfBloodDonation();
+        if(current == null)
+            current = 0L;
+        profile.setNumberOfBloodDonation(current + 1);
+        profileRepository.save(profile);
+    }
+
     private ProfileResponseDTO mapToProfileResponseDTO(Account account, Profile profile) {
         ProfileResponseDTO prd = new ProfileResponseDTO();
 
@@ -156,7 +164,7 @@ public class ProfileService {
         prd.setIsActive(account.isActive());
 
         //Proflie info
-prd.setProfileId(profile.getProfileId());
+        prd.setProfileId(profile.getProfileId());
         prd.setName(profile.getName());
         prd.setPhone(profile.getPhone());
         prd.setDob(profile.getDob());
