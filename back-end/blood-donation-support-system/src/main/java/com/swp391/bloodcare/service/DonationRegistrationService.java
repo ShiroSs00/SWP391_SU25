@@ -32,12 +32,10 @@ public class DonationRegistrationService {
 
     public final FeedbackRepository feedbackRepository;
 
-    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, HealthCheckRepository healthCheckRepository, ComponentRepository componentRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
-
     @Autowired
     private BloodDonationHistoryService bloodDonationHistoryService;
 
-    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository) {
+    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, HealthCheckRepository healthCheckRepository, ComponentRepository componentRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
 
         this.donationRegistrationRepository = donationRegistrationRepository;
         this.accountRepository = accountRepository;
