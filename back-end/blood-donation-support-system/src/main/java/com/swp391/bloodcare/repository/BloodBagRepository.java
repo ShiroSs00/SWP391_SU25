@@ -1,7 +1,15 @@
 package com.swp391.bloodcare.repository;
-
 import com.swp391.bloodcare.entity.BloodBag;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface BloodBagRepository  extends JpaRepository<BloodBag, String> {
+import java.util.Optional;
+
+public interface BloodBagRepository extends JpaRepository<BloodBag, Integer> {
+    boolean existsByBagId(String bagId);
+
+    Optional<BloodBag> findByBagId(String bagId);
+
+    void deleteBloodBagBybagId(String bagId);
+
+    Optional<BloodBag> findByAfterDonationBlood_IdAfterDonation(String afterDonationBloodIdAfterDonation);
 }

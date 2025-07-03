@@ -19,21 +19,27 @@ public class BlogController {
         this.blogService = blogService;
     }
 
+    @GetMapping("/latest")
+    public ResponseEntity<List<BlogDTO>> getLatestBlogs() {
+        List<BlogDTO> latestBlogs = blogService.getLatestBlogs();
+        return ResponseEntity.ok(latestBlogs);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<BlogDTO> createBlog(@RequestBody BlogDTO dto) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        BlogDTO blog =  blogService.createBlogByUserName( dto, username);
+        String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
+        BlogDTO blog =  blogService.createBlogByUserName( dto, accountId);
         return ResponseEntity.status(201).body(blog);
     }
 
 
 
-    @GetMapping("/getall")
+    @GetMapping("/get_all")
         public ResponseEntity<List<BlogDTO>> getAll() {
             return ResponseEntity.ok(blogService.getAllBlogs());
         }
 
-        @GetMapping("/getbyid/{id}")
+        @GetMapping("/get_by_id/{id}")
         public ResponseEntity<BlogDTO> getById(@PathVariable String id) {
             return ResponseEntity.ok(blogService.getBlogById(id));
         }

@@ -1,11 +1,9 @@
 package com.swp391.bloodcare.config;
 
 import com.swp391.bloodcare.entity.Account;
-import com.swp391.bloodcare.entity.Profile;
 import com.swp391.bloodcare.entity.Role;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.RoleRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Component

@@ -2,6 +2,7 @@ package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.BlogDTO;
 import com.swp391.bloodcare.entity.Blog;
+import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.BlogRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -9,24 +10,32 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BlogService {
 
     private final BlogRepository blogRepository;
-    private final AccountService accountService;
+    private final AccountRepository accountRepository;
 
-    public BlogService(BlogRepository blogRepository, AccountService accountService) {
+    public BlogService(BlogRepository blogRepository, AccountRepository accountRepository) {
         this.blogRepository = blogRepository;
-        this.accountService = accountService;
+        this.accountRepository = accountRepository;
     }
-
 
     public BlogDTO getBlogById(String blogId) {
         Blog blog = blogRepository.findBlogByBlogId(blogId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Blog với ID: " + blogId));
         return BlogDTO.toDTO(blog);
     }
+
+    public List<BlogDTO> getLatestBlogs() {
+        List<Blog> latestBlogs = blogRepository.findTop5ByOrderByPostDateDesc();
+        return latestBlogs.stream()
+                .map(BlogDTO::toDTO)
+                .collect(Collectors.toList());
+    }
+
 
     public List<BlogDTO> getAllBlogs() {
         return blogRepository.findAll().stream()
@@ -41,8 +50,6 @@ public class BlogService {
         if (dto.getContent() != null && !dto.getContent().isBlank())
             blog.setContent(dto.getContent());
 
-        if (dto.getConponent() != null && !dto.getConponent().isBlank())
-            blog.setComponent(dto.getConponent());
 
         if (dto.getTagName() != null)
             blog.setTagName(dto.getTagName());
@@ -58,19 +65,16 @@ public class BlogService {
         return BlogDTO.toDTO(blog);
     }
 
-    public BlogDTO createBlogByUserName(BlogDTO dto, String userName) {
+    public BlogDTO createBlogByUserName(BlogDTO dto, String accountId) {
         if (dto.getContent() == null || dto.getContent().isBlank()) {
             throw new IllegalArgumentException("Nội dung blog không được để trống");
-        }
-        if (dto.getConponent() == null || dto.getConponent().isBlank()) {
-            throw new IllegalArgumentException("Tên component không được để trống");
         }
 
         Blog blog = BlogDTO.toEntity(dto);
         blog.setBlogId(generateUniqueBlogId());
         blog.setPostDate(new Date());
 
-        blog.setAccount(accountService.findAccountByUserName(userName));
+        blog.setAccount(accountRepository.findAccountByAccountId(accountId));
 
         return BlogDTO.toDTO(blogRepository.save(blog));
     }

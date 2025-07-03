@@ -46,11 +46,11 @@ public class WaitingListService {
     public WaitingListResponseDTO assignBloodBag(String waitListId, String bloodBagId){
         WaitingList wl1 = waitingListRepository.findById(waitListId).orElseThrow(()-> new RuntimeException("Không tìm thấy waiting list: " + waitListId));
 
-        BloodBag bloodBag = bloodBagRepository.findById(bloodBagId)
+        BloodBag bloodBag = bloodBagRepository.findByBagId(bloodBagId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy túi máu: " + bloodBagId));
 
         //kiểm tra túi máu đã sử dung chưa?
-        if (bloodBag.getStatus() == BloodBag.statusBloodBag.USED) {
+        if ("USED".equals(bloodBag.getStatus())) {
             throw new RuntimeException("Túi máu này đã được sử dụng");
         }
 
@@ -58,7 +58,7 @@ public class WaitingListService {
             throw new RuntimeException("Nhóm máu không tương thích!");
         }
         // cập nhật trạng thái túi máu
-        bloodBag.setStatus(BloodBag.statusBloodBag.USED);
+        bloodBag.setStatus("USED");
         bloodBagRepository.save(bloodBag);
 
         //cập nhật waiting list

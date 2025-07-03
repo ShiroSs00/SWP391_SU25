@@ -50,7 +50,6 @@ public class BloodDonationEvent {
     private Account account;
 
 
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "event")
     private List<DonationRegistration> donationRegistrations = new ArrayList<>();
 

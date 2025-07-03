@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface ComponentRepository extends JpaRepository<Component, String> {
     Optional<Component> findByComponent(String component);
     boolean existsByComponent(String component);
-
+    
 }

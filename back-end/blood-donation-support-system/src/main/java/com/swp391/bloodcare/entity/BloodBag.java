@@ -33,23 +33,15 @@ public class BloodBag {
     @Column(name = "expiration_Date")
     private Date expirationDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private statusBloodBag status;
+    @Column(nullable = false)
+    private String status;
 
     @OneToOne(mappedBy = "bloodBag", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "after_donation_id")
     private AfterDonationBlood afterDonationBlood;
 
     // Nếu sau này bạn muốn dùng cho việc matching máu:
-    /*
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "match_request_id")
-    private BloodMatchRequest bloodMatchRequest;
-    */
-
-
-    public enum statusBloodBag{
-        AVAILABLE, USED, EXPIRED, DISCARDED
-    }
+    @JoinColumn(name = "wait_list_id")
+    private WaitingList waitingList;
 }

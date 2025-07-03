@@ -26,9 +26,6 @@ public class Blog {
     @Column(name = "post_date", nullable = false)
     private Date postDate;
 
-    @Column(name = "component", nullable = false)
-    private String component;
-
     @Column(name = "tag_name")
     private String tagName;
 

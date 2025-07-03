@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "donor_feedback")
+@Table(name = "feedback_of_donor")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,7 +35,9 @@ public class DonorFeedback {
     @OneToOne
     @JoinColumn(
             name = "registration_id",
-            foreignKey = @ForeignKey(name = "FK_DONOR_FEEDBACK_REGISTRATION")
+            referencedColumnName = "registration_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_feedback_registration")
     )
     private DonationRegistration donationRegistration;
 }
