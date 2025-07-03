@@ -2,8 +2,11 @@ package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.AchievementDTO;
 import com.swp391.bloodcare.entity.Achievement;
+import com.swp391.bloodcare.entity.Profile;
 import com.swp391.bloodcare.repository.AchievementRepository;
+import com.swp391.bloodcare.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +17,28 @@ import java.util.stream.Collectors;
 public class AchievementService {
 
     private final AchievementRepository achievementRepository;
+
+    @Autowired
+    private ProfileRepository profileRepository;
+
+    public Achievement findAchievementByDonationCount(long donationCount) {
+        return achievementRepository.findAll().stream()
+                .filter(a -> donationCount >= a.getMinValue() &&
+                        (a.getMaxValue() == null || donationCount < a.getMaxValue()))
+                .findFirst()
+                .orElse(null);
+    }
+    public void updateAchievementForProfile(Profile profile) {
+        long count = profile.getNumberOfBloodDonation();
+        Achievement newAchievement = findAchievementByDonationCount(count);
+        profile.setAchievement(newAchievement);
+        profileRepository.save(profile);
+    }
+
+
+
+
+
 
     public List<AchievementDTO> getAllAchievements() {
         return achievementRepository.findAll().stream()

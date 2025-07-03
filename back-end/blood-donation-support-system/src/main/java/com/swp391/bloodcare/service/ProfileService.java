@@ -36,6 +36,9 @@ public class ProfileService {
     @Autowired
     private ProfileRepository profileRepository;
 
+    @Autowired
+    private AchievementService achievementService;
+
     // Lấy account theo AccountId
     public ApiResponse<ProfileResponseDTO> getProfileByAccountId(String accountId){
         try{
@@ -150,6 +153,7 @@ public class ProfileService {
         if(current == null)
             current = 0L;
         profile.setNumberOfBloodDonation(current + 1);
+        achievementService.updateAchievementForProfile(profile);
         profileRepository.save(profile);
     }
 

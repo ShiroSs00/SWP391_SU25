@@ -21,6 +21,12 @@ public class Achievement {
     @Column(name = "description")
     private String description;
 
+    @Column(name ="min_value")
+    private Long minValue;
+
+    @Column(name ="max_value")
+    private Long maxValue;
+
     @OneToMany(mappedBy = "achievement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Profile> profiles;
 }

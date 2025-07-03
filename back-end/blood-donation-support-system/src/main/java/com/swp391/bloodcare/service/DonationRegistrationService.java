@@ -118,13 +118,13 @@ public class DonationRegistrationService {
             existing.setDonorFeedback(feedback);
         }
 
+
         DonationRegistration saved = donationRegistrationRepository.save(existing);
+        //update history
+        bloodDonationHistoryService.create(existing);
         return DonationRegistrationDTO.toDTO(saved);
 
-        //update
-        bloodDonationHistoryService.create(existing);
-        // Lưu và trả về DTO
-        return toDTO(donationRegistrationRepository.save(existing));
+
 
     }
 
