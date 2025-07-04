@@ -1,5 +1,6 @@
 package com.swp391.bloodcare.dto.profile;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp391.bloodcare.dto.AddressDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class ProfileResponseDTO {
     private String email;
     private String name;
     private String phone;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date dob;
     private Boolean gender;
     private AddressDTO address;
