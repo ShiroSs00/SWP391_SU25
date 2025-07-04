@@ -39,7 +39,7 @@ public class BloodDonationEventDTO {
 
     @NotBlank(message = "Trạng thái không được để trống")
     private String status;
-    
+
     private String accountId;
 
     public static BloodDonationEventDTO toDTO(BloodDonationEvent event) {

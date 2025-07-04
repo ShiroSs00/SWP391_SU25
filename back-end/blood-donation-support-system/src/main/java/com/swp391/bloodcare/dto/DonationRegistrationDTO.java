@@ -1,8 +1,8 @@
 package com.swp391.bloodcare.dto;
 
 import com.swp391.bloodcare.entity.DonationRegistration;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -24,7 +24,7 @@ public class DonationRegistrationDTO {
     private String status;
 
     @NotNull(message = "Ngày hiến máu không được để trống")
-    @PastOrPresent(message = "Ngày hiến máu không được lớn hơn ngày hiện tại")
+    @FutureOrPresent(message = "Ngày hiến máu không được nhỏ hơn ngày hiện tại")
     private LocalDate donationDate;
 
 

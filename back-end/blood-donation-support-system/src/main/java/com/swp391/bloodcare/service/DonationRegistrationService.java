@@ -4,12 +4,12 @@ import com.swp391.bloodcare.dto.DonationRegistrationDTO;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,65 +27,86 @@ public class DonationRegistrationService {
 
     public final FeedbackRepository feedbackRepository;
 
-    private final BloodDonationHistoryService bloodDonationHistoryService;
 
-    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository, BloodDonationHistoryService bloodDonationHistoryService) {
+    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
         this.donationRegistrationRepository = donationRegistrationRepository;
         this.accountRepository = accountRepository;
         this.eventRepository = eventRepository;
         this.feedbackRepository = feedbackRepository;
-        this.bloodDonationHistoryService = bloodDonationHistoryService;
     }
 
-    public DonationRegistrationDTO createDonation(DonationRegistrationDTO dto, String accountId, String eventId) {
-        Account account = accountRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản"));
+    public DonationRegistrationDTO createDonation(DonationRegistrationDTO dto, String accountId) {
+        String eventId = dto.getEventId();
+        LocalDate donationDate = dto.getDonationDate();
 
-        // ⛔ Thiếu donationDate thì không tạo
-        if (dto.getDonationDate() == null) {
-            throw new IllegalArgumentException("Phải chọn ngày hiến máu");
+        // ✅ Gọi hàm kiểm tra chung
+        validateDonation(accountId, donationDate, eventId, false);
+
+        // ✅ Lấy account & event
+        Account acc = accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tài khoản"));
+
+        BloodDonationEvent event = (eventId != null && !eventId.isBlank())
+                ? eventRepository.findByEventId(eventId).orElse(null)
+                : null;
+
+        // ✅ Tạo đơn
+        DonationRegistration reg = DonationRegistration.builder()
+                .donationDate(donationDate)
+                .account(acc)
+                .event(event)
+                .status("Đang đợi")
+                .build();
+
+        reg.setRegistrationId(generateUniqueIdWithRetry(5));
+        return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
+    }
+
+    private void validateDonation(String accountId, LocalDate donationDate, String eventId, boolean isUpdate) {
+        LocalDate today = LocalDate.now();
+
+        if (donationDate == null) {
+            throw new IllegalArgumentException("Ngày hiến máu không được để trống");
         }
 
-        // ✅ Kiểm tra đủ 12 tuần giữa lần hiến gần nhất và ngày muốn hiến mới
-        if (!canRegister(accountId, dto.getDonationDate())) {
-            throw new IllegalStateException("Bạn chưa đủ thời gian nghỉ giữa 2 lần hiến máu (tối thiểu 12 tuần)");
-        }
-
-        // ⛔ Nếu là hiến trực tiếp → không được có đơn đang xử lý
-        boolean hasDirectPending = donationRegistrationRepository.findByAccountAccountId(accountId).stream()
-                .anyMatch(reg -> reg.getEvent() == null && "Đang đợi".equalsIgnoreCase(reg.getStatus()));
-        if (eventId == null && hasDirectPending) {
-            throw new IllegalStateException("Bạn đã có đơn đăng ký hiến máu trực tiếp đang xử lý");
-        }
-
-        // ⛔ Nếu là sự kiện → kiểm tra trùng đơn
-        if (eventId != null) {
-            boolean alreadyRegistered = donationRegistrationRepository
-                    .existsByAccount_AccountIdAndEvent_EventId(accountId, eventId);
-            if (alreadyRegistered) {
-                throw new IllegalStateException("Bạn đã đăng ký sự kiện này rồi");
+        // 1. Phạm vi ngày
+        if (eventId != null && !eventId.isBlank()) {
+            BloodDonationEvent event = eventRepository.findByEventId(eventId)
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + eventId));
+            LocalDate endDate = event.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (donationDate.isBefore(today) || donationDate.isAfter(endDate)) {
+                throw new IllegalArgumentException("Ngày hiến máu phải nằm trong khoảng từ hôm nay đến ngày kết thúc sự kiện");
+            }
+        } else {
+            LocalDate max = today.plusDays(20);
+            if (!donationDate.isAfter(today) || donationDate.isAfter(max)) {
+                throw new IllegalArgumentException("Ngày hiến máu phải lớn hơn hôm nay và không quá 20 ngày tới");
             }
         }
 
-        // ✅ Tạo đơn
-        DonationRegistration reg = new DonationRegistration();
-        reg.setRegistrationId(generateUniqueIdWithRetry(5));
-        reg.setDateCreated(new Date());
-        reg.setStatus("Đang đợi");
-        reg.setDonationDate(dto.getDonationDate());
-        reg.setAccount(account);
-
-        if (eventId != null) {
-            BloodDonationEvent event = eventRepository.findByEventId(eventId)
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện"));
-            reg.setEvent(event);
+        // 2. Khoảng cách giữa các lần hiến
+        if (!canRegister(accountId, donationDate)) {
+            throw new IllegalStateException("Không đủ thời gian nghỉ giữa 2 lần hiến máu (tối thiểu 12 tuần)");
         }
 
-        DonationRegistration saved = donationRegistrationRepository.save(reg);
-        bloodDonationHistoryService.create(saved);
-
-        return DonationRegistrationDTO.toDTO(saved);
+        // 3. Check trùng đơn đăng ký nếu là tạo mới
+        if (!isUpdate) {
+            if (eventId == null) {
+                boolean hasPendingDirect = donationRegistrationRepository.findByAccountAccountId(accountId).stream()
+                        .anyMatch(reg -> reg.getEvent() == null && "Đang đợi".equalsIgnoreCase(reg.getStatus()));
+                if (hasPendingDirect) {
+                    throw new IllegalStateException("Bạn đã có đơn đăng ký hiến máu trực tiếp đang xử lý");
+                }
+            } else {
+                boolean registered = donationRegistrationRepository
+                        .existsByAccount_AccountIdAndEvent_EventId(accountId, eventId);
+                if (registered) {
+                    throw new IllegalStateException("Bạn đã đăng ký sự kiện này rồi");
+                }
+            }
+        }
     }
+
 
 
     private boolean canRegister(String accountId, LocalDate newDonationDate) {
@@ -129,21 +150,19 @@ public class DonationRegistrationService {
     }
 
     public DonationRegistrationDTO updateDonationDate(String id, LocalDate newDonationDate) {
-        if (newDonationDate == null || newDonationDate.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Ngày hiến máu không hợp lệ hoặc lớn hơn hiện tại");
-        }
-
         DonationRegistration reg = donationRegistrationRepository.findByRegistrationId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn đăng ký với ID: " + id));
 
-        // ⚠ Kiểm tra đủ 12 tuần trước ngày mới này không
-        if (!canRegister(reg.getAccount().getAccountId(), newDonationDate)) {
-            throw new IllegalStateException("Không đủ thời gian nghỉ giữa 2 lần hiến máu (tối thiểu 12 tuần)");
-        }
+        String accountId = reg.getAccount().getAccountId();
+        String eventId = reg.getEvent() != null ? reg.getEvent().getEventId() : null;
+
+        // ✅ Gọi hàm kiểm tra chung
+        validateDonation(accountId, newDonationDate, eventId, true);
 
         reg.setDonationDate(newDonationDate);
         return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
     }
+
 
 
 
