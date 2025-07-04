@@ -40,13 +40,14 @@ public class BloodDonationHistoryService {
     }
 
     //update from healthCheck
-    public BloodDonationHistory updateFromHealthCheck(HealthCheck healthCheck){
+    public BloodDonationHistory updateFromHealthCheck(HealthCheck healthCheck) {
         DonationRegistration registration = healthCheck.getDonationRegistration();
+
         BloodDonationHistory history = repository
                 .findByDonationRegistration(registration)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đăng kí: " + registration.getRegistrationId()));
-        history.setHealthCheck(healthCheck);
 
+        // Chỉ cập nhật status
         if (healthCheck.isFitToDonate()) {
             history.setStatus("HEALTH_CHECK_PASSED");
         } else {
@@ -57,14 +58,15 @@ public class BloodDonationHistoryService {
     }
 
     //update from after
-    public BloodDonationHistory updateFromAfterDonation(AfterDonationBlood afterDonationBlood){
+    public BloodDonationHistory updateFromAfterDonation(AfterDonationBlood afterDonationBlood) {
         HealthCheck healthCheck = afterDonationBlood.getHealthCheck();
         DonationRegistration registration = healthCheck.getDonationRegistration();
 
         BloodDonationHistory history = repository
                 .findByDonationRegistration(registration)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đăng kí: " + registration.getRegistrationId()));
-        history.setAfterDonationBlood(afterDonationBlood);
+
+        // Chỉ cập nhật trạng thái theo afterDonationBlood
         history.setStatus(mapAfterDonationStatusToHistoryStatus(afterDonationBlood));
 
         return repository.save(history);
@@ -115,27 +117,38 @@ public class BloodDonationHistoryService {
     public BloodDonationHistoryDTO convertToDTO(BloodDonationHistory bloodDonationHistory) {
         BloodDonationHistoryDTO dto = new BloodDonationHistoryDTO();
         dto.setId(bloodDonationHistory.getHistoryId());
-
+        //lấy tên người hiến
         if(bloodDonationHistory.getAccount() != null) {
             dto.setName(bloodDonationHistory.getAccount().getProfile().getName());
         }
 
+        //Lấy sự kiện
         if(bloodDonationHistory.getDonationRegistration() != null) {
             dto.setEvent(bloodDonationHistory.getDonationRegistration().getEvent().getNameOfEvent());
 
         }
 
-        if(bloodDonationHistory.getAfterDonationBlood() != null) {
-            dto.setBloodCode(bloodDonationHistory.getAfterDonationBlood().getBlood().getBloodCode());
+        HealthCheck healCheck = null;
+        HealthCheck healthCheck = null;
+        if (bloodDonationHistory.getDonationRegistration() != null) {
+            healthCheck = bloodDonationHistory.getDonationRegistration().getHealthCheck();
         }
 
-        if(bloodDonationHistory.getHealthCheck() != null) {
-            dto.setVolumeToTake(bloodDonationHistory.getHealthCheck().getVolumeToTake());
+        if (healthCheck != null) {
+            // Gán volume
+            dto.setVolumeToTake(healthCheck.getVolumeToTake());
+
+            // Gán ID của HealthCheck
+            dto.setHealCheck(healthCheck.getHealthCheckId());
+
+            // Lấy AfterDonationBlood từ HealthCheck
+            AfterDonationBlood after = healthCheck.getAfterDonationBlood();
+            if (after != null && after.getBlood() != null) {
+                dto.setBloodCode(after.getBlood().getBloodCode());
+                dto.setAfterDonationBlood(after.getStatus());
+            }
         }
 
-        if(bloodDonationHistory.getHealthCheck() != null) {
-            dto.setHealCheck(bloodDonationHistory.getHealthCheck().getHealthCheckId());
-        }
 
         dto.setStatus(bloodDonationHistory.getStatus());
         return dto;
