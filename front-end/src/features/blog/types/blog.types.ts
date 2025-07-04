@@ -1,141 +1,98 @@
 export interface BlogPost {
     id: string;
     title: string;
-    slug: string;
     content: string;
-    excerpt: string;
-    featuredImage?: string;
+    summary?: string;
+    coverImage?: string;
+    tags: string[];
     author: {
         id: string;
         name: string;
         avatar?: string;
-        role: string;
+        role: UserRole;
     };
-    category: BlogCategory;
-    tags: string[];
-    status: BlogStatus;
+    createdAt: string;
+    updatedAt: string;
     isPublished: boolean;
-    publishedAt?: Date;
-    createdAt: Date;
-    updatedAt: Date;
-    views: number;
-    likes: number;
-    commentsCount: number;
-    readingTime: number;
-    seoTitle?: string;
-    seoDescription?: string;
+    viewCount?: number;
+    like?: number;
+    comment?: number;
 }
 
-export type BlogCategory = 
-  | 'blood_education'
-  | 'donation_tips'
-  | 'health_wellness'
-  | 'success_stories'
-  | 'medical_research'
-  | 'community'
-  | 'news'
-  | 'events';
+export interface CreateBlogRequest {
+    title: string;
+    content: string;
+    summary: string;
+    coverImage?: string;
+    tags: string[];
+    isPublished?: boolean;
+}
 
-export type BlogStatus = 'draft' | 'published' | 'archived' | 'scheduled';
+export type UpdateBlogRequest = Partial<CreateBlogRequest>
+
+export interface BlogListResponse {
+    blogs: BlogPost[];
+    total: number;
+    page: number;
+    limit: number;
+}
 
 export interface BlogComment {
-  id: string;
-  postId: string;
-  author: {
+    id: string;
+    blogId: string;
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    content: string;
+    createdAt: string;
+    parentId?: string;
+    replies?: BlogComment[];
+}
+
+export interface BlogLike {
+    id: string;
+    blogId: string;
+    userId: string;
+    createdAt: string;
+}
+
+export interface BlogInteraction {
+    blogId: string;
+    likes: BlogLike[];
+    comments: BlogComment[];
+    likeCount: number;
+    commentCount: number;
+}
+
+export type UserRole =  'MEMBER' | 'STAFF' | 'ADMIN';
+
+export interface User {
     id: string;
     name: string;
+    email: string;
     avatar?: string;
-    isVerified: boolean;
-  };
-  content: string;
-  parentId?: string;
-  replies?: BlogComment[];
-  likes: number;
-  isLiked: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  isApproved: boolean;
+    role: UserRole;
 }
 
 export interface BlogFilters {
-  category?: BlogCategory;
-  tags?: string[];
-  author?: string;
-  dateRange?: {
-    start: Date;
-    end: Date;
-  };
-  status?: BlogStatus;
-  search?: string;
-  sortBy?: 'newest' | 'oldest' | 'popular' | 'trending';
+    search?: string;
+    tags?: string[];
+    author?: string;
+    sortBy?: 'createdAt' | 'viewCount' | 'title';
+    sortOrder?: 'asc' | 'desc';
 }
 
-export interface BlogStats {
-  totalPosts: number;
-  totalViews: number;
-  totalComments: number;
-  totalLikes: number;
-  popularPosts: BlogPost[];
-  recentPosts: BlogPost[];
-  categoryStats: {
-    [key in BlogCategory]: number;
-  };
-  monthlyStats: {
-    month: string;
-    posts: number;
-    views: number;
-  }[];
-}
-
-export interface BlogForm {
-  title: string;
-  content: string;
-  excerpt: string;
-  category: BlogCategory;
-  tags: string[];
-  featuredImage?: string;
-  status: BlogStatus;
-  publishedAt?: Date;
-  seoTitle?: string;
-  seoDescription?: string;
-}
-
-export interface LocalBlogState {
-  postLikes: Record<string, { count: number; isLiked: boolean }>;
-  commentLikes: Record<string, { count: number; isLiked: boolean }>;
-  localComments: Record<string, BlogComment[]>;
-}
+export const BLOG_TAGS = [
+    'Câu chuyện',
+    'Kinh nghiệm',
+    'Y học',
+    'Tin tức',
+    'Hướng dẫn',
+    'Sự kiện',
+    'Thống kê',
+    'Nghiên cứu'
+] as const;
 
 
-export interface BlogCardProps {
-  post: BlogPost;
-  onClick?: () => void;
-  showExcerpt?: boolean;
-  size?: 'small' | 'medium' | 'large';
-}
 
-export interface BlogListProps {
-    onPostClick?: (slug: string) => void;
-    showFilters?: boolean;
-    category?: BlogCategory;
-    limit?: number;
-} 
-
-export interface BlogCommentsProps {
-  postId: string;
-}
-
-export interface BlogEditorProps {
-  initialData?: Partial<BlogForm>;
-  onSave: (data: BlogForm) => Promise<void>;
-  onPreview?: (data: BlogForm) => void;
-  loading?: boolean;
-}
-
-export interface BlogPostPageProps {
-    slug: string;
-}
-
-export interface EditPostPageProps {
-    postId: string;
-}
+export type BlogTag = typeof BLOG_TAGS[number];

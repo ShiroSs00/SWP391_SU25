@@ -1,109 +1,111 @@
 import { useState, useEffect, useCallback } from 'react';
-import type{ 
-  Feedback, 
-  CreateFeedbackRequest, 
-  UpdateFeedbackRequest, 
-  FeedbackFilter,
-  FeedbackStats 
-}  from '../types/feedback.types';
+import type { DonorFeedback, CreateFeedbackRequest, UpdateFeedbackRequest, FeedbackFilters, FeedbackStats } from '../types/feedback.types';
 import { feedbackService } from '../services/feedback.service';
 
 export const useFeedback = () => {
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [feedbacks, setFeedbacks] = useState<DonorFeedback[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const handleError = (err: unknown) => {
-    const message = err instanceof Error ? err.message : 'An error occurred';
-    setError(message);
-  };
-
-  const createFeedback = useCallback(async (
-    registrationId: string, 
-    feedback: CreateFeedbackRequest
-  ) => {
-    setLoading(true);
-    setError(null);
+  const createFeedback = useCallback(async (registrationId: string, data: CreateFeedbackRequest) => {
     try {
-      const newFeedback = await feedbackService.createFeedback(registrationId, feedback);
-      setFeedbacks(prev => [...prev, newFeedback]);
-      return newFeedback;
+      setLoading(true);
+      setError(null);
+      const feedback = await feedbackService.createFeedback(registrationId, data);
+      return feedback;
     } catch (err) {
-      handleError(err);
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
       throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const updateFeedback = useCallback(async (
-    registrationId: string, 
-    feedback: UpdateFeedbackRequest
-  ) => {
-    setLoading(true);
-    setError(null);
+  const getAllFeedbacks = useCallback(async (filters?: FeedbackFilters) => {
     try {
-      const updatedFeedback = await feedbackService.updateFeedback(registrationId, feedback);
-      setFeedbacks(prev => 
-        prev.map(f => f.registrationId === registrationId ? updatedFeedback : f)
-      );
-      return updatedFeedback;
+      setLoading(true);
+      setError(null);
+      const result = await feedbackService.getAllFeedbacks(filters);
+      setFeedbacks(result.feedbacks);
+      setTotal(result.total);
+      setCurrentPage(result.page);
+      setTotalPages(result.totalPages);
+      return result;
     } catch (err) {
-      handleError(err);
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
       throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const deleteFeedback = useCallback(async (id: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await feedbackService.deleteFeedback(id);
-      setFeedbacks(prev => prev.filter(f => f.id !== id));
-    } catch (err) {
-      handleError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const deleteMultipleFeedbacks = useCallback(async (ids: string[]) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await feedbackService.deleteMultipleFeedbacks(ids);
-      setFeedbacks(prev => prev.filter(f => !ids.includes(f.id)));
-    } catch (err) {
-      handleError(err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadFeedbacks = useCallback(async (filter?: FeedbackFilter) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await feedbackService.getAllFeedbacks(filter);
-      setFeedbacks(data);
-    } catch (err) {
-      handleError(err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   const getFeedbackByRegistration = useCallback(async (registrationId: string) => {
-    setLoading(true);
-    setError(null);
     try {
-      return await feedbackService.getFeedbackByRegistration(registrationId);
+      setLoading(true);
+      setError(null);
+      const feedback = await feedbackService.getFeedbackByRegistration(registrationId);
+      return feedback;
     } catch (err) {
-      handleError(err);
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateFeedback = useCallback(async (feedbackId: string, data: UpdateFeedbackRequest) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const updatedFeedback = await feedbackService.updateFeedback(feedbackId, data);
+      
+      // Cập nhật state local
+      setFeedbacks(prev => 
+        prev.map(feedback => 
+          feedback.feedbackId === feedbackId ? updatedFeedback : feedback
+        )
+      );
+      
+      return updatedFeedback;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteFeedback = useCallback(async (feedbackId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await feedbackService.deleteFeedback(feedbackId);
+      
+      // Cập nhật state local
+      setFeedbacks(prev => prev.filter(feedback => feedback.feedbackId !== feedbackId));
+      setTotal(prev => prev - 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteMultipleFeedbacks = useCallback(async (feedbackIds: string[]) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await feedbackService.deleteMultipleFeedbacks(feedbackIds);
+      
+      // Cập nhật state local
+      setFeedbacks(prev => prev.filter(feedback => !feedbackIds.includes(feedback.feedbackId)));
+      setTotal(prev => prev - feedbackIds.length);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
       throw err;
     } finally {
       setLoading(false);
@@ -114,13 +116,16 @@ export const useFeedback = () => {
     feedbacks,
     loading,
     error,
+    total,
+    currentPage,
+    totalPages,
     createFeedback,
+    getAllFeedbacks,
+    getFeedbackByRegistration,
     updateFeedback,
     deleteFeedback,
     deleteMultipleFeedbacks,
-    loadFeedbacks,
-    getFeedbackByRegistration,
-    clearError: () => setError(null)
+    setError,
   };
 };
 
@@ -129,22 +134,29 @@ export const useFeedbackStats = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadStats = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchStats = useCallback(async () => {
     try {
-      const data = await feedbackService.getDashboardStats();
-      setStats(data);
+      setLoading(true);
+      setError(null);
+      const statsData = await feedbackService.getFeedbackStats();
+      setStats(statsData);
+      return statsData;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load stats');
+      setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
+      throw err;
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadStats();
-  }, [loadStats]);
+    fetchStats();
+  }, [fetchStats]);
 
-  return { stats, loading, error, refreshStats: loadStats };
+  return {
+    stats,
+    loading,
+    error,
+    refetch: fetchStats,
+  };
 };

@@ -48,14 +48,25 @@ function useUserState() {
 const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, className }) => {
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const user = useUserState(); // Use the custom hook instead of direct localStorage read
+    const user = useUserState();
+    const [activeMenu, setActiveMenu] = useState('Trang Chủ');
+
+    // Menu items from ModernNavbar
+    const menuItems = [
+        { name: 'Trang Chủ', href: '/' },
+        { name: 'Blog', href: '/blogs' },
+        { name: 'Nhóm Máu', href: '/blood-types' },
+        { name: 'Cấp Cứu', href: '/emergency' },
+        { name: 'Giới Thiệu', href: '/about' },
+        { name: 'Liên Hệ', href: '/contact' }
+    ];
 
     // Debug logging
     console.log('Header - Current user state:', user);
 
     const handleLogout = async () => {
         await logout();
-        triggerUserStateChange(); // Trigger state update after logout
+        triggerUserStateChange();
         navigate("/");
     };
 
@@ -71,7 +82,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
                 return "text-gray-600";
         }
     };
-
 
     const getUserInitials = (name: string = "") => {
         return name
@@ -106,6 +116,25 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
                             BloodDonation
                         </span>
                     </Link>
+                </div>
+
+                {/* Center - Menu items */}
+                <div className="flex items-center space-x-8">
+                    {menuItems.map((item) => (
+                        <Link
+                            key={item.name}
+                            to={item.href}
+                            onClick={() => setActiveMenu(item.name)}
+                            className={cn(
+                                "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
+                                activeMenu === item.name
+                                    ? "text-red-500 bg-red-50 border-b-2 border-red-500"
+                                    : "text-gray-700 hover:text-red-500 hover:bg-red-50"
+                            )}
+                        >
+                            {item.name}
+                        </Link>
+                    ))}
                 </div>
 
                 {/* Right side */}

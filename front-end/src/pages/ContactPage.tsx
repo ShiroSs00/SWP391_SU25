@@ -1,12 +1,12 @@
-import Navigation from "@/components/Navigation";
-import Footer from "../components/Footer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NavigationMenu } from "../components/ui/navigation"
+import Footer from "../components/layouts/Footer.tsx";
+import { Button} from "../components/ui/Button";
+import { Input } from "../components/ui/input";
+import { Textarea} from "../components/ui/textarea/Textarea.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { MapPin, Phone, Mail, Clock, Heart } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast} from "../components/ui/use-toast.tsx";
 
 const ContactPage = () => {
   const { toast } = useToast();
@@ -69,7 +69,7 @@ const ContactPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navigation />
+      <NavigationMenu />
       
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-red-600 to-red-700 text-white py-20">
