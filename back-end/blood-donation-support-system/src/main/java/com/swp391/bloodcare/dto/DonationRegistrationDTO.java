@@ -1,7 +1,6 @@
 package com.swp391.bloodcare.dto;
 
 import com.swp391.bloodcare.entity.DonationRegistration;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.*;
@@ -15,13 +14,13 @@ import java.util.Date;
 @Builder
 public class DonationRegistrationDTO {
 
-    @NotBlank(message = "Mã đơn đăng ký không được để trống")
+
     private String registrationId;
 
-    @NotNull(message = "Ngày tạo không được để trống")
+
     private Date dateCreated;
 
-    @NotBlank(message = "Trạng thái không được để trống")
+
     private String status;
 
     @NotNull(message = "Ngày hiến máu không được để trống")
@@ -31,7 +30,6 @@ public class DonationRegistrationDTO {
 
     private String eventId;
 
-    @NotBlank(message = "Tài khoản không được để trống")
     private String accountId;
 
     private String componentId;
@@ -45,6 +43,7 @@ public class DonationRegistrationDTO {
                 .registrationId(reg.getRegistrationId())
                 .dateCreated(reg.getDateCreated())
                 .status(reg.getStatus())
+                .donationDate(reg.getDonationDate())
                 .eventId(reg.getEvent() != null ? reg.getEvent().getEventId() : null)
                 .accountId(reg.getAccount() != null ? reg.getAccount().getAccountId() : null)
                 .componentId(reg.getComponent() != null ? reg.getComponent().getComponent() : null)

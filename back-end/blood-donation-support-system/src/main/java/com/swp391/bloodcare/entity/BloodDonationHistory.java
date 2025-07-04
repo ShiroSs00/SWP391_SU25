@@ -36,4 +36,8 @@ public class BloodDonationHistory {
 
     @Column(name = "status")
     private String status;
+
+    @OneToOne
+    @JoinColumn(name = "history_id")
+    private BloodDonationHistory bloodDonationHistory;
 }
