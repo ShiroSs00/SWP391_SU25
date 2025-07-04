@@ -47,6 +47,12 @@ public class BloodRequestController {
         }
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<BloodRequestResponseDTO>>> getAllRequests() {
+        List<BloodRequestResponseDTO> requests = bloodRequestService.getAllBloodRequests();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Danh sách đơn xin máu", requests));
+    }
+
     // Lấy danh sách đơn của user hiện tại
     @GetMapping("/my-requests")
     public ResponseEntity<ApiResponse<List<BloodRequestResponseDTO>>> getMyRequests(Authentication authentication) {

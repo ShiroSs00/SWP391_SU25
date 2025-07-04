@@ -22,10 +22,16 @@ public class AfterDonationService {
     private final HealthCheckRepository healthCheckRepo;
     private final BloodRepository bloodRepo;
 
-    public AfterDonationService(AfterDonationRepository afterRepo, HealthCheckRepository healthCheckRepo, BloodRepository bloodRepo) {
+    private final BloodDonationHistoryService bloodDonationHistoryService;
+
+    private final ProfileService profileService;
+
+    public AfterDonationService(AfterDonationRepository afterRepo, HealthCheckRepository healthCheckRepo, BloodRepository bloodRepo, BloodDonationHistoryService bloodDonationHistoryService, ProfileService profileService) {
         this.afterRepo = afterRepo;
         this.healthCheckRepo = healthCheckRepo;
         this.bloodRepo = bloodRepo;
+        this.bloodDonationHistoryService = bloodDonationHistoryService;
+        this.profileService = profileService;
     }
 
     public List<AfterDonationBloodDTO> getAll() {
@@ -67,6 +73,14 @@ public class AfterDonationService {
             existing.setStatus(dto.getStatus());
         if (dto.getNote() != null && !dto.getNote().isBlank())
             existing.setNote(dto.getNote());
+        //update trạng thái cho lịch sử
+        bloodDonationHistoryService.updateFromAfterDonation(existing);
+
+        //update tăng cho số lần hiến máu
+        if("Đã hoàn thành".equalsIgnoreCase(dto.getStatus())){
+            String accountId = existing.getHealthCheck().getDonationRegistration().getAccount().getAccountId();
+            profileService.increaseBloodDonationCount(accountId);
+        }
 
         return toDTO(afterRepo.save(existing));
     }

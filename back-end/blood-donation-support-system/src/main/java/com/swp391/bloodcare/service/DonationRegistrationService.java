@@ -4,6 +4,7 @@ import com.swp391.bloodcare.dto.DonationRegistrationDTO;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +29,14 @@ public class DonationRegistrationService {
 
     private final EventRepository eventRepository;
 
+
     public final FeedbackRepository feedbackRepository;
 
+    @Autowired
+    private BloodDonationHistoryService bloodDonationHistoryService;
+
     public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, HealthCheckRepository healthCheckRepository, ComponentRepository componentRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
+
         this.donationRegistrationRepository = donationRegistrationRepository;
         this.accountRepository = accountRepository;
         this.healthCheckRepository = healthCheckRepository;
@@ -64,6 +70,8 @@ public class DonationRegistrationService {
             donationRegistration.setEvent(event);
         }
 
+        bloodDonationHistoryService.create(donationRegistration);
+
         return toDTO(donationRegistrationRepository.save(donationRegistration));
     }
 
@@ -93,7 +101,7 @@ public class DonationRegistrationService {
         }
 
         if (dto.getComponentId() != null) {
-            Component component = componentRepository.findComponentByComponent(dto.getComponentId())
+            Component component = componentRepository.findByComponent(dto.getComponentId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thành phần"));
             existing.setComponent(component);
         }
@@ -110,8 +118,14 @@ public class DonationRegistrationService {
             existing.setDonorFeedback(feedback);
         }
 
+
         DonationRegistration saved = donationRegistrationRepository.save(existing);
+        //update history
+        bloodDonationHistoryService.create(existing);
         return DonationRegistrationDTO.toDTO(saved);
+
+
+
     }
 
 

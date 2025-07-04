@@ -23,14 +23,15 @@ public class ProfileController {
     @Autowired
     private ProfileService profileService;
 
-
+// lấy của profile của current user
     @GetMapping("/profile")
     public ApiResponse<ProfileResponseDTO> getUserProfile() {
        return profileService.getProfileFromToken();
     }
 
+// lấy profile của user cho admin or staff xem
     @GetMapping("/admin/profiles/{accountId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     public ResponseEntity<ApiResponse<ProfileResponseDTO>> getProfileByAccountId(@PathVariable String accountId) {
 
         ApiResponse<ProfileResponseDTO> response = profileService.getProfileByAccountId(accountId);
@@ -40,54 +41,6 @@ public class ProfileController {
                 ResponseEntity.badRequest().body(response);
     }
 
-    @GetMapping("/admin/accounts/search")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<PageResponse<AccountSearchDTO>>> searchAccounts(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Boolean isActive,
-            @RequestParam(required = false) String roleName,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "creationDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir
-    ){
-        Sort sort = sortDir.equalsIgnoreCase("desc") ?
-                Sort.by(sortBy).descending() :
-                Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        ApiResponse<PageResponse<AccountSearchDTO>> response =
-                profileService.searchAccounts(keyword, isActive, roleName, pageable);
-
-        return response.isSuccess() ?
-                ResponseEntity.ok(response) :
-                ResponseEntity.badRequest().body(response);
-    }
-
-
-    //Lấy tất cả Account cho Admin
-    @GetMapping("/admin/accounts")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<PageResponse<AccountSearchDTO>>> getAllAccounts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "creationDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir
-    ){
-        Sort sort = sortDir.equalsIgnoreCase("desc") ?
-                Sort.by(sortBy).descending() :
-                Sort.by(sortBy).ascending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        ApiResponse<PageResponse<AccountSearchDTO>> response =
-                profileService.searchAccounts(null, true, null, pageable);
-
-        return response.isSuccess() ?
-                ResponseEntity.ok(response) :
-                ResponseEntity.badRequest().body(response);
-    }
     }
 
 

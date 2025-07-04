@@ -8,6 +8,7 @@ import com.swp391.bloodcare.dto.profile.ProfileResponseDTO;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,9 @@ public class ProfileService {
     @Autowired
     private ProfileRepository profileRepository;
 
+    @Autowired
+    private AchievementService achievementService;
+
     // Lấy account theo AccountId
     public ApiResponse<ProfileResponseDTO> getProfileByAccountId(String accountId){
         try{
@@ -57,11 +61,7 @@ public class ProfileService {
             return new ApiResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
         }
 
-
-
-
     }
-
 
 
     //Lấy profile cho username -token
@@ -97,8 +97,9 @@ public class ProfileService {
     public ApiResponse<PageResponse<AccountSearchDTO>> searchAccounts(String keyword, boolean isActive, String roleName, Pageable pageable){
         try{
 
-            Page<Account> accountPage = accountRepository.searchAccounts(keyword,isActive,roleName,pageable);
-
+            // Sử dụng cùng 1 keyword cho cả username và email
+            Page<Account> accountPage = accountRepository.findAccountsByMultipleCriteriaWithPaging(
+                    keyword, keyword, roleName, isActive, pageable);
             List<AccountSearchDTO> accountDTOs = accountPage.getContent()
                     .stream()
                     .map(this::mapToAccountSearchDTO)
@@ -133,10 +134,6 @@ public class ProfileService {
             dto.setRoleName(account.getRole().getRole());
         }
 
-        //hospital
-        if(account.getHospital() != null){
-            dto.setHospitalName(account.getHospital().getHospitalName());
-        }
 
         //profile
         if(account.getProfile() != null){
@@ -147,6 +144,17 @@ public class ProfileService {
         }
         return dto;
 
+    }
+
+    public void increaseBloodDonationCount(String accountId){
+        Profile profile = profileRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy profile cho accountId: " + accountId));
+        Long current = profile.getNumberOfBloodDonation();
+        if(current == null)
+            current = 0L;
+        profile.setNumberOfBloodDonation(current + 1);
+        achievementService.updateAchievementForProfile(profile);
+        profileRepository.save(profile);
     }
 
     private ProfileResponseDTO mapToProfileResponseDTO(Account account, Profile profile) {
@@ -160,7 +168,7 @@ public class ProfileService {
         prd.setIsActive(account.isActive());
 
         //Proflie info
-
+        prd.setProfileId(profile.getProfileId());
         prd.setName(profile.getName());
         prd.setPhone(profile.getPhone());
         prd.setDob(profile.getDob());

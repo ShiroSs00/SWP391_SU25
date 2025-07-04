@@ -19,6 +19,12 @@ public class BlogController {
         this.blogService = blogService;
     }
 
+    @GetMapping("/latest")
+    public ResponseEntity<List<BlogDTO>> getLatestBlogs() {
+        List<BlogDTO> latestBlogs = blogService.getLatestBlogs();
+        return ResponseEntity.ok(latestBlogs);
+    }
+
     @PostMapping("/create")
     public ResponseEntity<BlogDTO> createBlog(@RequestBody BlogDTO dto) {
         String accountId = SecurityContextHolder.getContext().getAuthentication().getName();

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.List;
 
@@ -20,25 +21,60 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
 
 
-    boolean existsByUserName(String userName);
-    boolean existsByEmail(String email);
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Account a WHERE LOWER(a.userName) = LOWER(:username)")
+    boolean existsByUserNameIgnoreCase(@Param("username") String username);
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Account a WHERE LOWER(a.email) = LOWER(:email)")
+    boolean existsByEmailIgnoreCase(@Param("email") String email);
+
+// tìm kiếm account theo username
+    List<Account> findByUserNameContainingIgnoreCase(String username);
+
+    //tìm kiếm theo mail
+    List<Account> findByEmailContainingIgnoreCase(String email);
+
+    //tìm kiếm theo role
+    List<Account> findByRole_Role(String roleName);
+
+    //tìm kiếm theo trạng thái hoạt động
+    List<Account> findByIsActive(Boolean isActive);
+
+    //Đếm số lượng account theo trạng thái
+    Long countByIsActive(Boolean isActive);
 
 
+    /**
+     * Tìm kiếm account với phân trang theo nhiều tiêu chí
+     */
+    @Query("SELECT a FROM Account a WHERE " +
+            "(:username IS NULL OR LOWER(a.userName) LIKE LOWER(CONCAT('%', :username, '%'))) AND " +
+            "(:email IS NULL OR LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%'))) AND " +
+            "(:roleName IS NULL OR a.role.role = :roleName) AND " +
+            "(:isActive IS NULL OR a.isActive = :isActive)")
+    Page<Account> findAccountsByMultipleCriteriaWithPaging(
+            @Param("username") String username,
+            @Param("email") String email,
+            @Param("roleName") String roleName,
+            @Param("isActive") Boolean isActive,
+            Pageable pageable
+    );
 
 
-    //tìm kiếm dành cho STAFF/ADMIN
-    @Query("SELECT a FROM Account a LEFT JOIN a.profile p LEFT JOIN a.role r LEFT JOIN a.hospital h " +
-            "WHERE (:keyword IS NULL OR :keyword = '' OR " +
-            "LOWER(a.userName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(a.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(p.phone) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-            "AND (:isActive IS NULL OR a.isActive = :isActive) " +
-            "AND (:roleName IS NULL OR :roleName = '' OR r.role = :roleName)")
-    Page<Account> searchAccounts(@Param("keyword") String keyword,
-                                 @Param("isActive") Boolean isActive,
-                                 @Param("roleName") String roleName,
-                                 Pageable pageable);
+    //tìm kiếm account theo thời gian tạo
+    List<Account> findByCreationDateBetween(LocalDate startDate, LocalDate endDate);
+
+
+    //đếm tổng số account
+    @Query("SELECT COUNT(a) FROM Account a")
+    Long countAllAccounts();
+
+
+    // * Đếm account theo role
+    Long countByRole_Role(String roleName);
+
+    // * Tìm account gần đây nhất
+    List<Account> findTop10ByOrderByCreationDateDesc();
+
+
 
     List<Account> findByProfile_Address_DistrictIgnoreCaseAndProfile_BloodCode_BloodTypeInAndProfile_BloodCode_RhIn(
             String district, List<Blood.BloodType> bloodTypes, List<Blood.RhFactor> rhFactors);
@@ -52,5 +88,4 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
     boolean existsByAccountId(String accountId);
 
-    List<Account> findByRole_Role(String roleRole);
 }

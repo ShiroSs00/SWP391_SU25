@@ -23,8 +23,7 @@ public class BloodRequestDTO {
     @NotBlank(message = "Mã máu không được bỏ trống")
     private String bloodCode;
 
-    @NotNull(message = "ID Bệnh viện không được bỏ trống")
-    private String hospitalName;
+
 
     @NotNull(message = "Số lượng máu không được để trống")
     @Min(value = 1, message = "Số lượng máu phải lớn hơn 0")
