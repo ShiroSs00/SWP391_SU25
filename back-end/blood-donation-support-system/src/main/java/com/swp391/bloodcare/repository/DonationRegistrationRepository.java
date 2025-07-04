@@ -18,4 +18,6 @@ public interface DonationRegistrationRepository extends JpaRepository<DonationRe
     List<DonationRegistration> findByAccountAccountId(String accountAccountId);
 
     List<DonationRegistration> findByAccountAccountIdAndEventEventId(String accountAccountId, String eventEventId);
+
+    boolean existsByAccount_AccountIdAndEvent_EventId(String accountAccountId, String eventEventId);
 }

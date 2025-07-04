@@ -2,6 +2,7 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.AfterDonationBloodDTO;
 import com.swp391.bloodcare.service.AfterDonationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,20 +27,20 @@ public class AfterDonationBloodController {
 
     @PostMapping("/create/{healthCheckId}")
     public ResponseEntity<AfterDonationBloodDTO> create(@PathVariable String healthCheckId,
-                                                        @RequestBody AfterDonationBloodDTO dto) {
+                                                        @Valid @RequestBody AfterDonationBloodDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 afterDonationService.create(healthCheckId, dto)
         );
     }
 
     @PutMapping("/update/{idAfterDonation}")
-    public ResponseEntity<AfterDonationBloodDTO> update(
-            @PathVariable String idAfterDonation,
-            @RequestBody AfterDonationBloodDTO dto) {
+    public ResponseEntity<AfterDonationBloodDTO> update(@PathVariable String idAfterDonation,
+                                                        @Valid @RequestBody AfterDonationBloodDTO dto) {
         return ResponseEntity.ok(
                 afterDonationService.updateById(idAfterDonation, dto)
         );
     }
+
 
 
     @GetMapping("/get-by-healthcheck/{healthCheckId}")
