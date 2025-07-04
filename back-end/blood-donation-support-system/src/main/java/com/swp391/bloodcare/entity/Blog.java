@@ -1,8 +1,10 @@
 package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-
 import java.util.Date;
 
 @Entity
@@ -17,19 +19,26 @@ public class Blog {
 
     @Id
     @Column(name = "blog_id")
+    @NotBlank(message = "ID bài viết không được để trống")
     private String blogId;
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    @NotBlank(message = "Nội dung không được để trống")
+    @Size(min = 20, message = "Nội dung phải có ít nhất 20 ký tự")
     private String content;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "post_date", nullable = false)
+    @NotNull(message = "Ngày đăng không được để null")
     private Date postDate;
 
     @Column(name = "tag_name")
+    @Size(max = 100, message = "Tag tối đa 100 ký tự")
     private String tagName;
 
     @ManyToOne
-    @JoinColumn(name = "account_id")
+    @JoinColumn(name = "account_id", nullable = false)
+    @NotNull(message = "Bài viết phải gắn với người đăng")
     private Account account;
 }
+
