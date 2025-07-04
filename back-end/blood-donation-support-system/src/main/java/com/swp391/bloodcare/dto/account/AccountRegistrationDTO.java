@@ -25,6 +25,9 @@ public class AccountRegistrationDTO {
     @Size(min = 8, message = "Mật khẩu phải có ít nhất 8 ký tự")
     private String password;
 
+    @NotBlank(message = "Role không được để trống")
+    private String roleName;
+
     @NotBlank(message = "Tên không được để trống")
     private String name;
 

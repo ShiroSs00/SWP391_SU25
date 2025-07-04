@@ -26,14 +26,6 @@ public class BloodDonationHistory {
     @JoinColumn(name = "registration_id")
     private DonationRegistration donationRegistration;
 
-    @ManyToOne
-    @JoinColumn(name = "health_check_id")
-    private HealthCheck healthCheck;
-
-    @ManyToOne
-    @JoinColumn(name = "after_donation_id")
-    private AfterDonationBlood afterDonationBlood;
-
     @Column(name = "status")
     private String status;
 
