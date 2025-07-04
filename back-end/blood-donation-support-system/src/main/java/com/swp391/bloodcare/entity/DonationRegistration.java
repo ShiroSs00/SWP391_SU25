@@ -56,4 +56,7 @@ public class DonationRegistration {
     @OneToOne(mappedBy = "donationRegistration", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private DonorFeedback donorFeedback;
 
+    @OneToOne
+    @JoinColumn(name = "history_id")
+    private BloodDonationHistory bloodDonationHistory;
 }

@@ -22,14 +22,11 @@ public class BloodDonationHistory {
     @JoinColumn(name = "id")
     private Account account;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "registration_id")
     private DonationRegistration donationRegistration;
 
     @Column(name = "status")
     private String status;
 
-    @OneToOne
-    @JoinColumn(name = "history_id")
-    private BloodDonationHistory bloodDonationHistory;
 }
