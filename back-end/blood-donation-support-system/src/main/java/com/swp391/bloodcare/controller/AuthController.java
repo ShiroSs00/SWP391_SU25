@@ -88,6 +88,15 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/admin/register")
+    public ResponseEntity<ApiResponse<String>> createAccount(@Valid @RequestBody AccountRegistrationDTO accountRegistration) {
+        ApiResponse<String> response = accountService.createAccountByAdmin(accountRegistration);
 
+        if (response.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+    }
 
 }
