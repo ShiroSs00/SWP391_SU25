@@ -14,4 +14,6 @@ public class Address {
     private String district;
     private String ward;
     private String street;
+    private Double latitude;
+    private Double longitude;
 }

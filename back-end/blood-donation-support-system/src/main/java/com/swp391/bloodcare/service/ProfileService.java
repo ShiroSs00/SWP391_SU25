@@ -39,6 +39,10 @@ public class ProfileService {
     @Autowired
     private AchievementService achievementService;
 
+    // 2 tạo độ có thể thay đổi
+    private static final double FACILITY_LATITUDE = 10.762622;
+    private static final double FACILITY_LONGITUDE = 106.660172;
+
     // Lấy account theo AccountId
     public ApiResponse<ProfileResponseDTO> getProfileByAccountId(String accountId){
         try{
@@ -157,6 +161,24 @@ public class ProfileService {
         profileRepository.save(profile);
     }
 
+    public List<ProfileResponseDTO> findProfilesByBloodAndDistance(String bloodCode, Double radiusKm) {
+        double lat = FACILITY_LATITUDE;
+        double lon = FACILITY_LONGITUDE;
+
+        List<Profile> profiles = profileRepository.findByBloodAndDistance(
+                bloodCode,
+                lat,
+                lon,
+                radiusKm != null ? radiusKm : 9999.0  // Nếu null thì coi như không giới hạn
+        );
+
+        return profiles.stream()
+                .map(profile -> mapToProfileResponseDTO(profile.getAccount(), profile))
+                .collect(Collectors.toList());
+    }
+
+
+
     private ProfileResponseDTO mapToProfileResponseDTO(Account account, Profile profile) {
         ProfileResponseDTO prd = new ProfileResponseDTO();
 
@@ -181,7 +203,7 @@ public class ProfileService {
         if(profile.getAddress() != null){
             Address add = profile.getAddress();
             AddressDTO addDto = new AddressDTO(
-                    add.getCity(),add.getDistrict(),add.getWard(),add.getStreet()
+                    add.getCity(),add.getDistrict(),add.getWard(),add.getStreet(),add.getLatitude(),add.getLongitude()
             );
             prd.setAddress(addDto);
         }

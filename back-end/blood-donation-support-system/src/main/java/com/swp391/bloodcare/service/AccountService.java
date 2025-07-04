@@ -92,6 +92,8 @@ public class AccountService {
             address.setDistrict(accountRegistration.getAddress().getDistrict());
             address.setWard(accountRegistration.getAddress().getWard());
             address.setStreet(accountRegistration.getAddress().getStreet());
+            address.setLongitude(accountRegistration.getAddress().getLongitude());
+            address.setLatitude(accountRegistration.getAddress().getLatitude());
 
             profile.setAddress(address);
             profile.setNumberOfBloodDonation(0);
