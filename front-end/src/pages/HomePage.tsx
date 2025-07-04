@@ -2,23 +2,20 @@ import React from 'react';
 import { HeroSection } from '../components/home/HeroSection.tsx';
 import { StatsSection } from '../components/home/StatsSection.tsx';
 import { FeaturesSection } from '../components/home/FeaturesSection.tsx';
-import { EmergencySection } from '../components/home/EmergencySection.tsx';
-import { BloodTypesSection } from '../components/home/BloodTypeSection.tsx';
+import { LatestBlogs} from "../features/blog/components/LatestBlogs.tsx";
 import { TestimonialsSection } from '../components/home/TestimonialsSection.tsx';
-import {Header} from "../components/layouts/Header.tsx";
-import Footer from "../components/layouts/Footer.tsx";
-
 const HomePage: React.FC = () => {
+
+
     return (
         <main>
-            <Header />
+                <div className="flex-1">
             <HeroSection />
             <StatsSection />
+            <LatestBlogs />
             <FeaturesSection />
-            <EmergencySection />
-            <BloodTypesSection />
             <TestimonialsSection />
-            <Footer />
+            </div>
         </main>
     );
 };

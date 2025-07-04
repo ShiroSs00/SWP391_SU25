@@ -7,6 +7,7 @@ import { ScrollArea } from '../scroll-area.tsx';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../collapsible';
 import { ChevronDown, ChevronRight } from "lucide-react";
 
+
 export interface SidebarItem {
     id: string
     label: string

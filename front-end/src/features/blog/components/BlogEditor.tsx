@@ -1,317 +1,544 @@
-import React, { useState } from 'react';
-import { Save, Eye, Upload, Tag, Calendar } from 'lucide-react';
-import type { BlogForm, BlogCategory, BlogEditorProps } from '../types/blog.types';
+import React, { useState, useEffect } from 'react';
+import { Save, Eye, X, Image as ImageIcon, Send, FileText, Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { BLOG_TAGS, type BlogTag, type CreateBlogRequest } from '../types/blog.types';
+import toast from 'react-hot-toast';
 
-const categoryOptions = [
-    { value: 'blood_education', label: 'Giáo dục về máu' },
-    { value: 'donation_tips', label: 'Mẹo hiến máu' },
-    { value: 'health_wellness', label: 'Sức khỏe' },
-    { value: 'success_stories', label: 'Câu chuyện thành công' },
-    { value: 'medical_research', label: 'Nghiên cứu y khoa' },
-    { value: 'community', label: 'Cộng đồng' },
-    { value: 'news', label: 'Tin tức' },
-    { value: 'events', label: 'Sự kiện' }
-]
+interface BlogEditorProps {
+  initialData?: Partial<CreateBlogRequest>;
+  onSave: (data: CreateBlogRequest) => Promise<{ success: boolean; blogId?: string }>;
+  onCancel: () => void;
+  isEditing?: boolean;
+  loading?: boolean;
+  className?: string;
+}
 
-const BlogEditor: React.FC<BlogEditorProps> = ({
-                                                   initialData,
-                                                   onSave,
-                                                   onPreview,
-                                                   loading = false
-                                               }) => {
-    const [formData, setFormData] = useState<BlogForm>({
+export const BlogEditor: React.FC<BlogEditorProps> = ({
+                                                        initialData,
+                                                        onSave,
+                                                        onCancel,
+                                                        isEditing = false,
+                                                        loading = false,
+                                                        className = ''
+                                                      }) => {
+  const [formData, setFormData] = useState<CreateBlogRequest>({
+    title: initialData?.title || '',
+    content: initialData?.content || '',
+    summary: initialData?.summary || '',
+    coverImage: initialData?.coverImage || '',
+    tags: initialData?.tags || [],
+    isPublished: initialData?.isPublished ?? true,
+  });
+
+  const [showPreview, setShowPreview] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
         title: initialData?.title || '',
         content: initialData?.content || '',
-        excerpt: initialData?.excerpt || '',
-        category: initialData?.category || 'blood_education',
+        summary: initialData?.summary || '',
+        coverImage: initialData?.coverImage || '',
         tags: initialData?.tags || [],
-        status: initialData?.status || 'draft',
-        featuredImage: initialData?.featuredImage,
-        publishedAt: initialData?.publishedAt,
-        seoTitle: initialData?.seoTitle,
-        seoDescription: initialData?.seoDescription
-    });
+        isPublished: initialData?.isPublished ?? true,
+      });
+    }
+  }, [initialData]);
 
-    const [tagInput, setTagInput] = useState('');
-    const [errors, setErrors] = useState<Partial<BlogForm>>({});
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
 
-    const validateForm = (): boolean => {
-        const newErrors: Partial<BlogForm> = {};
+    if (!formData.title.trim()) {
+      newErrors.title = 'Tiêu đề không được để trống';
+    } else if (formData.title.length > 200) {
+      newErrors.title = 'Tiêu đề không được vượt quá 200 ký tự';
+    }
 
-        if (!formData.title.trim()) {
-            newErrors.title = 'Tiêu đề là bắt buộc';
-        }
-        if (!formData.content.trim()) {
-            newErrors.content = 'Nội dung là bắt buộc';
-        }
-        if (!formData.excerpt.trim()) {
-            newErrors.excerpt = 'Tóm tắt là bắt buộc';
-        }
+    if (!formData.content.trim()) {
+      newErrors.content = 'Nội dung không được để trống';
+    } else if (formData.content.length < 100) {
+      newErrors.content = 'Nội dung phải có ít nhất 100 ký tự';
+    }
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+    if (formData.summary && formData.summary.length > 500) {
+      newErrors.summary = 'Tóm tắt không được vượt quá 500 ký tự';
+    }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    if (formData.tags.length === 0) {
+      newErrors.tags = 'Vui lòng chọn ít nhất một thẻ';
+    } else if (formData.tags.length > 5) {
+      newErrors.tags = 'Không được chọn quá 5 thẻ';
+    }
 
-        if (!validateForm()) return;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-        try {
-            await onSave(formData);
-        } catch (error) {
-            console.error('Error saving blog post:', error);
-        }
-    };
+  const handleSubmit = async (publishStatus: boolean) => {
+    if (!validateForm()) {
+      toast.error('Vui lòng kiểm tra lại thông tin');
+      return;
+    }
 
-    const handleAddTag = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && tagInput.trim()) {
-            e.preventDefault();
-            if (!formData.tags.includes(tagInput.trim())) {
-                setFormData(prev => ({
-                    ...prev,
-                    tags: [...prev.tags, tagInput.trim()]
-                }));
-            }
-            setTagInput('');
-        }
-    };
+    setIsSubmitting(true);
+    try {
+      const dataToSave = { ...formData, isPublished: publishStatus } as CreateBlogRequest;
+      const result = await onSave(dataToSave);
 
-    const handleRemoveTag = (tagToRemove: string) => {
-        setFormData(prev => ({
-            ...prev,
-            tags: prev.tags.filter(tag => tag !== tagToRemove)
-        }));
-    };
+      if (result.success) {
+        const message = publishStatus
+            ? (isEditing ? 'Cập nhật và xuất bản thành công!' : 'Xuất bản bài viết thành công!')
+            : (isEditing ? 'Cập nhật nháp thành công!' : 'Lưu nháp thành công!');
 
-    return (
-        <div className="bg-white rounded-lg shadow-md">
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        {initialData ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'}
-                    </h2>
-                    <div className="flex items-center gap-3">
-                        {onPreview && (
-                            <button
-                                type="button"
-                                onClick={() => onPreview(formData)}
-                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"
-                            >
-                                <Eye className="w-4 h-4" />
-                                Xem trước
-                            </button>
-                        )}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-2"
-                        >
-                            <Save className="w-4 h-4" />
-                            {loading ? 'Đang lưu...' : 'Lưu bài viết'}
-                        </button>
-                    </div>
-                </div>
+        toast.success(message);
 
+        // Navigate back to blog list after successful save
+        setTimeout(() => {
+          onCancel(); // This should navigate back to the blog list
+        }, 1500);
+      }
+    } catch {
+      const errorMessage = publishStatus
+          ? 'Có lỗi xảy ra khi xuất bản. Vui lòng thử lại!'
+          : 'Có lỗi xảy ra khi lưu nháp. Vui lòng thử lại!';
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleTagToggle = (tag: BlogTag) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+          ? prev.tags.filter(t => t !== tag)
+          : [...prev.tags, tag]
+    }));
+  };
+
+  const handleImageUrlAdd = () => {
+    const url = prompt('Nhập URL hình ảnh:');
+    if (url) {
+      setFormData(prev => ({ ...prev, coverImage: url }));
+    }
+  };
+
+  const insertMarkdown = (syntax: string) => {
+    const textarea = document.getElementById('content-textarea') as HTMLTextAreaElement;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = textarea.value.substring(start, end);
+      const beforeText = textarea.value.substring(0, start);
+      const afterText = textarea.value.substring(end);
+
+      let newText = '';
+      switch (syntax) {
+        case 'bold':
+          newText = `${beforeText}**${selectedText || 'văn bản đậm'}**${afterText}`;
+          break;
+        case 'italic':
+          newText = `${beforeText}_${selectedText || 'văn bản nghiêng'}_${afterText}`;
+          break;
+        case 'heading':
+          newText = `${beforeText}## ${selectedText || 'Tiêu đề'}\n${afterText}`;
+          break;
+        case 'list':
+          newText = `${beforeText}- ${selectedText || 'Mục danh sách'}\n${afterText}`;
+          break;
+        case 'link':
+          newText = `${beforeText}[${selectedText || 'văn bản liên kết'}](URL)${afterText}`;
+          break;
+        case 'image':
+          newText = `${beforeText}![${selectedText || 'mô tả ảnh'}](URL_ảnh)${afterText}`;
+          break;
+        default:
+          return;
+      }
+
+      setFormData(prev => ({ ...prev, content: newText }));
+
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + syntax.length + 2, start + syntax.length + 2);
+      }, 0);
+    }
+  };
+
+  const isDisabled = loading || isSubmitting;
+
+  return (
+      <div className={`bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden ${className}`}>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-primary-50 to-secondary-50 border-b border-gray-100 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-primary-100 rounded-lg">
+                <FileText className="w-6 h-6 text-primary-600" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {isEditing ? 'Chỉnh sửa bài viết' : 'Tạo bài viết mới'}
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {isEditing ? 'Cập nhật thông tin bài viết' : 'Chia sẻ kiến thức với cộng đồng'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button
+                  type="button"
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="flex items-center px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm border border-gray-200"
+                  disabled={isDisabled}
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                {showPreview ? 'Chỉnh sửa' : 'Xem trước'}
+              </button>
+              <button
+                  type="button"
+                  onClick={onCancel}
+                  className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+                  disabled={isDisabled}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-8">
+          {!showPreview ? (
+              <div className="space-y-8">
                 {/* Title */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tiêu đề *
-                    </label>
+                <div className="space-y-2">
+                  <label htmlFor="title" className="block text-sm font-semibold text-gray-700">
+                    Tiêu đề bài viết *
+                  </label>
+                  <input
+                      type="text"
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                      className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-lg font-medium ${
+                          errors.title ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+                      }`}
+                      placeholder="Nhập tiêu đề hấp dẫn cho bài viết..."
+                      disabled={isDisabled}
+                  />
+                  {errors.title && (
+                      <p className="text-sm text-red-600 flex items-center">
+                        <span className="w-4 h-4 mr-1">⚠️</span>
+                        {errors.title}
+                      </p>
+                  )}
+                  <p className="text-xs text-gray-500">{formData.title.length}/200 ký tự</p>
+                </div>
+
+                {/* Summary */}
+                <div className="space-y-2">
+                  <label htmlFor="summary" className="block text-sm font-semibold text-gray-700">
+                    Tóm tắt bài viết
+                  </label>
+                  <textarea
+                      id="summary"
+                      value={formData.summary}
+                      onChange={(e) => setFormData(prev => ({ ...prev, summary: e.target.value }))}
+                      className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 resize-none ${
+                          errors.summary ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+                      }`}
+                      rows={3}
+                      placeholder="Viết tóm tắt ngắn gọn để thu hút người đọc..."
+                      disabled={isDisabled}
+                  />
+                  {errors.summary && (
+                      <p className="text-sm text-red-600 flex items-center">
+                        <span className="w-4 h-4 mr-1">⚠️</span>
+                        {errors.summary}
+                      </p>
+                  )}
+                  <p className="text-xs text-gray-500">{formData.summary?.length || 0}/500 ký tự</p>
+                </div>
+
+                {/* Cover Image */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Ảnh bìa
+                  </label>
+                  <div className="flex space-x-3">
                     <input
-                        type="text"
-                        value={formData.title}
-                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        placeholder="Nhập tiêu đề bài viết..."
+                        type="url"
+                        value={formData.coverImage}
+                        onChange={(e) => setFormData(prev => ({ ...prev, coverImage: e.target.value }))}
+                        className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                        placeholder="https://example.com/image.jpg"
+                        disabled={isDisabled}
                     />
-                    {errors.title && (
-                        <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-                    )}
-                </div>
-
-                {/* Category and Status */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Danh mục
-                        </label>
-                        <select
-                            value={formData.category}
-                            onChange={(e) => setFormData(prev => ({
-                                ...prev,
-                                category: e.target.value as BlogCategory
-                            }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        >
-                            {categoryOptions.map(option => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Trạng thái
-                        </label>
-                        <select
-                            value={formData.status}
-                            onChange={(e) => setFormData(prev => ({
-                                ...prev,
-                                status: e.target.value as any
-                            }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        >
-                            <option value="draft">Bản nháp</option>
-                            <option value="published">Đã xuất bản</option>
-                            <option value="scheduled">Lên lịch</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Excerpt */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tóm tắt *
-                    </label>
-                    <textarea
-                        value={formData.excerpt}
-                        onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-                        placeholder="Viết tóm tắt ngắn gọn về bài viết..."
-                    />
-                    {errors.excerpt && (
-                        <p className="text-red-500 text-sm mt-1">{errors.excerpt}</p>
-                    )}
-                </div>
-
-                {/* Content */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nội dung *
-                    </label>
-                    <textarea
-                        value={formData.content}
-                        onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                        rows={15}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-                        placeholder="Viết nội dung bài viết..."
-                    />
-                    {errors.content && (
-                        <p className="text-red-500 text-sm mt-1">{errors.content}</p>
-                    )}
+                    <button
+                        type="button"
+                        onClick={handleImageUrlAdd}
+                        className="flex items-center px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors border-2 border-gray-200"
+                        disabled={isDisabled}
+                    >
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      Chọn ảnh
+                    </button>
+                  </div>
+                  {formData.coverImage && (
+                      <div className="mt-4">
+                        <img
+                            src={formData.coverImage}
+                            alt="Preview"
+                            className="w-full h-48 object-cover rounded-xl border-2 border-gray-200"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                        />
+                      </div>
+                  )}
                 </div>
 
                 {/* Tags */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Thẻ tag
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Thẻ bài viết * <span className="text-gray-500 font-normal">(Chọn 1-5 thẻ)</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {BLOG_TAGS.map((tag) => (
+                        <button
+                            key={tag}
+                            type="button"
+                            onClick={() => handleTagToggle(tag)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                formData.tags.includes(tag)
+                                    ? 'bg-primary-600 text-white shadow-md transform scale-105'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                            }`}
+                            disabled={isDisabled || (!formData.tags.includes(tag) && formData.tags.length >= 5)}
+                        >
+                          {tag}
+                        </button>
+                    ))}
+                  </div>
+                  {errors.tags && (
+                      <p className="text-sm text-red-600 flex items-center">
+                        <span className="w-4 h-4 mr-1">⚠️</span>
+                        {errors.tags}
+                      </p>
+                  )}
+                  <p className="text-xs text-gray-500">Đã chọn {formData.tags.length}/5 thẻ</p>
+                </div>
+
+                {/* Content Editor */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="content-textarea" className="block text-sm font-semibold text-gray-700">
+                      Nội dung bài viết * <span className="text-gray-500 font-normal">(Hỗ trợ Markdown)</span>
                     </label>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                        {formData.tags.map(tag => (
+                    <div className="flex items-center space-x-2">
+                      <button
+                          type="button"
+                          onClick={() => insertMarkdown('bold')}
+                          className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-bold"
+                          title="Đậm"
+                          disabled={isDisabled}
+                      >
+                        B
+                      </button>
+                      <button
+                          type="button"
+                          onClick={() => insertMarkdown('italic')}
+                          className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors italic"
+                          title="Nghiêng"
+                          disabled={isDisabled}
+                      >
+                        I
+                      </button>
+                      <button
+                          type="button"
+                          onClick={() => insertMarkdown('heading')}
+                          className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-bold"
+                          title="Tiêu đề"
+                          disabled={isDisabled}
+                      >
+                        H
+                      </button>
+                      <button
+                          type="button"
+                          onClick={() => insertMarkdown('list')}
+                          className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                          title="Danh sách"
+                          disabled={isDisabled}
+                      >
+                        •
+                      </button>
+                      <button
+                          type="button"
+                          onClick={() => insertMarkdown('link')}
+                          className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                          title="Liên kết"
+                          disabled={isDisabled}
+                      >
+                        🔗
+                      </button>
+                      <button
+                          type="button"
+                          onClick={() => insertMarkdown('image')}
+                          className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                          title="Hình ảnh"
+                          disabled={isDisabled}
+                      >
+                        📷
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                      id="content-textarea"
+                      value={formData.content}
+                      onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                      className={`w-full px-4 py-4 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 resize-none font-mono text-sm leading-relaxed ${
+                          errors.content ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+                      }`}
+                      rows={20}
+                      placeholder="Bắt đầu viết nội dung bài viết bằng Markdown...
+
+Ví dụ:
+# Tiêu đề chính
+## Tiêu đề phụ
+**Văn bản đậm**
+*Văn bản nghiêng*
+- Danh sách
+[Liên kết](URL)
+![Hình ảnh](URL)"
+                      disabled={isDisabled}
+                  />
+                  {errors.content && (
+                      <p className="text-sm text-red-600 flex items-center">
+                        <span className="w-4 h-4 mr-1">⚠️</span>
+                        {errors.content}
+                      </p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    {formData.content.length} ký tự (tối thiểu 100 ký tự)
+                  </p>
+                </div>
+              </div>
+          ) : (
+              /* Preview */
+              <div className="space-y-8">
+                <div className="border-b border-gray-200 pb-6">
+                  <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                    {formData.title || 'Tiêu đề bài viết'}
+                  </h1>
+                  {formData.summary && (
+                      <p className="text-xl text-gray-600 leading-relaxed">{formData.summary}</p>
+                  )}
+                  {formData.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-6">
+                        {formData.tags.map((tag) => (
                             <span
                                 key={tag}
-                                className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm flex items-center gap-2"
+                                className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm font-medium"
                             >
-                #{tag}
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveTag(tag)}
-                                    className="text-red-600 hover:text-red-800"
-                                >
-                  ×
-                </button>
-              </span>
+                      {tag}
+                    </span>
                         ))}
-                    </div>
-                    <input
-                        type="text"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={handleAddTag}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        placeholder="Nhập tag và nhấn Enter..."
+                      </div>
+                  )}
+                </div>
+
+                {formData.coverImage && (
+                    <img
+                        src={formData.coverImage}
+                        alt="Cover"
+                        className="w-full h-64 object-cover rounded-xl"
                     />
+                )}
+
+                <div className="prose prose-lg max-w-none">
+                  <ReactMarkdown
+                      components={{
+                        h1: ({ children }) => <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-3">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-xl font-semibold text-gray-900 mt-4 mb-2">{children}</h3>,
+                        p: ({ children }) => <p className="text-gray-700 leading-relaxed mb-4 text-lg">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2 text-lg">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside text-gray-700 mb-4 space-y-2 text-lg">{children}</ol>,
+                        blockquote: ({ children }) => (
+                            <blockquote className="border-l-4 border-primary-500 bg-primary-50 pl-6 py-4 italic text-gray-700 my-6 rounded-r-lg">
+                              {children}
+                            </blockquote>
+                        ),
+                        code: ({ children }) => (
+                            <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono text-gray-800">
+                              {children}
+                            </code>
+                        ),
+                        pre: ({ children }) => (
+                            <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm font-mono mb-6">
+                      {children}
+                    </pre>
+                        ),
+                      }}
+                  >
+                    {formData.content || 'Nội dung bài viết sẽ hiển thị ở đây...'}
+                  </ReactMarkdown>
                 </div>
+              </div>
+          )}
 
-                {/* Featured Image */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Ảnh đại diện
-                    </label>
-                    <div className="flex items-center gap-4">
-                        <input
-                            type="url"
-                            value={formData.featuredImage || ''}
-                            onChange={(e) => setFormData(prev => ({
-                                ...prev,
-                                featuredImage: e.target.value || undefined
-                            }))}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            placeholder="URL ảnh đại diện..."
-                        />
-                        <button
-                            type="button"
-                            className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"
-                        >
-                            <Upload className="w-4 h-4" />
-                            Tải lên
-                        </button>
-                    </div>
-                    {formData.featuredImage && (
-                        <img
-                            src={formData.featuredImage}
-                            alt="Preview"
-                            className="mt-2 w-32 h-20 object-cover rounded-md"
-                        />
-                    )}
-                </div>
+          {/* Actions */}
+          <div className="flex items-center justify-between mt-12 pt-8 border-t border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center">
+                <input
+                    type="checkbox"
+                    id="isPublished"
+                    checked={formData.isPublished}
+                    onChange={(e) => setFormData(prev => ({ ...prev, isPublished: e.target.checked }))}
+                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    disabled={isDisabled}
+                />
+                <label htmlFor="isPublished" className="ml-2 text-sm text-gray-700">
+                  Xuất bản ngay lập tức
+                </label>
+              </div>
+            </div>
 
-                {/* SEO Settings */}
-                <div className="border-t border-gray-200 pt-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Cài đặt SEO</h3>
-
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Tiêu đề SEO
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.seoTitle || ''}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    seoTitle: e.target.value || undefined
-                                }))}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                placeholder="Tiêu đề tối ưu cho SEO..."
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Mô tả SEO
-                            </label>
-                            <textarea
-                                value={formData.seoDescription || ''}
-                                onChange={(e) => setFormData(prev => ({
-                                    ...prev,
-                                    seoDescription: e.target.value || undefined
-                                }))}
-                                rows={3}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-                                placeholder="Mô tả ngắn gọn cho công cụ tìm kiếm..."
-                            />
-                        </div>
-                    </div>
-                </div>
-            </form>
+            <div className="flex items-center space-x-4">
+              <button
+                  type="button"
+                  onClick={onCancel}
+                  className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
+                  disabled={isDisabled}
+              >
+                Hủy bỏ
+              </button>
+              <button
+                  type="button"
+                  onClick={() => handleSubmit(false)}
+                  disabled={isDisabled}
+                  className="flex items-center px-6 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSubmitting ? 'Đang lưu...' : 'Lưu nháp'}
+              </button>
+              <button
+                  type="button"
+                  onClick={() => handleSubmit(true)}
+                  disabled={isDisabled}
+                  className="flex items-center px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl hover:from-primary-700 hover:to-primary-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium shadow-lg"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                <Sparkles className="w-4 h-4 mr-1" />
+                {isSubmitting ? 'Đang xuất bản...' : 'Xuất bản'}
+              </button>
+            </div>
+          </div>
         </div>
-    );
+      </div>
+  );
 };
-
-export default BlogEditor;

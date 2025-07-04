@@ -1,158 +1,217 @@
 import React from 'react';
-import { Calendar, User, MessageSquare, Tag, MoreVertical, Trash2, Edit3 } from 'lucide-react';
-import { FeedbackCategory, FeedbackStatus } from '../types/feedback.types';
-import type { Feedback } from '../types/feedback.types';
-import   RatingStars  from './RatingStars';
+import { Calendar, User, MessageSquare, Reply, Trash2, AlertCircle } from 'lucide-react';
+import RatingStars from './RatingStars';
+import type { DonorFeedback } from '../types/feedback.types';
+import { formatDateTime, formatRelativeTime } from '../utils/formatters';
 
 interface FeedbackCardProps {
-  feedback: Feedback;
-  onEdit?: (feedback: Feedback) => void;
-  onDelete?: (feedback: Feedback) => void;
+  feedback: DonorFeedback;
+  onReply?: (feedback: DonorFeedback) => void;
+  onDelete?: (feedbackId: string) => void;
   showActions?: boolean;
+  selected?: boolean;
+  onSelect?: (feedbackId: string, selected: boolean) => void;
 }
 
-const categoryLabels: Record<FeedbackCategory, string> = {
-  [FeedbackCategory.STAFF_SERVICE]: 'Dịch vụ nhân viên',
-  [FeedbackCategory.FACILITY_CLEANLINESS]: 'Vệ sinh cơ sở',
-  [FeedbackCategory.DONATION_PROCESS]: 'Quy trình hiến máu',
-  [FeedbackCategory.WAITING_TIME]: 'Thời gian chờ đợi',
-  [FeedbackCategory.OVERALL_EXPERIENCE]: 'Trải nghiệm tổng thể',
-  [FeedbackCategory.GENERAL_SUGGESTION]: 'Góp ý chung'
-};
-
-const categoryColors: Record<FeedbackCategory, string> = {
-  [FeedbackCategory.STAFF_SERVICE]: 'bg-blue-100 text-blue-800',
-  [FeedbackCategory.FACILITY_CLEANLINESS]: 'bg-green-100 text-green-800',
-  [FeedbackCategory.DONATION_PROCESS]: 'bg-purple-100 text-purple-800',
-  [FeedbackCategory.WAITING_TIME]: 'bg-yellow-100 text-yellow-800',
-  [FeedbackCategory.OVERALL_EXPERIENCE]: 'bg-indigo-100 text-indigo-800',
-  [FeedbackCategory.GENERAL_SUGGESTION]: 'bg-gray-100 text-gray-800'
-};
-
-const statusColors: Record<FeedbackStatus, string> = {
-  [FeedbackStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
-  [FeedbackStatus.REVIEWED]: 'bg-blue-100 text-blue-800',
-  [FeedbackStatus.RESOLVED]: 'bg-green-100 text-green-800'
-};
-
-const statusLabels: Record<FeedbackStatus, string> = {
-  [FeedbackStatus.PENDING]: 'Chờ xử lý',
-  [FeedbackStatus.REVIEWED]: 'Đã xem',
-  [FeedbackStatus.RESOLVED]: 'Đã giải quyết'
-};
-
-export const FeedbackCard: React.FC<FeedbackCardProps> = ({
+const FeedbackCard: React.FC<FeedbackCardProps> = ({
   feedback,
-  onEdit,
+  onReply,
   onDelete,
-  showActions = true
+  showActions = true,
+  selected = false,
+  onSelect,
 }) => {
-  const [showDropdown, setShowDropdown] = React.useState(false);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'replied':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'resolved':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Chờ phản hồi';
+      case 'replied':
+        return 'Đã phản hồi';
+      case 'resolved':
+        return 'Đã giải quyết';
+      default:
+        return 'Không xác định';
+    }
+  };
+
+  const averageRating = (
+    feedback.process +
+    feedback.bloodTest +
+    feedback.postDonationCare +
+    feedback.comfortable +
+    feedback.overallSatisfaction
+  ) / 5;
+
+  const ratingCategories = [
+    { label: 'Quy trình', value: feedback.process },
+    { label: 'Xét nghiệm', value: feedback.bloodTest },
+    { label: 'Chăm sóc', value: feedback.postDonationCare },
+    { label: 'Thoải mái', value: feedback.comfortable },
+    { label: 'Tổng thể', value: feedback.overallSatisfaction },
+  ];
+
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow duration-200">
+    <div className={`
+      bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden
+      ${selected ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}
+    `}>
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-red-600" />
+      <div className="p-6 border-b border-gray-100">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-4">
+            {showActions && onSelect && (
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={(e) => onSelect(feedback.feedbackId, e.target.checked)}
+                className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+            )}
+            
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <User className="w-4 h-4" />
+                  <span className="font-medium">
+                    {feedback.donorName || 'Người hiến máu'}
+                  </span>
+                </div>
+                <span className={`
+                  px-2 py-1 text-xs font-medium rounded-full border
+                  ${getStatusColor(feedback.status)}
+                `}>
+                  {getStatusText(feedback.status)}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>{formatDateTime(feedback.createdAt)}</span>
+                </div>
+                <span>•</span>
+                <span>{formatRelativeTime(feedback.createdAt)}</span>
+                <span>•</span>
+                <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
+                  {feedback.registrationId}
+                </span>
+              </div>
             </div>
           </div>
-          <div>
-            <h3 className="font-medium text-gray-900">
-              {feedback.isAnonymous ? 'Người hiến máu ẩn danh' : feedback.donorInfo?.name || 'Người hiến máu'}
-            </h3>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Calendar className="w-4 h-4" />
-              <span>{formatDate(feedback.createdAt)}</span>
+
+          {showActions && (
+            <div className="flex items-center gap-2">
+              {onReply && (
+                <button
+                  onClick={() => onReply(feedback)}
+                  className="
+                    flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 
+                    hover:bg-blue-50 rounded-lg transition-colors duration-200
+                  "
+                >
+                  <Reply className="w-4 h-4" />
+                  Phản hồi
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(feedback.feedbackId)}
+                  className="
+                    flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 
+                    hover:bg-red-50 rounded-lg transition-colors duration-200
+                  "
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Xóa
+                </button>
+              )}
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* Rating Summary */}
+      <div className="p-6 bg-gray-50">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-semibold text-gray-900">Đánh giá tổng quan</h4>
+          <div className="flex items-center gap-2">
+            <RatingStars rating={averageRating} readonly size="sm" />
+            <span className="text-sm font-medium text-gray-700">
+              {averageRating.toFixed(1)}/5
+            </span>
           </div>
         </div>
         
-        {showActions && (
-          <div className="relative">
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <MoreVertical className="w-4 h-4 text-gray-500" />
-            </button>
-            
-            {showDropdown && (
-              <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                <div className="py-1">
-                  {onEdit && (
-                    <button
-                      onClick={() => {
-                        onEdit(feedback);
-                        setShowDropdown(false);
-                      }}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-                    >
-                      <Edit3 className="w-4 h-4 mr-2" />
-                      Chỉnh sửa
-                    </button>
-                  )}
-                  {onDelete && (
-                    <button
-                      onClick={() => {
-                        onDelete(feedback);
-                        setShowDropdown(false);
-                      }}
-                      className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Xóa
-                    </button>
-                  )}
-                </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {ratingCategories.map((category, index) => (
+            <div key={index} className="text-center">
+              <div className="text-xs text-gray-600 mb-1">{category.label}</div>
+              <div className="flex justify-center mb-1">
+                <RatingStars rating={category.value} readonly size="sm" />
               </div>
-            )}
+              <div className="text-xs font-medium text-gray-700">
+                {category.value}/5
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Description */}
+      <div className="p-6">
+        <div className="flex items-start gap-2 mb-3">
+          <MessageSquare className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+          <h4 className="font-semibold text-gray-900">Mô tả chi tiết</h4>
+        </div>
+        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+          {feedback.description}
+        </p>
+      </div>
+
+      {/* Staff Reply */}
+      {feedback.staffReply && (
+        <div className="p-6 bg-blue-50 border-t border-blue-100">
+          <div className="flex items-start gap-2 mb-3">
+            <Reply className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <h4 className="font-semibold text-blue-900">Phản hồi từ nhân viên</h4>
           </div>
-        )}
-      </div>
-
-      {/* Rating */}
-      <div className="mb-4">
-        <RatingStars rating={feedback.rating} readonly size="sm" />
-      </div>
-
-      {/* Category */}
-      <div className="mb-4">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[feedback.category]}`}>
-          <Tag className="w-3 h-3 mr-1" />
-          {categoryLabels[feedback.category]}
-        </span>
-      </div>
-
-      {/* Comment */}
-      {feedback.comment && (
-        <div className="mb-4">
-          <div className="flex items-start space-x-2">
-            <MessageSquare className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-            <p className="text-gray-700 text-sm leading-relaxed">{feedback.comment}</p>
-          </div>
+          <p className="text-blue-800 leading-relaxed whitespace-pre-wrap">
+            {feedback.staffReply}
+          </p>
+          {feedback.updatedAt && (
+            <div className="mt-3 text-xs text-blue-600">
+              Phản hồi lúc: {formatDateTime(feedback.updatedAt)}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-gray-500 pt-4 border-t border-gray-100">
-        <span>ID: {feedback.registrationId}</span>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[feedback.status]}`}>
-          {statusLabels[feedback.status]}
-        </span>
-      </div>
+      {/* Warning for pending feedback */}
+      {feedback.status === 'pending' && showActions && (
+        <div className="p-4 bg-yellow-50 border-t border-yellow-100">
+          <div className="flex items-center gap-2 text-yellow-800">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">
+              Feedback này đang chờ phản hồi từ nhân viên
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+export default FeedbackCard;

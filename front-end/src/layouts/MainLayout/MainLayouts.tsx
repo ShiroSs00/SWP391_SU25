@@ -1,21 +1,29 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { Header } from '../../components/layouts/Header';
-import Footer from '../../components/layouts/Footer';
-import { Sidebar } from '../../components/ui/sidebar/Sidebar';
-// import sidebarItems from 'path-to-your-sidebar-items';
+import React from "react";
+import { Outlet, } from "react-router-dom";
+import Footer from "../../components/layouts/Footer";
+import { cn } from "../../lib/utils";
+import {Header} from "../../components/layouts/Header";
 
-const MainLayout = () => (
-  <>
-    <Header />
-    <div className="flex min-h-screen">
-      <Sidebar items={/* sidebarItems */} />
-      <main className="flex-1">
-        <Outlet />
-      </main>
-    </div>
-    <Footer />
-  </>
-);
+export const MainLayout: React.FC = () => {
 
-export default MainLayout;
+    // Sidebar items for navigation
+
+
+    return (
+        <div className="min-h-screen flex flex-col bg-gray-50">
+            {/* Navbar cố định */}
+            <Header />
+
+            <div className="flex flex-1">
+                {/* Main content */}
+                <main className={cn("flex-1 min-h-0")}>
+                    <div className="p-6">
+                        <Outlet />
+                    </div>
+                </main>
+            </div>
+
+            <Footer />
+        </div>
+    );
+};

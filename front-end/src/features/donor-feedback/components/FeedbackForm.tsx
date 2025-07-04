@@ -1,467 +1,342 @@
 import React, { useState } from 'react';
-import { X, Heart } from 'lucide-react';
-import { FeedbackCategory } from '../types/feedback.types';
-import type { CreateFeedbackRequest} from '../types/feedback.types';
+import { Send, AlertCircle, CheckCircle, Heart, Star } from 'lucide-react';
+import RatingStars from './RatingStars';
+import type { CreateFeedbackRequest } from '../types/feedback.types';
+import { validateFeedbackForm, type ValidationError } from '../utils/validation';
+import toast from "react-hot-toast";
+
 interface FeedbackFormProps {
-  registrationId: string;
-  onSubmit: (feedback: CreateFeedbackRequest) => Promise<void>;
-  onCancel?: () => void;
+  onSubmit: (data: CreateFeedbackRequest) => Promise<void>;
   loading?: boolean;
+  registrationId: string;
 }
 
-interface FormData {
-  fullName: string;
-  age: string;
-  email: string;
-  phone: string;
-  donationDate: string;
-  donationLocation: string;
-  overallExperience: number;
-  staffFriendliness: number;
-  facilityComfort: number;
-  donationProcess: number;
-  waitingTime: number;
-  wouldDonateAgain: string;
-  wouldRecommend: string;
-  experienceDescription: string;
-  suggestions: string;
-  allowContact: boolean;
-}
-
-const initialFormData: FormData = {
-  fullName: '',
-  age: '',
-  email: '',
-  phone: '',
-  donationDate: '',
-  donationLocation: '',
-  overallExperience: 0,
-  staffFriendliness: 0,
-  facilityComfort: 0,
-  donationProcess: 0,
-  waitingTime: 0,
-  wouldDonateAgain: '',
-  wouldRecommend: '',
-  experienceDescription: '',
-  suggestions: '',
-  allowContact: false
-};
-
-export const FeedbackForm: React.FC<FeedbackFormProps> = ({
-  registrationId,
+const FeedbackForm: React.FC<FeedbackFormProps> = ({
   onSubmit,
-  onCancel,
-  loading = false
+  loading = false,
+  registrationId,
 }) => {
-  const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formData, setFormData] = useState<CreateFeedbackRequest>({
+    process: 0,
+    bloodTest: 0,
+    postDonationCare: 0,
+    comfortable: 0,
+    overallSatisfaction: 0,
+    description: '',
+  });
 
-  const handleInputChange = (
-    field: keyof FormData,
-    value: string | number | boolean
-  ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
+  const [errors, setErrors] = useState<ValidationError[]>([]);
+  const [submitted, setSubmitted] = useState(false);
 
-  const handleRatingChange = (field: keyof FormData, rating: number) => {
-    setFormData(prev => ({ ...prev, [field]: rating }));
-  };
+  const ratingCategories = [
+    {
+      key: 'process' as keyof CreateFeedbackRequest,
+      label: 'Quy trình hiến máu',
+      description: 'Đánh giá về quy trình đăng ký, kiểm tra sức khỏe và hiến máu',
+      icon: '🩺',
+    },
+    {
+      key: 'bloodTest' as keyof CreateFeedbackRequest,
+      label: 'Xét nghiệm máu',
+      description: 'Đánh giá về quá trình xét nghiệm và thông báo kết quả',
+      icon: '🔬',
+    },
+    {
+      key: 'postDonationCare' as keyof CreateFeedbackRequest,
+      label: 'Chăm sóc sau hiến máu',
+      description: 'Đánh giá về việc chăm sóc và hướng dẫn sau khi hiến máu',
+      icon: '💊',
+    },
+    {
+      key: 'comfortable' as keyof CreateFeedbackRequest,
+      label: 'Sự thoải mái',
+      description: 'Đánh giá về môi trường, cơ sở vật chất và sự thoải mái',
+      icon: '🏥',
+    },
+    {
+      key: 'overallSatisfaction' as keyof CreateFeedbackRequest,
+      label: 'Mức độ hài lòng chung',
+      description: 'Đánh giá tổng thể về trải nghiệm hiến máu',
+      icon: '⭐',
+    },
+  ];
 
-  const StarRating: React.FC<{ 
-    value: number; 
-    onChange: (rating: number) => void; 
-    label: string;
-  }> = ({ value, onChange, label }) => {
-    return (
-      <div className="flex flex-col">
-        <label className="text-sm text-gray-700 mb-2">{label}</label>
-        <div className="flex space-x-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              type="button"
-              onClick={() => onChange(star)}
-              className="focus:outline-none hover:scale-110 transition-transform"
-            >
-              <svg
-                className={`w-6 h-6 transition-colors ${
-                  star <= value ? 'text-yellow-400 fill-current' : 'text-gray-300 hover:text-yellow-200'
-                }`}
-                viewBox="0 0 20 20"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+  const handleRatingChange = (category: keyof CreateFeedbackRequest, rating: number) => {
+    setFormData(prev => ({
+      ...prev,
+      [category]: rating,
+    }));
     
-    if (!formData.fullName.trim()) newErrors.fullName = 'Vui lòng nhập họ tên';
-    if (!formData.email.trim()) newErrors.email = 'Vui lòng nhập email';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email không hợp lệ';
-    if (!formData.donationDate) newErrors.donationDate = 'Vui lòng chọn ngày';
-    if (!formData.donationLocation.trim()) newErrors.donationLocation = 'Vui lòng nhập địa điểm';
+    // Clear error for this field when user makes a selection
+    setErrors(prev => prev.filter(error => error.field !== category));
+  };
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      description: e.target.value,
+    }));
+    
+    // Clear error when user starts typing
+    if (e.target.value.trim().length > 0) {
+      setErrors(prev => prev.filter(error => error.field !== 'description'));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    const validationErrors = validateFeedbackForm(formData);
+    setErrors(validationErrors);
+
+    if (validationErrors.length > 0) {
+      // Scroll to first error
+      const firstErrorField = document.querySelector(`[data-field="${validationErrors[0].field}"]`);
+      firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
 
     try {
-      const detailedComment = `
-THÔNG TIN CÁ NHÂN:
-- Họ tên: ${formData.fullName}
-- Tuổi: ${formData.age}
-- Email: ${formData.email}
-- Số điện thoại: ${formData.phone}
-- Ngày hiến máu: ${formData.donationDate}
-- Địa điểm: ${formData.donationLocation}
-
-ĐÁNH GIÁ TRẢI NGHIỆM:
-- Đánh giá tổng thể: ${formData.overallExperience}/5 sao
-- Thái độ nhân viên: ${formData.staffFriendliness}/5 sao
-- Cơ sở vật chất: ${formData.facilityComfort}/5 sao
-- Quy trình hiến máu: ${formData.donationProcess}/5 sao
-- Thời gian chờ: ${formData.waitingTime}/5 sao
-
-CÂU HỎI KHÁC:
-- Bạn có muốn hiến máu lần tiếp theo không? ${formData.wouldDonateAgain}
-- Bạn có muốn giới thiệu bạn bè hiến máu không? ${formData.wouldRecommend}
-
-MÔ TẢ TRẢI NGHIỆM: ${formData.experienceDescription}
-NHẬN XÉT KHÁC: ${formData.suggestions}
-      `.trim();
-
-      const feedbackRequest: CreateFeedbackRequest = {
-        registrationId,
-        rating: formData.overallExperience || 5,
-        comment: detailedComment,
-        category: FeedbackCategory.OVERALL_EXPERIENCE,
-        isAnonymous: false
-      };
-
-      await onSubmit(feedbackRequest);
-    } catch (error) {
-      console.error('Error submitting feedback:', error);
+      await onSubmit(formData);
+      setSubmitted(true);
+    } catch {
+      toast.error('Có lỗi xảy ra khi gửi feedback. Vui lòng thử lại sau.');
     }
   };
 
-  return (
-    <div className="bg-white rounded-lg shadow-lg border border-gray-200 max-w-2xl mx-auto">
-      {/* Header with red background */}
-      <div className="bg-red-500 text-white px-6 py-4 rounded-t-lg flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <Heart className="w-6 h-6" />
-          <div>
-            <h3 className="text-xl font-semibold">Feedback Sau Hiến Máu</h3>
-            <p className="text-red-100 text-sm">Chia sẻ trải nghiệm hiến máu của bạn để giúp chúng tôi cải thiện dịch vụ</p>
+  const getFieldError = (fieldName: string): string | undefined => {
+    return errors.find(error => error.field === fieldName)?.message;
+  };
+
+  const getRatingText = (rating: number): string => {
+    if (rating === 0) return 'Chưa đánh giá';
+    if (rating === 1) return 'Rất không hài lòng';
+    if (rating === 2) return 'Không hài lòng';
+    if (rating === 3) return 'Bình thường';
+    if (rating === 4) return 'Hài lòng';
+    if (rating === 5) return 'Rất hài lòng';
+    return '';
+  };
+
+  const averageRating = (
+    formData.process + 
+    formData.bloodTest + 
+    formData.postDonationCare + 
+    formData.comfortable + 
+    formData.overallSatisfaction
+  ) / 5;
+
+  if (submitted) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-6">
+            <div className="text-center text-white">
+              <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-white bg-opacity-20 mb-4">
+                <CheckCircle className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">
+                Cảm ơn bạn đã gửi feedback!
+              </h2>
+              <p className="text-green-100">
+                Phản hồi của bạn rất quan trọng và sẽ giúp chúng tôi cải thiện chất lượng dịch vụ.
+              </p>
+            </div>
+          </div>
+          
+          <div className="p-8">
+            <div className="bg-blue-50 rounded-xl p-6 mb-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-900">Thông tin đăng ký</h3>
+                  <p className="text-sm text-blue-700">Mã đăng ký: <span className="font-mono font-medium">{registrationId}</span></p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <Star className="w-5 h-5 text-yellow-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-yellow-900">Đánh giá của bạn</h3>
+                  <p className="text-sm text-yellow-700">
+                    Điểm trung bình: <span className="font-bold">{averageRating.toFixed(1)}/5</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 text-center">
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-red-50 text-red-700 rounded-full">
+                <Heart className="w-5 h-5" />
+                <span className="font-medium">Cảm ơn bạn đã hiến máu cứu người!</span>
+              </div>
+            </div>
           </div>
         </div>
-        {onCancel && (
-          <button
-            onClick={onCancel}
-            className="p-1 hover:bg-red-600 rounded-full transition-colors"
-          >
-            <X className="w-5 h-5 text-white" />
-          </button>
-        )}
       </div>
+    );
+  }
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        {/* Personal Information Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Họ tên mình <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.fullName}
-              onChange={(e) => handleInputChange('fullName', e.target.value)}
-              placeholder="Nhập họ tên của bạn"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                errors.fullName ? 'border-red-300' : 'border-gray-300'
-              }`}
-            />
-            {errors.fullName && <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              placeholder="email@example.com"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                errors.email ? 'border-red-300' : 'border-gray-300'
-              }`}
-            />
-            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Tuổi của bạn
-            </label>
-            <input
-              type="text"
-              value={formData.age}
-              onChange={(e) => handleInputChange('age', e.target.value)}
-              placeholder="Nhập tuổi của bạn"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Số điện thoại
-            </label>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => handleInputChange('phone', e.target.value)}
-              placeholder="Nhập số điện thoại"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Ngày hiến máu <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              value={formData.donationDate}
-              onChange={(e) => handleInputChange('donationDate', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                errors.donationDate ? 'border-red-300' : 'border-gray-300'
-              }`}
-            />
-            {errors.donationDate && <p className="mt-1 text-sm text-red-600">{errors.donationDate}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Địa điểm hiến máu <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.donationLocation}
-              onChange={(e) => handleInputChange('donationLocation', e.target.value)}
-              placeholder="Nơi bạn hiến máu (bệnh viện, trung tâm y tế...)"
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                errors.donationLocation ? 'border-red-300' : 'border-gray-300'
-              }`}
-            />
-            {errors.donationLocation && <p className="mt-1 text-sm text-red-600">{errors.donationLocation}</p>}
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-gradient-to-r from-red-500 to-pink-600 px-8 py-8">
+          <div className="text-center text-white">
+            <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-white bg-opacity-20 mb-4">
+              <Heart className="w-8 h-8" />
+            </div>
+            <h2 className="text-3xl font-bold mb-2">
+              Đánh giá trải nghiệm hiến máu
+            </h2>
+            <p className="text-red-100 text-lg">
+              Chia sẻ trải nghiệm của bạn để giúp chúng tôi cải thiện dịch vụ
+            </p>
           </div>
         </div>
 
-        {/* Rating Section */}
-        <div>
-          <h4 className="text-lg font-semibold text-red-600 mb-4">Đánh Giá Trải Nghiệm</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StarRating
-              value={formData.overallExperience}
-              onChange={(rating) => handleRatingChange('overallExperience', rating)}
-              label="Đánh giá tổng thể"
-            />
-            <StarRating
-              value={formData.staffFriendliness}
-              onChange={(rating) => handleRatingChange('staffFriendliness', rating)}
-              label="Thái độ nhân viên"
-            />
-            <StarRating
-              value={formData.facilityComfort}
-              onChange={(rating) => handleRatingChange('facilityComfort', rating)}
-              label="Cơ sở vật chất"
-            />
-            <StarRating
-              value={formData.donationProcess}
-              onChange={(rating) => handleRatingChange('donationProcess', rating)}
-              label="Quy trình hiến máu"
-            />
-            <StarRating
-              value={formData.waitingTime}
-              onChange={(rating) => handleRatingChange('waitingTime', rating)}
-              label="Thời gian chờ đợi"
-            />
-          </div>
-        </div>
-
-        {/* Yes/No Questions */}
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bạn có muốn hiến máu lần tiếp theo không? <span className="text-red-500">*</span>
-            </label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="wouldDonateAgain"
-                  value="Có"
-                  checked={formData.wouldDonateAgain === 'Có'}
-                  onChange={(e) => handleInputChange('wouldDonateAgain', e.target.value)}
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
-                />
-                <span className="ml-2 text-gray-700">Có</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="wouldDonateAgain"
-                  value="Không"
-                  checked={formData.wouldDonateAgain === 'Không'}
-                  onChange={(e) => handleInputChange('wouldDonateAgain', e.target.value)}
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
-                />
-                <span className="ml-2 text-gray-700">Không</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="wouldDonateAgain"
-                  value="Có thể"
-                  checked={formData.wouldDonateAgain === 'Có thể'}
-                  onChange={(e) => handleInputChange('wouldDonateAgain', e.target.value)}
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
-                />
-                <span className="ml-2 text-gray-700">Có thể</span>
-              </label>
+        <form onSubmit={handleSubmit} className="p-8">
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-blue-900">Thông tin đăng ký hiến máu</h3>
+                  <p className="text-blue-700">
+                    Mã đăng ký: <span className="font-mono font-medium bg-blue-100 px-2 py-1 rounded">{registrationId}</span>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bạn có muốn giới thiệu bạn bè hiến máu không? <span className="text-red-500">*</span>
-            </label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="wouldRecommend"
-                  value="Có"
-                  checked={formData.wouldRecommend === 'Có'}
-                  onChange={(e) => handleInputChange('wouldRecommend', e.target.value)}
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
-                />
-                <span className="ml-2 text-gray-700">Có</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="wouldRecommend"
-                  value="Không"
-                  checked={formData.wouldRecommend === 'Không'}
-                  onChange={(e) => handleInputChange('wouldRecommend', e.target.value)}
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
-                />
-                <span className="ml-2 text-gray-700">Không</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="wouldRecommend"
-                  value="Có thể"
-                  checked={formData.wouldRecommend === 'Có thể'}
-                  onChange={(e) => handleInputChange('wouldRecommend', e.target.value)}
-                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
-                />
-                <span className="ml-2 text-gray-700">Có thể</span>
-              </label>
+          <div className="space-y-8">
+            {ratingCategories.map((category, index) => (
+              <div 
+                key={category.key} 
+                className="border-b border-gray-100 pb-8 last:border-b-0"
+                data-field={category.key}
+              >
+                <div className="mb-6">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="text-2xl">{category.icon}</div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        {index + 1}. {category.label}
+                      </h3>
+                      <p className="text-gray-600 leading-relaxed">
+                        {category.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <RatingStars
+                        rating={formData[category.key] as number}
+                        onRatingChange={(rating) => handleRatingChange(category.key, rating)}
+                        size="lg"
+                      />
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-900">
+                          {Number(formData[category.key]) > 0 ? `${formData[category.key]}/5` : 'Chưa đánh giá'}
+                        </div>
+                        <div className="text-gray-500">
+                          {getRatingText(formData[category.key] as number)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {getFieldError(category.key) && (
+                    <div className="mt-4 flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                      <span className="text-sm font-medium">{getFieldError(category.key)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10" data-field="description">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                6. Mô tả chi tiết cảm nhận
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Chia sẻ thêm về trải nghiệm của bạn, những điều bạn thích hoặc muốn cải thiện
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-xl p-6">
+              <textarea
+                id="description"
+                rows={6}
+                value={formData.description}
+                onChange={handleDescriptionChange}
+                placeholder="Nhập mô tả chi tiết về trải nghiệm hiến máu của bạn..."
+                className={`
+                  w-full px-4 py-4 border-2 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none
+                  transition-all duration-200 bg-white
+                  ${getFieldError('description') ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'}
+                `}
+                maxLength={1000}
+              />
+              <div className="flex justify-between items-center mt-3">
+                <div>
+                  {getFieldError('description') && (
+                    <div className="flex items-center gap-2 text-red-600">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-sm font-medium">{getFieldError('description')}</span>
+                    </div>
+                  )}
+                </div>
+                <span className={`text-sm ${formData.description.length > 900 ? 'text-red-500 font-medium' : 'text-gray-500'}`}>
+                  {formData.description.length}/1000
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Text Areas */}
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mô tả trải nghiệm
-            </label>
-            <textarea
-              value={formData.experienceDescription}
-              onChange={(e) => handleInputChange('experienceDescription', e.target.value)}
-              placeholder="Mô tả chi tiết về trải nghiệm hiến máu của bạn"
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nhận xét khác
-            </label>
-            <textarea
-              value={formData.suggestions}
-              onChange={(e) => handleInputChange('suggestions', e.target.value)}
-              placeholder="Có điều gì bạn muốn chia sẻ thêm không?"
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-            />
-          </div>
-        </div>
-
-        {/* Privacy Checkbox */}
-        <div>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.allowContact}
-              onChange={(e) => handleInputChange('allowContact', e.target.checked)}
-              className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-            />
-            <span className="ml-2 text-sm text-gray-700">
-              Tôi đồng ý để được liên hệ lại về các chương trình hiến máu trong tương lai
-            </span>
-          </label>
-        </div>
-
-        {/* Submit button */}
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          {onCancel && (
+          <div className="mt-10 flex justify-center">
             <button
-              type="button"
-              onClick={onCancel}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              type="submit"
+              disabled={loading}
+              className="
+                group flex items-center gap-3 px-10 py-4 bg-gradient-to-r from-red-500 to-pink-600 
+                text-white font-bold text-lg rounded-xl hover:from-red-600 hover:to-pink-700 
+                focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50
+                disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200
+                shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95
+              "
             >
-              Hủy
+              {loading ? (
+                <>
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Đang gửi feedback...
+                </>
+              ) : (
+                <>
+                  <Send className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-200" />
+                  Gửi feedback
+                </>
+              )}
             </button>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Đang gửi...
-              </>
-            ) : (
-              <>
-                ❤️ Gửi Phản Hồi
-              </>
-            )}
-          </button>
-        </div>
-      </form>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
+
+export default FeedbackForm;

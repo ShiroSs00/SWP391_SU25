@@ -1,86 +1,74 @@
-export interface Feedback {
-  id: string;
+export interface DonorFeedback {
+  feedbackId: string;
   registrationId: string;
-  donationId: string;
-  rating: number;
-  comment: string;
-  category: FeedbackCategory;
-  isAnonymous: boolean;
-  status: FeedbackStatus;
+  donorName?: string;
+  donorEmail?: string;
+  process: number; // 1-5 rating
+  bloodTest: number; // 1-5 rating
+  postDonationCare: number; // 1-5 rating
+  comfortable: number; // 1-5 rating
+  overallSatisfaction: number; // 1-5 rating
+  description: string;
+  staffReply?: string;
   createdAt: string;
-  updatedAt: string;
-  donorInfo?: {
-    name: string;
-    email: string;
-    phone: string;
-  };
+  updatedAt?: string;
+  status: 'pending' | 'replied' | 'resolved';
 }
 
 export interface CreateFeedbackRequest {
-  registrationId: string;
-  rating: number;
-  comment: string;
-  category: FeedbackCategory;
-  isAnonymous: boolean;
+  process: number;
+  bloodTest: number;
+  postDonationCare: number;
+  comfortable: number;
+  overallSatisfaction: number;
+  description: string;
 }
 
 export interface UpdateFeedbackRequest {
-  rating?: number;
-  comment?: string;
-  category?: FeedbackCategory;
-  isAnonymous?: boolean;
-  status?: FeedbackStatus;
+  staffReply: string;
 }
 
-export interface FeedbackFilter {
-  category?: FeedbackCategory;
-  rating?: number;
-  status?: FeedbackStatus;
-  dateFrom?: string;
-  dateTo?: string;
-  searchQuery?: string;
+export interface FeedbackFilters {
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+  minRating?: number;
+  maxRating?: number;
+  status?: 'pending' | 'replied' | 'resolved' | 'all';
+  sortBy?: 'createdAt' | 'overallSatisfaction' | 'process' | 'bloodTest' | 'postDonationCare' | 'comfortable';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
 }
 
 export interface FeedbackStats {
   totalFeedbacks: number;
   averageRating: number;
-  categoryBreakdown: Record<FeedbackCategory, number>;
-  ratingDistribution: Record<number, number>;
-}
-
-// String constants instead of enums
-export const FeedbackCategory = {
-  STAFF_SERVICE: 'STAFF_SERVICE',
-  FACILITY_CLEANLINESS: 'FACILITY_CLEANLINESS',
-  DONATION_PROCESS: 'DONATION_PROCESS',
-  WAITING_TIME: 'WAITING_TIME',
-  OVERALL_EXPERIENCE: 'OVERALL_EXPERIENCE',
-  GENERAL_SUGGESTION: 'GENERAL_SUGGESTION'
-} as const;
-
-export const FeedbackStatus = {
-  PENDING: 'PENDING',
-  REVIEWED: 'REVIEWED',
-  RESOLVED: 'RESOLVED'
-} as const;
-
-// Type unions for type safety
-export type FeedbackCategory = typeof FeedbackCategory[keyof typeof FeedbackCategory];
-export type FeedbackStatus = typeof FeedbackStatus[keyof typeof FeedbackStatus];
-
-export interface SurveyResponse {
-  registrationId: string;
-  questions: {
-    questionId: string;
-    answer: string | number;
+  pendingCount: number;
+  repliedCount: number;
+  resolvedCount: number;
+  ratingDistribution: {
+    [key: number]: number;
+  };
+  categoryAverages: {
+    process: number;
+    bloodTest: number;
+    postDonationCare: number;
+    comfortable: number;
+    overallSatisfaction: number;
+  };
+  monthlyStats: {
+    month: string;
+    count: number;
+    averageRating: number;
   }[];
-  additionalComments?: string;
 }
 
-export interface DonationInfo {
-  id: string;
-  donationDate: string;
-  location: string;
-  bloodType: string;
-  status: string;
+export interface ChatbotRequest {
+  message: string;
+}
+
+export interface ChatbotResponse {
+  response: string;
+  suggestions?: string[];
 }
