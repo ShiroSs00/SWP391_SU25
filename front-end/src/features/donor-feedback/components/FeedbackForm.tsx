@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, X, Heart } from 'lucide-react';
+import { X, Heart } from 'lucide-react';
 import { FeedbackCategory } from '../types/feedback.types';
 import type { CreateFeedbackRequest} from '../types/feedback.types';
 interface FeedbackFormProps {
@@ -56,7 +56,10 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  const handleInputChange = (
+    field: keyof FormData,
+    value: string | number | boolean
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));

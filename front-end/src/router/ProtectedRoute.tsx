@@ -21,4 +21,4 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   return <Outlet />;
 };
 
-export default ProtectedRoute; 
+export default ProtectedRoute;

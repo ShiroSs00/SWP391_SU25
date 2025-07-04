@@ -227,7 +227,7 @@ const ProfilePage = () => {
 
               {/* Add Blood Donation History */}
               <div className="mt-6">
-                <ProfileDonationHistory accountId={profile.profileId || ""} />
+                <ProfileDonationHistory accountId={profile.accountId || ""} />
               </div>
             </div>
           </div>

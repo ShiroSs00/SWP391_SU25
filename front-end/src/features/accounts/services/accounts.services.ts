@@ -9,8 +9,8 @@ export const getProfile = async (token: string) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    console.log("API Response:", response.data); // Log response data for debugging
-    return response.data.data; // Return only the 'data' field
+    console.log("API Response:", response.data);
+    return response.data.data; 
 };
 
 export const getAdminProfileByAccountId = async (accountId: string) => {
@@ -32,8 +32,10 @@ export const searchAdminAccounts = async (query: string) => {
 
 export const getDonationsByAccountId = async (accountId: string): Promise<DonationItem[]> => {
     try {
+        console.log("Calling API with accountId:", accountId); // Log accountId
         const response = await api.get(`/donation/get-by-account/${accountId}`);
-        console.log("API Response Data:", response.data); // Log API response for debugging
+        console.log("Full API Response:", response); // Log toàn bộ response
+        console.log("API Response Data:", response.data); // Log response.data
         return response.data;
     } catch (error) {
         console.error("Error fetching donations by account ID:", error);

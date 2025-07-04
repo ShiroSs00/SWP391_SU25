@@ -125,7 +125,7 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({
 
       {/* Rating */}
       <div className="mb-4">
-        <RatingStars rating={feedback.rating} readonly size="sm" showText />
+        <RatingStars rating={feedback.rating} readonly size="sm" />
       </div>
 
       {/* Category */}

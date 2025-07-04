@@ -56,7 +56,7 @@ function App() {
         <Route path="/donation/:eventId" element={<DonationPages />} />
         <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
           <Route path="/admin" element={<AdminPage showToast={showToast} />} />        </Route>
-        <Route element={<ProtectedRoute allowedRoles={['STAFF']} />}>
+        <Route element={<ProtectedRoute allowedRoles={['STAFF', 'ADMIN']} />}>
           <Route path="/staff" element={<StaffPage />} />
         </Route>
         <Route path="/profile" element={<ProfilePage />} />

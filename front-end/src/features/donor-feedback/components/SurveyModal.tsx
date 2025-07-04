@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Heart, CheckCircle } from 'lucide-react';
 import type { SurveyResponse } from '../types/feedback.types';
-import { RatingStars } from './RatingStars';
+import RatingStars from './RatingStars';
 
 interface SurveyModalProps {
   isOpen: boolean;
@@ -182,7 +182,6 @@ export const SurveyModal: React.FC<SurveyModalProps> = ({
                       rating={(responses[question.id] as number) || 0}
                       onRatingChange={(rating) => handleResponseChange(question.id, rating)}
                       size="md"
-                      showText
                     />
                   )}
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Calendar, MessageSquare, Plus, AlertCircle, CheckCircle } from 'lucide-react';
-import type { Feedback, DonationInfo } from '../types/feedback.types';
+import type { Feedback, DonationInfo, CreateFeedbackRequest } from '../types/feedback.types';
 import { useFeedback } from '../hooks/useFeedback';
 import { FeedbackForm } from './FeedbackForm';
 import { FeedbackCard } from './FeedbackCard';
@@ -51,7 +51,7 @@ const mockDonationHistory: DonationInfo[] = [
 export const PersonalInfo: React.FC<PersonalInfoProps> = ({ 
   donationHistory = mockDonationHistory 
 }) => {
-  const { feedbacks, loading, error, createFeedback, getFeedbackByRegistration } = useFeedback();
+  const {  loading, error, createFeedback, getFeedbackByRegistration } = useFeedback();
   const [selectedDonation, setSelectedDonation] = useState<DonationInfo | null>(null);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [donationFeedbacks, setDonationFeedbacks] = useState<Record<string, Feedback>>({});
@@ -63,9 +63,11 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
       const feedbackPromises = donationHistory.map(async (donation) => {
         setLoadingFeedbacks(prev => ({ ...prev, [donation.id]: true }));
         try {
-          const feedback = await getFeedbackByRegistration(donation.id);
-          return { registrationId: donation.id, feedback };
-        } catch (error) {
+          const feedbackResult = await getFeedbackByRegistration(donation.id);
+          // If feedbackResult is an array, take the first item; otherwise, use as is
+          const feedback = Array.isArray(feedbackResult) ? feedbackResult[0] : feedbackResult;
+          return feedback ? { registrationId: donation.id, feedback } : null;
+        } catch {
           // Không có feedback cho registration này - đây là trường hợp bình thường
           return null;
         } finally {
@@ -95,7 +97,7 @@ export const PersonalInfo: React.FC<PersonalInfoProps> = ({
     setShowFeedbackForm(true);
   };
 
-  const handleSubmitFeedback = async (feedbackData: any) => {
+  const handleSubmitFeedback = async (feedbackData: CreateFeedbackRequest) => {
     if (!selectedDonation) return;
 
     try {
