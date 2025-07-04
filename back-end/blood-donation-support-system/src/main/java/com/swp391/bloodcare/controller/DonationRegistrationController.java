@@ -3,12 +3,14 @@ package com.swp391.bloodcare.controller;
 import com.swp391.bloodcare.dto.DonationRegistrationDTO;
 import com.swp391.bloodcare.entity.DonationRegistration;
 import com.swp391.bloodcare.service.DonationRegistrationService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -33,20 +35,91 @@ public class DonationRegistrationController {
     }
 
 
-    @PostMapping({"/create", "/create/{id}"})
-    public ResponseEntity<DonationRegistrationDTO> createDonationRegistration(@PathVariable(name = "id", required = false) String id) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String accountId = auth.getName();
+    @PostMapping({"/create", "/create/{eventId}"})
+    public ResponseEntity<?> createDonationRegistration(
+            @PathVariable(name = "eventId", required = false) String eventId,
+            @Valid @RequestBody DonationRegistrationDTO dto) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String accountId = auth.getName();
 
-        DonationRegistrationDTO savedRegistration = donationRegistrationService.createDonationByUsername(accountId, id);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedRegistration);
+            DonationRegistrationDTO saved = donationRegistrationService.createDonation(dto, accountId, eventId);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "status", "success",
+                    "message", eventId == null ? "Tạo đăng ký hiến trực tiếp thành công!" : "Tạo đăng ký sự kiện thành công!",
+                    "data", saved
+            ));
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", "failed",
+                    "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "message", "Đã xảy ra lỗi khi tạo đơn đăng ký",
+                    "error", e.getMessage()
+            ));
+        }
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<DonationRegistrationDTO> update(@PathVariable String id,
-                                                          @RequestBody DonationRegistrationDTO dto) {
-        return ResponseEntity.ok(donationRegistrationService.updateDonationRegistration(id, dto));
+
+    @PutMapping("/update-donation-date/{id}")
+    public ResponseEntity<?> updateDonationDate(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body // chứa "donationDate"
+    ) {
+        try {
+            String dateStr = body.get("donationDate");
+            if (dateStr == null || dateStr.isBlank()) {
+                throw new IllegalArgumentException("Ngày hiến máu không được để trống");
+            }
+
+            LocalDate donationDate = LocalDate.parse(dateStr);
+            DonationRegistrationDTO updated = donationRegistrationService.updateDonationDate(id, donationDate);
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Cập nhật ngày hiến máu thành công",
+                    "data", updated
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "failed",
+                    "message", e.getMessage()
+            ));
+        }
     }
+
+    @PatchMapping("/update-status/{id}")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body // chứa "status"
+    ) {
+        try {
+            String status = body.get("status");
+            if (status == null || status.isBlank()) {
+                throw new IllegalArgumentException("Trạng thái không được để trống");
+            }
+
+            DonationRegistrationDTO updated = donationRegistrationService.updateStatusOnly(id, status);
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Cập nhật trạng thái thành công",
+                    "data", updated
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "failed",
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+
+
 
 
 
