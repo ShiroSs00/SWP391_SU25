@@ -42,8 +42,8 @@ public class DonationRegistrationController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String accountId = auth.getName();
-
-            DonationRegistrationDTO saved = donationRegistrationService.createDonation(dto, accountId, eventId);
+            dto.setEventId(eventId);
+            DonationRegistrationDTO saved = donationRegistrationService.createDonation(dto, accountId);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "status", "success",
