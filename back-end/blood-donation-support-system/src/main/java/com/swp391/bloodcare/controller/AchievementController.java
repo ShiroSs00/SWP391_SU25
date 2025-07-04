@@ -4,6 +4,7 @@ import com.swp391.bloodcare.dto.AchievementDTO;
 import com.swp391.bloodcare.service.AchievementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,7 +39,14 @@ public class AchievementController {
 
     @DeleteMapping("/delete/{name}")
     public ResponseEntity<Void> deleteAchievement(@PathVariable String name) {
-        achievementService.deleteAchievement(name);
+        achievementService.deleteAchievementByName(name);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/getbyaccount")
+    public ResponseEntity<AchievementDTO> getMyAchievement() {
+        String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(achievementService.getAchievementByAccountId(accountId));
+    }
+
 }

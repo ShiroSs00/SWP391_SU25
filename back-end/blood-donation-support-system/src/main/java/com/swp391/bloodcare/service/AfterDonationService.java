@@ -8,7 +8,6 @@ import com.swp391.bloodcare.repository.AfterDonationRepository;
 import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.HealthCheckRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,16 +22,16 @@ public class AfterDonationService {
     private final HealthCheckRepository healthCheckRepo;
     private final BloodRepository bloodRepo;
 
-    @Autowired
-    private BloodDonationHistoryService bloodDonationHistoryService;
+    private final BloodDonationHistoryService bloodDonationHistoryService;
 
-    @Autowired
-    private ProfileService profileService;
+    private final ProfileService profileService;
 
-    public AfterDonationService(AfterDonationRepository afterRepo, HealthCheckRepository healthCheckRepo, BloodRepository bloodRepo) {
+    public AfterDonationService(AfterDonationRepository afterRepo, HealthCheckRepository healthCheckRepo, BloodRepository bloodRepo, BloodDonationHistoryService bloodDonationHistoryService, ProfileService profileService) {
         this.afterRepo = afterRepo;
         this.healthCheckRepo = healthCheckRepo;
         this.bloodRepo = bloodRepo;
+        this.bloodDonationHistoryService = bloodDonationHistoryService;
+        this.profileService = profileService;
     }
 
     public List<AfterDonationBloodDTO> getAll() {

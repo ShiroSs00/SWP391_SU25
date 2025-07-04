@@ -1,6 +1,9 @@
 package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -10,23 +13,28 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"healthCheck", "blood"}) // Tránh vòng lặp khi gọi toString
+@ToString(exclude = {"healthCheck", "blood"})
 public class AfterDonationBlood {
 
     @Id
     @Column(name = "after_donation_id")
+    @NotBlank(message = "ID không được để trống")
     private String idAfterDonation;
 
     @Column(name = "infectious_diseases_checked")
+    @NotNull(message = "Trường kiểm tra bệnh truyền nhiễm không được null")
     private Boolean infectiousDiseasesChecked;
 
     @Column(name = "is_blood_usable")
+    @NotNull(message = "Trường máu sử dụng được không được null")
     private Boolean isBloodUsable;
 
     @Column(name = "status")
+    @NotBlank(message = "Trạng thái không được để trống")
     private String status;
 
     @Column(name = "note")
+    @Size(max = 500, message = "Ghi chú tối đa 500 ký tự")
     private String note;
 
     @OneToOne
@@ -41,3 +49,4 @@ public class AfterDonationBlood {
     @JoinColumn(name = "bag_id")
     private BloodBag bloodBag;
 }
+

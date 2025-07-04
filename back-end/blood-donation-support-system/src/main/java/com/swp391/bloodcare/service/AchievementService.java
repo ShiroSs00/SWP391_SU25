@@ -6,7 +6,6 @@ import com.swp391.bloodcare.entity.Profile;
 import com.swp391.bloodcare.repository.AchievementRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,9 +16,7 @@ import java.util.stream.Collectors;
 public class AchievementService {
 
     private final AchievementRepository achievementRepository;
-
-    @Autowired
-    private ProfileRepository profileRepository;
+    private final ProfileRepository profileRepository;
 
     public Achievement findAchievementByDonationCount(long donationCount) {
         return achievementRepository.findAll().stream()
@@ -28,6 +25,19 @@ public class AchievementService {
                 .findFirst()
                 .orElse(null);
     }
+
+    public AchievementDTO getAchievementByAccountId(String accountId) {
+        Profile profile = profileRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy profile với accountId: " + accountId));
+
+        Achievement achievement = profile.getAchievement();
+        if (achievement == null) return null;
+
+        return toDTO(achievement); // chuyển sang DTO
+    }
+
+
+
     public void updateAchievementForProfile(Profile profile) {
         long count = profile.getNumberOfBloodDonation();
         Achievement newAchievement = findAchievementByDonationCount(count);
@@ -47,7 +57,7 @@ public class AchievementService {
     }
 
     public AchievementDTO getAchievementByName(String name) {
-        Achievement achievement = achievementRepository.findByAchievementNameContainingIgnoreCase(name)
+        Achievement achievement = achievementRepository.findById(name)
                 .orElseThrow(() -> new RuntimeException("Achievement not found: " + name));
         return toDTO(achievement);
     }
@@ -56,20 +66,28 @@ public class AchievementService {
         if (achievementRepository.existsById(dto.getAchievementName())) {
             throw new RuntimeException("Achievement already exists: " + dto.getAchievementName());
         }
+
+        if (dto.getMinValue() != null && dto.getMaxValue() != null && dto.getMinValue() > dto.getMaxValue()) {
+            throw new IllegalArgumentException("minValue must be <= maxValue");
+        }
+
         Achievement achievement = toEntity(dto);
         achievementRepository.save(achievement);
         return toDTO(achievement);
     }
 
+
     public AchievementDTO updateAchievement(String name, AchievementDTO dto) {
         Achievement achievement = achievementRepository.findById(name)
                 .orElseThrow(() -> new RuntimeException("Achievement not found: " + name));
         achievement.setDescription(dto.getDescription());
+        achievement.setMinValue(dto.getMinValue());
+        achievement.setMaxValue(dto.getMaxValue());
         achievementRepository.save(achievement);
         return toDTO(achievement);
     }
 
-    public void deleteAchievement(String name) {
+    public void deleteAchievementByName(String name) {
         if (!achievementRepository.existsById(name)) {
             throw new RuntimeException("Achievement not found: " + name);
         }

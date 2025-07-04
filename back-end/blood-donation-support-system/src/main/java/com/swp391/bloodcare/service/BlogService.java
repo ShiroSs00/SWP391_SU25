@@ -54,7 +54,6 @@ public class BlogService {
         if (dto.getTagName() != null)
             blog.setTagName(dto.getTagName());
 
-        blog.setPostDate(new Date());
         return BlogDTO.toDTO(blogRepository.save(blog));
     }
 
