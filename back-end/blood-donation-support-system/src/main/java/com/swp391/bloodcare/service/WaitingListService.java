@@ -1,11 +1,13 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.WaitingListResponseDTO;
+import com.swp391.bloodcare.entity.Blood;
 import com.swp391.bloodcare.entity.BloodBag;
 import com.swp391.bloodcare.entity.BloodRequest;
 import com.swp391.bloodcare.entity.WaitingList;
 import com.swp391.bloodcare.repository.BloodBagRepository;
 import com.swp391.bloodcare.repository.WaitingListRepository;
+import com.swp391.bloodcare.util.BloodCompatibilityUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -117,12 +119,10 @@ public class WaitingListService {
 
     //Kiểm tra tương thích nhóm máu
     private boolean isBloodTypeCompatible(BloodRequest request, BloodBag bloodBag) {
-        // Logic kiểm tra tương thích nhóm máu
-        String requestBloodType = request.getBloodCode().getBloodCode();
-        String bagBloodType = bloodBag.getAfterDonationBlood().getBlood().getBloodCode();
+        Blood receiverBlood = request.getBloodCode(); // Là 1 đối tượng Blood
+        Blood donorBlood = bloodBag.getAfterDonationBlood().getBlood();
 
-        // Ví dụ logic đơn giản - bạn có thể customize
-        return requestBloodType.equals(bagBloodType);
+        return BloodCompatibilityUtil.isCompatible(receiverBlood, donorBlood);
     }
 
     public WaitingListResponseDTO convertToResponseDTO(WaitingList wl) {

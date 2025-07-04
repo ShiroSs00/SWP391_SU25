@@ -15,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
@@ -41,6 +43,20 @@ public class ProfileController {
                 ResponseEntity.badRequest().body(response);
     }
 
+    @GetMapping("/search/donors/optimized")
+    public ResponseEntity<ApiResponse<List<ProfileResponseDTO>>> findOptimizedProfiles(
+            @RequestParam(required = false) String bloodCode,
+            @RequestParam(required = false) Double radiusKm
+    ) {
+        try {
+            List<ProfileResponseDTO> result = profileService.findProfilesByBloodAndDistance(bloodCode, radiusKm);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Tìm kiếm thành công", result));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, "Lỗi: " + e.getMessage(), null));
+        }
     }
+
+
+}
 
 

@@ -20,4 +20,9 @@ public class AddressDTO {
 
     @NotBlank(message = "Số nhà không được để trống")
     private String street;
+
+    private Double latitude;
+    private Double longitude;
+
+
 }
