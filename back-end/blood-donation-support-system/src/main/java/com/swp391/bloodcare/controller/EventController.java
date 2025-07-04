@@ -2,15 +2,18 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.BloodDonationEventDTO;
 import com.swp391.bloodcare.service.EventService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/event")
@@ -20,15 +23,23 @@ public class EventController {
     private final EventService eventService;
 
     @PostMapping("/create")
-    public ResponseEntity<BloodDonationEventDTO> create(@RequestBody BloodDonationEventDTO dto) {
+    public ResponseEntity<?> create(@Valid @RequestBody BloodDonationEventDTO dto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(getValidationErrors(bindingResult));
+        }
+
         String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(eventService.createEvent(dto, accountId));
     }
 
-
     @PutMapping("/update/{id}")
-    public ResponseEntity<BloodDonationEventDTO> update(@PathVariable String id,
-                                                        @RequestBody BloodDonationEventDTO dto) {
+    public ResponseEntity<?> update(@PathVariable String id,
+                                    @Valid @RequestBody BloodDonationEventDTO dto,
+                                    BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(getValidationErrors(bindingResult));
+        }
+
         return ResponseEntity.ok(eventService.updateEvent(id, dto));
     }
 
@@ -64,5 +75,14 @@ public class EventController {
             @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date to
     ) {
         return ResponseEntity.ok(eventService.getByEndDateRange(from, to));
+    }
+
+    private Map<String, String> getValidationErrors(BindingResult bindingResult) {
+        return bindingResult.getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        fieldError -> fieldError.getField(),
+                        fieldError -> fieldError.getDefaultMessage(),
+                        (existing, replacement) -> existing
+                ));
     }
 }

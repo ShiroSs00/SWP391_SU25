@@ -87,6 +87,7 @@ public class DonationRegistrationService {
         return DonationRegistrationDTO.toDTO(saved);
     }
 
+
     private boolean canRegister(String accountId, LocalDate newDonationDate) {
         List<DonationRegistration> completedRegs = donationRegistrationRepository
                 .findByAccountAccountId(accountId).stream()
