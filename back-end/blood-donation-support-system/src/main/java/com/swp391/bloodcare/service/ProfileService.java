@@ -7,6 +7,7 @@ import com.swp391.bloodcare.dto.account.AccountSearchDTO;
 import com.swp391.bloodcare.dto.profile.ProfileResponseDTO;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.AccountRepository;
+import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,6 +40,9 @@ public class ProfileService {
 
     @Autowired
     private AchievementService achievementService;
+
+    @Autowired
+    private BloodRepository bloodRepository;
 
     // 2 tạo độ có thể thay đổi
     private static final double FACILITY_LATITUDE = 10.762622;
@@ -158,6 +163,33 @@ public class ProfileService {
             current = 0L;
         profile.setNumberOfBloodDonation(current + 1);
         achievementService.updateAchievementForProfile(profile);
+        profileRepository.save(profile);
+    }
+
+    public void setBloodCodeForProfile(String accountId, String bloodCode) {
+        Profile profile = profileRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy profile cho accountId: " + accountId));
+
+        Blood blood = bloodRepository.findById(bloodCode)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy mã nhóm máu: " + bloodCode));
+
+        profile.setBloodCode(blood);
+        profileRepository.save(profile);
+    }
+
+    public void updateRestDateBasedOnDonation(String accountId, String componentName) {
+        Profile profile = profileRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy profile cho accountId: " + accountId));
+
+        long daysToRest = switch (componentName.toUpperCase()) {
+            case "WHOLE"     -> 84;
+            case "RBC"       -> 56;
+            case "PLASMA"    -> 14;
+            case "PLATELET"  -> 14;
+            default          -> 30;
+        };
+
+        profile.setRestDate(LocalDate.now().plusDays(daysToRest));
         profileRepository.save(profile);
     }
 

@@ -26,7 +26,7 @@ public class AccountRegistrationDTO {
     private String password;
 
     @NotBlank
-    private String roleName = "member";
+    private String roleName = "MEMBER";
 
 
     @NotBlank(message = "Tên không được để trống")
@@ -45,8 +45,6 @@ public class AccountRegistrationDTO {
     @Valid
     @NotNull(message = "Địa chỉ không được để trống")
     private AddressDTO address;
-
-    
 
 
 }
