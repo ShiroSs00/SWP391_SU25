@@ -4,6 +4,7 @@ import com.swp391.bloodcare.dto.RoleDTO;
 import com.swp391.bloodcare.service.RoleService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class RoleController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(@RequestBody RoleDTO dto) {
+    public ResponseEntity<?> create(@Valid @RequestBody RoleDTO dto) {
         try {
             return ResponseEntity.ok(roleService.createRole(dto));
         } catch (EntityExistsException e) {
