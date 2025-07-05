@@ -30,31 +30,45 @@ public class EventService {
         Account account = accountRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy account với accountID: " + accountId));
 
+        if (dto.getStartDate().after(dto.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
+        }
+
+        // Tạo ID duy nhất
         String eventId;
         do {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
             int randomCode = new Random().nextInt(1000);
-            String randomPart = String.format("%03d", randomCode);
-            eventId = "EV-" + timestamp + "-" + randomPart;
+            eventId = "EV-" + timestamp + "-" + String.format("%03d", randomCode);
         } while (eventRepository.existsByEventId(eventId));
 
-        BloodDonationEvent event = new BloodDonationEvent();
-        event.setEventId(eventId);
-        event.setCreationDate(new Date());
-        event.setAccount(account);
-        setEntityFromDTO(event, dto);
-
-
-        // 👇 GÁN account tạo sự kiện
-        event.setAccount(account);
+        // Tạo sự kiện mới
+        BloodDonationEvent event = BloodDonationEvent.builder()
+                .eventId(eventId)
+                .creationDate(new Date())
+                .nameOfEvent(dto.getNameOfEvent())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .expectedBloodVolume(dto.getExpectedBloodVolume())
+                .actualVolume(0L) // Gán mặc định, không lấy từ DTO
+                .location(dto.getLocation())
+                .status(dto.getStatus())
+                .account(account)
+                .build();
 
         return toDTO(eventRepository.save(event));
     }
 
 
+
     public BloodDonationEventDTO updateEvent(String id, BloodDonationEventDTO dto) {
         BloodDonationEvent existing = eventRepository.findByEventId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + id));
+
+        if (dto.getStartDate().after(dto.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
+        }
+
 
         setEntityFromDTO(existing, dto);
         return toDTO(eventRepository.save(existing));
@@ -122,17 +136,18 @@ public class EventService {
 
     private void setEntityFromDTO(BloodDonationEvent event, BloodDonationEventDTO dto) {
         if (dto.getNameOfEvent() != null) event.setNameOfEvent(dto.getNameOfEvent());
-        if (dto.getCreationDate() != null) event.setCreationDate(dto.getCreationDate());
         if (dto.getStartDate() != null) event.setStartDate(dto.getStartDate());
         if (dto.getEndDate() != null) event.setEndDate(dto.getEndDate());
         if (dto.getExpectedBloodVolume() != null) event.setExpectedBloodVolume(dto.getExpectedBloodVolume());
         if (dto.getLocation() != null) event.setLocation(dto.getLocation());
         if (dto.getStatus() != null) event.setStatus(dto.getStatus());
 
+        // Không cho sửa actualVolume từ ngoài DTO (chỉ cập nhật nội bộ hệ thống)
         if (dto.getAccountId() != null && !dto.getAccountId().isBlank()) {
             Account account = accountRepository.findById(dto.getAccountId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tài khoản với ID: " + dto.getAccountId()));
             event.setAccount(account);
         }
     }
+
 }

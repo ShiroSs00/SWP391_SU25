@@ -1,9 +1,9 @@
 package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -35,7 +35,7 @@ public class DonationRegistration {
 
     @Column(name = "donation_date", nullable = false)
     @NotNull
-    @PastOrPresent
+    @FutureOrPresent
     private LocalDate donationDate;
 
     @ManyToOne
@@ -56,7 +56,7 @@ public class DonationRegistration {
     @OneToOne(mappedBy = "donationRegistration", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private DonorFeedback donorFeedback;
 
-    @OneToOne
+    @OneToOne(mappedBy = "donationRegistration", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "history_id")
     private BloodDonationHistory bloodDonationHistory;
 }
