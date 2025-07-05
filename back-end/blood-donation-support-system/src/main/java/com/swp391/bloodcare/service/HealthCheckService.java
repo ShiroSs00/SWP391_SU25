@@ -6,7 +6,6 @@ import com.swp391.bloodcare.entity.HealthCheck;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import com.swp391.bloodcare.repository.HealthCheckRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +22,12 @@ public class HealthCheckService {
 
     private final DonationRegistrationRepository donationRegistrationRepository;
 
-    @Autowired
-    private BloodDonationHistoryService bloodDonationHistoryService;
+    private final BloodDonationHistoryService bloodDonationHistoryService;
 
-    public HealthCheckService(HealthCheckRepository healthCheckRepository, DonationRegistrationRepository donationRegistrationRepository) {
+    public HealthCheckService(HealthCheckRepository healthCheckRepository, DonationRegistrationRepository donationRegistrationRepository, BloodDonationHistoryService bloodDonationHistoryService) {
         this.healthCheckRepository = healthCheckRepository;
         this.donationRegistrationRepository = donationRegistrationRepository;
+        this.bloodDonationHistoryService = bloodDonationHistoryService;
     }
 
     @Transactional
@@ -65,6 +64,8 @@ public class HealthCheckService {
             throw new IllegalStateException("HealthCheck đã tồn tại cho DonationRegistration này");
         }
 
+
+
         HealthCheck healthCheck = HealthCheckDTO.toEntity(dto);
         healthCheck.setDonationRegistration(reg);
         healthCheck.setHealthCheckId(generateHealthCheckId());
@@ -78,9 +79,9 @@ public class HealthCheckService {
 
 
 
-    public HealthCheckDTO updateHealthCheckByDonationRegistrationId(String donationRegistrationId, HealthCheckDTO dto) {
-        HealthCheck existing = healthCheckRepository.findByDonationRegistration_RegistrationId(donationRegistrationId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck"));
+    public HealthCheckDTO updateHealthCheckById(String healthCheckId, HealthCheckDTO dto) {
+        HealthCheck existing = healthCheckRepository.findByHealthCheckId(healthCheckId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck với ID: " + healthCheckId));
 
         if (dto.getWeight() != null) existing.setWeight(dto.getWeight());
         if (dto.getTemperature() != null) existing.setTemperature(dto.getTemperature());
@@ -88,11 +89,14 @@ public class HealthCheckService {
         if (dto.getPulse() != null) existing.setPulse(dto.getPulse());
         if (dto.getHemoglobin() != null) existing.setHemoglobin(dto.getHemoglobin());
         if (dto.getVolumeToTake() != null) existing.setVolumeToTake(dto.getVolumeToTake());
-        if (dto.getIsFitToDonate() != null) existing.setFitToDonate(dto.getIsFitToDonate());
+        if (dto.getIsFitToDonate() != null) existing.setIsFitToDonate(dto.getIsFitToDonate());
         if (dto.getNote() != null && !dto.getNote().isBlank()) existing.setNote(dto.getNote());
+
         bloodDonationHistoryService.updateFromHealthCheck(existing);
-        return toDTO(healthCheckRepository.save(existing));
+
+        return HealthCheckDTO.toDTO(healthCheckRepository.save(existing));
     }
+
 
 
     @Transactional

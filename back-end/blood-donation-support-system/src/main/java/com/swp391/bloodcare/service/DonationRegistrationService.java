@@ -4,6 +4,7 @@ import com.swp391.bloodcare.dto.DonationRegistrationDTO;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +36,7 @@ public class DonationRegistrationService {
         this.feedbackRepository = feedbackRepository;
     }
 
-    public DonationRegistrationDTO createDonation(DonationRegistrationDTO dto, String accountId) {
+    public DonationRegistrationDTO createDonation(@Valid DonationRegistrationDTO dto, String accountId) {
         String eventId = dto.getEventId();
         LocalDate donationDate = dto.getDonationDate();
 
@@ -55,11 +56,17 @@ public class DonationRegistrationService {
                 .donationDate(donationDate)
                 .account(acc)
                 .event(event)
+                .dateCreated(new Date())
                 .status("Đang đợi")
                 .build();
 
         reg.setRegistrationId(generateUniqueIdWithRetry(5));
-        return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
+        try {
+            return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
+        } catch (Exception e) {
+            throw new RuntimeException("❌ Lỗi khi lưu đơn đăng ký: " + e.getMessage(), e);
+        }
+
     }
 
     private void validateDonation(String accountId, LocalDate donationDate, String eventId, boolean isUpdate) {

@@ -2,6 +2,8 @@ package com.swp391.bloodcare.dto;
 
 
 import com.swp391.bloodcare.entity.Blog;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,9 +16,16 @@ import java.util.Date;
 @Builder
 public class BlogDTO {
     private String blogId;
+
+    @NotBlank(message = "Nội dung blog không được để trống")
+    @Size(min = 20, message = "Nội dung blog phải ít nhất 20 ký tự")
     private String content;
+
     private Date postDate;
+
+    @Size(max = 100, message = "Tag không được vượt quá 100 ký tự")
     private String tagName;
+
     private String accountId;
 
     public static BlogDTO toDTO(Blog blog) {

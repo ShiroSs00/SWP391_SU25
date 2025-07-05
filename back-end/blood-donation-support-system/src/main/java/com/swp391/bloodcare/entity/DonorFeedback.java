@@ -40,4 +40,5 @@ public class DonorFeedback {
             foreignKey = @ForeignKey(name = "fk_feedback_registration")
     )
     private DonationRegistration donationRegistration;
+
 }

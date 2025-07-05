@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AfterDonationBloodDTO {
 
-    @NotBlank(message = "ID sau hiến không được để trống")
+
     private String idAfterDonation;
 
     @NotNull(message = "Vui lòng kiểm tra bệnh truyền nhiễm")

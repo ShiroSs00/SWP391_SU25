@@ -2,12 +2,15 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.BlogDTO;
 import com.swp391.bloodcare.service.BlogService;
+import jakarta.validation.Valid;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/blog")
@@ -26,11 +29,17 @@ public class BlogController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<BlogDTO> createBlog(@RequestBody BlogDTO dto) {
+    public ResponseEntity<?> createBlog(@Valid @RequestBody BlogDTO dto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            List<String> errors = bindingResult.getAllErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toList();
+            return ResponseEntity.badRequest().body(Map.of("errors", errors));
+        }
         String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
-        BlogDTO blog =  blogService.createBlogByUserName( dto, accountId);
-        return ResponseEntity.status(201).body(blog);
+        return ResponseEntity.status(201).body(blogService.createBlogByUserName(dto, accountId));
     }
+
 
 
 

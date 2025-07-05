@@ -74,11 +74,16 @@ public class FeedbackService {
         DonorFeedback existing = feedbackRepository.findDonorFeedbackByFeedbackID(feedbackId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phản hồi với ID: " + feedbackId));
 
+        if (existing.getDonationRegistration() != null) {
+            existing.getDonationRegistration().setDonorFeedback(null);
+        }
+
         existing.setDonationRegistration(null);
         feedbackRepository.delete(existing);
 
-        return fromEntity(existing);
+        return DonorFeedbackDTO.fromEntity(existing);
     }
+
 
     @Transactional
     public Map<String, Object> deleteMultipleFeedbacksSafe(List<String> ids) {

@@ -1,7 +1,7 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.BloodDonationHistoryDTO;
-import com.swp391.bloodcare.dto.BloodDonationStatisticsDTO;
+
 import com.swp391.bloodcare.entity.AfterDonationBlood;
 import com.swp391.bloodcare.entity.BloodDonationHistory;
 import com.swp391.bloodcare.entity.DonationRegistration;
@@ -48,7 +48,7 @@ public class BloodDonationHistoryService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đăng kí: " + registration.getRegistrationId()));
 
         // Chỉ cập nhật status
-        if (healthCheck.isFitToDonate()) {
+        if (healthCheck.getIsFitToDonate()) {
             history.setStatus("HEALTH_CHECK_PASSED");
         } else {
             history.setStatus("HEALTH_CHECK_FAILED");

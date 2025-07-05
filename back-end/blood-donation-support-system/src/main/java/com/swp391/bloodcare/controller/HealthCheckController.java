@@ -2,10 +2,12 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.HealthCheckDTO;
 import com.swp391.bloodcare.service.HealthCheckService;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,20 +26,45 @@ public class HealthCheckController {
         return ResponseEntity.ok(healthCheckService.getAllHealthChecks());
     }
 
-    @PutMapping("/update/{donationRegistrationId}")
+    @PutMapping("/update/{healthCheckId}")
     public ResponseEntity<HealthCheckDTO> updateHealthCheck(
-            @PathVariable String donationRegistrationId,
-            @RequestBody HealthCheckDTO updatedHealthCheckDTO) {
-        return ResponseEntity.ok(healthCheckService.updateHealthCheckByDonationRegistrationId(donationRegistrationId, updatedHealthCheckDTO));
+            @PathVariable String healthCheckId,
+            @Valid @RequestBody HealthCheckDTO updatedHealthCheckDTO) {
+        return ResponseEntity.ok(healthCheckService.updateHealthCheckById(healthCheckId, updatedHealthCheckDTO));
     }
 
-    @PostMapping("/create/{donationRegistrationId}")
-    public ResponseEntity<HealthCheckDTO> createHealthCheck(
-            @PathVariable String donationRegistrationId,
-            @RequestBody HealthCheckDTO healthCheckDTO) {
-        HealthCheckDTO created = healthCheckService.createHealthCheck(donationRegistrationId, healthCheckDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @PostMapping("/create/{registrationId}")
+    public ResponseEntity<?> createHealthCheck(
+            @PathVariable String registrationId,
+            @Valid @RequestBody HealthCheckDTO dto,
+            BindingResult bindingResult
+    ) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(err ->
+                    errors.put(err.getField(), err.getDefaultMessage())
+            );
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "failed",
+                    "errors", errors
+            ));
+        }
+
+        try {
+            HealthCheckDTO created = healthCheckService.createHealthCheck(registrationId, dto);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Tạo bản ghi kiểm tra sức khỏe thành công",
+                    "data", created
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "failed",
+                    "message", e.getMessage()
+            ));
+        }
     }
+
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Map<String, Object>> deleteHealthCheck(@PathVariable String id) {
