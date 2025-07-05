@@ -63,14 +63,13 @@ public class  BloodRequestService {
 
         Blood blood = bloodRepository.findByBloodCode(bloodRequestDTO.getBloodCode()).orElseThrow(()-> new RuntimeException("Không tìm thấy loại máu: " + bloodRequestDTO.getBloodCode()));
         br.setBloodCode(blood);
-
         br.setPatientName(bloodRequestDTO.getPatientName());
         br.setRequestDate(bloodRequestDTO.getRequestDate());
         br.setVolume(bloodRequestDTO.getVolume());
         br.setEmergency(bloodRequestDTO.isEmergency());
         br.setStatus("Đang xử lý");
         br.setRequestCreationDate(LocalDate.now());
-br.setEmergency(bloodRequestDTO.isEmergency());
+        br.setEmergency(bloodRequestDTO.isEmergency());
 
         BloodRequest savedRequest = bloodRequestRepository.save(br);
 
