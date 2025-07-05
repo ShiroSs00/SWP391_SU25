@@ -8,6 +8,7 @@ import com.swp391.bloodcare.entity.BloodRequest;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.BloodRequestRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,7 @@ public class  BloodRequestService {
 
 
     // tạo đơn xin máu
-    public BloodRequest createBloodRequest(BloodRequestDTO bloodRequestDTO, String accountId) {
+    public BloodRequest createBloodRequest(@Valid BloodRequestDTO bloodRequestDTO, String accountId) {
 
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản: " + accountId));
