@@ -4,10 +4,13 @@ import com.swp391.bloodcare.dto.AfterDonationBloodDTO;
 import com.swp391.bloodcare.entity.AfterDonationBlood;
 import com.swp391.bloodcare.entity.Blood;
 import com.swp391.bloodcare.entity.HealthCheck;
+import com.swp391.bloodcare.entity.Profile;
 import com.swp391.bloodcare.repository.AfterDonationRepository;
 import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.HealthCheckRepository;
+import com.swp391.bloodcare.repository.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,9 @@ public class AfterDonationService {
     private final BloodDonationHistoryService bloodDonationHistoryService;
 
     private final ProfileService profileService;
+
+    @Autowired
+    private ProfileRepository profileRepo;
 
     public AfterDonationService(AfterDonationRepository afterRepo, HealthCheckRepository healthCheckRepo, BloodRepository bloodRepo, BloodDonationHistoryService bloodDonationHistoryService, ProfileService profileService) {
         this.afterRepo = afterRepo;
@@ -54,7 +60,16 @@ public class AfterDonationService {
         if (dto.getBloodId() != null) {
             Blood blood = bloodRepo.findByBloodCode(dto.getBloodId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Blood"));
+
+            //set blood code
+            Profile profile = healthCheck.getDonationRegistration().getAccount().getProfile();
+            if(profile.getBloodCode() == null){
+                profile.setBloodCode(blood);
+                profileRepo.save(profile);
+            }
+
             entity.setBlood(blood);
+
         }
 
         return toDTO(afterRepo.save(entity));
@@ -76,10 +91,17 @@ public class AfterDonationService {
         //update trạng thái cho lịch sử
         bloodDonationHistoryService.updateFromAfterDonation(existing);
 
-        //update tăng cho số lần hiến máu
+        //update tăng cho số lần hiến máu && set ngày nghỉ
         if("Đã hoàn thành".equalsIgnoreCase(dto.getStatus())){
             String accountId = existing.getHealthCheck().getDonationRegistration().getAccount().getAccountId();
+            //tăng số lần
             profileService.increaseBloodDonationCount(accountId);
+
+            if(existing.getBlood() != null && existing.getBlood().getComponent()!= null){
+                String componentName = existing.getBlood().getComponent().getComponent();
+                //set ngày nghỉ
+                profileService.updateRestDateBasedOnDonation(accountId,componentName);
+            }
         }
 
         return toDTO(afterRepo.save(existing));
