@@ -141,8 +141,8 @@ public class EventService {
         if (dto.getExpectedBloodVolume() != null) event.setExpectedBloodVolume(dto.getExpectedBloodVolume());
         if (dto.getLocation() != null) event.setLocation(dto.getLocation());
         if (dto.getStatus() != null) event.setStatus(dto.getStatus());
+        if (dto.getActualVolume() != null) event.setActualVolume(dto.getActualVolume());
 
-        // Không cho sửa actualVolume từ ngoài DTO (chỉ cập nhật nội bộ hệ thống)
         if (dto.getAccountId() != null && !dto.getAccountId().isBlank()) {
             Account account = accountRepository.findById(dto.getAccountId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tài khoản với ID: " + dto.getAccountId()));
