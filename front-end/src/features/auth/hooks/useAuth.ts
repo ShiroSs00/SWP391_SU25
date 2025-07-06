@@ -1,5 +1,5 @@
 // src/useAuth.ts
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../../../services/axios/api';
 import { type LoginFormData, type AuthResponse, type RegisterFormData } from '../types/auth.types';
 import { triggerUserStateChange } from '../../../lib/userUtils';
@@ -95,4 +95,21 @@ export const useAuth = () => {
   };
 
   return { login, register, logout, isLoading, error };
+};
+
+export const useProfile = () => {
+  const [profile, setProfile] = useState<{ accountId: string } | null>(null);
+
+  useEffect(() => {
+    const storedProfile = localStorage.getItem('user');
+    if (storedProfile) {
+      try {
+        setProfile(JSON.parse(storedProfile));
+      } catch (error) {
+        console.error('Lỗi khi parse thông tin người dùng từ localStorage:', error);
+      }
+    }
+  }, []);
+
+  return { profile };
 };

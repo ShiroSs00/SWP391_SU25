@@ -16,6 +16,7 @@ export const useHealthCheck = (donationRegistrationId?: string) => {
   const [donationRegistrations, setDonationRegistrations] = useState<DonationRegistrationDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previousRegistrationId, setPreviousRegistrationId] = useState<string | null>(null);
 
   // Lấy tất cả health checks
   const fetchAllHealthChecks = async () => {
@@ -33,22 +34,6 @@ export const useHealthCheck = (donationRegistrationId?: string) => {
   };
 
   // Lấy health check cho donation registration cụ thể
-  const fetchHealthCheckForRegistration = async (registrationId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await getHealthCheckByRegistration(registrationId);
-      setHealthCheck(data);
-      return data;
-    } catch (err) {
-      setError('Không thể tải health check cho đơn đăng ký này');
-      console.error('Error fetching health check for registration:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Lấy health check theo registration ID
   const fetchHealthCheckByRegistration = async (registrationId: string) => {
     try {
@@ -152,13 +137,37 @@ export const useHealthCheck = (donationRegistrationId?: string) => {
 
   // Load dữ liệu khi component mount
   useEffect(() => {
-    if (donationRegistrationId) {
-      fetchHealthCheckForRegistration(donationRegistrationId);
-    } else {
+    if (donationRegistrationId && donationRegistrationId !== previousRegistrationId && !loading) {
+      setPreviousRegistrationId(donationRegistrationId);
+    } else if (!loading) {
       fetchAllHealthChecks();
       fetchDonationRegistrations();
     }
-  }, [donationRegistrationId]);
+  }, [donationRegistrationId, loading, previousRegistrationId]);
+
+  // Hàm thêm health check mới
+  const handleAddHealthCheck = async (donationRegistrationId: string, healthCheckData: HealthCheckData) => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Adding new health check for registrationId:', donationRegistrationId);
+
+      const result = await createNewHealthCheck(donationRegistrationId, healthCheckData);
+
+      if (!result) {
+        throw new Error('Failed to create health check');
+      }
+
+      await fetchAllHealthChecks(); // Refresh the list after adding
+      return result;
+    } catch (err) {
+      setError('Không thể thêm health check mới');
+      console.error('Error adding health check:', err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
     healthCheck, // Health check cho donation registration cụ thể
@@ -168,12 +177,12 @@ export const useHealthCheck = (donationRegistrationId?: string) => {
     error,
     fetchAllHealthChecks,
     fetchDonationRegistrations,
-    fetchHealthCheckForRegistration,
     fetchHealthCheckByRegistration,
     createNewHealthCheck,
     updateExistingHealthCheck,
     removeHealthCheck,
     removeMultipleHealthChecks,
-    setError
+    setError,
+    handleAddHealthCheck // Xuất khẩu hàm thêm health check mới
   };
 };

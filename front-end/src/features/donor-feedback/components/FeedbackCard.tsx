@@ -143,31 +143,9 @@ const FeedbackCard: React.FC<FeedbackCardProps> = ({
         </div>
       </div>
 
-      {/* Rating Summary */}
-      <div className="p-6 bg-gray-50">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-semibold text-gray-900">Đánh giá tổng quan</h4>
-          <div className="flex items-center gap-2">
-            <RatingStars rating={averageRating} readonly size="sm" />
-            <span className="text-sm font-medium text-gray-700">
-              {averageRating.toFixed(1)}/5
-            </span>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {ratingCategories.map((category, index) => (
-            <div key={index} className="text-center">
-              <div className="text-xs text-gray-600 mb-1">{category.label}</div>
-              <div className="flex justify-center mb-1">
-                <RatingStars rating={category.value} readonly size="sm" />
-              </div>
-              <div className="text-xs font-medium text-gray-700">
-                {category.value}/5
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Rating */}
+      <div className="mb-4">
+        <RatingStars rating={feedback.rating} readonly size="sm" showText />
       </div>
 
       {/* Description */}

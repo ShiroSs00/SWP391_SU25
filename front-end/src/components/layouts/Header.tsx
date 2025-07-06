@@ -56,6 +56,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
         { name: 'Trang Chủ', href: '/' },
         { name: 'Blog', href: '/blogs' },
         { name: 'Nhóm Máu', href: '/blood-types' },
+        { name: 'Yêu Cầu Máu', href: '/blood-requests' },
         { name: 'Cấp Cứu', href: '/emergency' },
         { name: 'Giới Thiệu', href: '/about' },
         { name: 'Liên Hệ', href: '/contact' }

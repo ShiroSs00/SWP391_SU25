@@ -113,4 +113,5 @@ function StatusBadge({ status, className }: StatusBadgeProps) {
     )
 }
 
-export { Badge as default, badgeVariants, BloodTypeBadge, StatusBadge }
+export { Badge as default, badgeVariants }
+export { BloodTypeBadge, StatusBadge }

@@ -1,4 +1,4 @@
-// Định nghĩa type cho các API donation-register (chỉ các trường liên quan accountId, eventId)
+// Định nghĩa type cho các API donation-register
 
 export interface DonationRegistrationDTO {
   registrationId: string;
@@ -6,27 +6,45 @@ export interface DonationRegistrationDTO {
   accountId: string; // lấy từ account.accountId
   dateCreated: string; // ISO date string
   status: string;
+  componentId: string;
+  healthCheckId: string;
+  donorFeedbackId: string;
+  donationDate: string; // thêm donationDate
 }
 
 export interface DonationRegistration {
   registrationId: string;
   dateCreated: string; // ISO date string
   status: string;
+  componentId: string;
+  healthCheckId: string;
+  donorFeedbackId: string;
+  donationDate: string; // thêm donationDate
   event: { eventId: string; nameOfEvent?: string };
   account: { accountId: string; username?: string };
 }
 
 export interface DonationCreatePayload {
-  eventId: string; // truyền vào khi tạo mới
-  accountId: string; // truyền vào khi tạo mới
+  eventId?: string | null; // có thể không truyền nếu không có sự kiện
+  accountId: string | null; // truyền vào khi tạo mới
   status: string;
+  donationDate: string; // ISO datetime string
+  registrationId: string | null;
+  dateCreated: string; // ISO date string
+  componentId: string | null;
+  healthCheckId: string | null;
+  donorFeedbackId: string | null;
 }
 
 export interface DonationUpdatePayload {
   status?: string;
+  donationDate?: string;
+  componentId: string 
+  healthCheckId: string// thêm donationDate
 }
 
 export interface DonationFilterParams {
   username?: string;
   eventId?: string;
+  donationDate?: string; // thêm donationDate để lọc
 }

@@ -38,10 +38,11 @@ export const filterDonations = async (params: DonationFilterParams): Promise<Don
 };
 
 // Tạo mới đăng ký hiến máu
-export const createDonation = async (eventId: string, payload: DonationCreatePayload): Promise<void> => {
-  const res = await api.post(`/donation/create`, {
+export const createDonation = async (eventId: string | null, payload: DonationCreatePayload): Promise<void> => {
+  const endpoint = eventId ? `/donation/create/${eventId}` : '/donation/create';
+  const res = await api.post(endpoint, {
     ...payload,
-    eventId: eventId || 'default-event', // Use default event ID if none is provided
+    eventId: eventId || '', // Use default event ID if none is provided
   });
   return res.data;
 };

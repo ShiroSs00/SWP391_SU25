@@ -17,7 +17,7 @@ const DonationManage: React.FC = () => {
   const [donations, setDonations] = useState<DonationRegistrationDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [filter, setFilter] = useState<DonationFilterParams>({ username: '', eventId: '' });
+  const [filter, setFilter] = useState<DonationFilterParams>({ username: '', eventId: '', donationDate: '' });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [role, setRole] = useState<string>('');
@@ -150,6 +150,13 @@ const DonationManage: React.FC = () => {
           value={filter.eventId || ''}
           onChange={e => setFilter(f => ({ ...f, eventId: e.target.value }))}
         />
+        <input
+          type="date"
+          placeholder="Tìm theo ngày hiến máu"
+          className="border p-2 rounded w-full md:w-64"
+          value={filter.donationDate || ''}
+          onChange={e => setFilter(f => ({ ...f, donationDate: e.target.value }))}
+        />
         <button
           type="submit"
           className="px-5 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-all duration-200"
@@ -160,7 +167,7 @@ const DonationManage: React.FC = () => {
           type="button"
           className="px-5 py-2 bg-gray-300 rounded-full font-medium hover:bg-gray-400 transition-all duration-200"
           onClick={() => {
-            setFilter({ username: '', eventId: '' });
+            setFilter({ username: '', eventId: '', donationDate: '' });
             fetchAll();
           }}
         >
@@ -217,6 +224,9 @@ const DonationManage: React.FC = () => {
                 <th className="px-4 py-2 border-b font-bold">Mã tài khoản</th>
                 <th className="px-4 py-2 border-b font-bold">Ngày tạo</th>
                 <th className="px-4 py-2 border-b font-bold">Trạng thái</th>
+                <th className="px-4 py-2 border-b font-bold">Component ID</th>
+                <th className="px-4 py-2 border-b font-bold">Health Check ID</th>
+                <th className="px-4 py-2 border-b font-bold">Ngày hiến máu</th>
                 <th className="px-4 py-2 border-b font-bold">Hành động</th>
               </tr>
             </thead>
@@ -238,21 +248,35 @@ const DonationManage: React.FC = () => {
                   <td className="px-4 py-2 border-b">{d.accountId}</td>
                   <td className="px-4 py-2 border-b">{new Date(d.dateCreated).toLocaleString()}</td>
                   <td className="px-4 py-2 border-b">{d.status}</td>
+                  <td className="px-4 py-2 border-b">{d.componentId || 'Chưa có'}</td>
+                  <td className="px-4 py-2 border-b">{d.healthCheckId || 'Chưa có'}</td>
+                  <td className="px-4 py-2 border-b">{d.donationDate || 'Chưa có'}</td>
                   <td className="px-4 py-2 border-b text-center flex gap-2 justify-center">
                     <button
                       className="px-3 py-1 bg-yellow-400 text-white rounded-full hover:bg-yellow-500 transition-all animate-fade-in-up hover:scale-105"
                       onClick={() => {
                         if (role === 'ADMIN' || role === 'STAFF') {
-                          if (window.confirm('Bạn muốn đổi trạng thái đơn này?')) {
-                            handleUpdate(d.registrationId, { status: d.status === 'Đăng ký mới' ? 'Đã xác nhận' : 'Đăng ký mới' });
+                          const newStatus = prompt('Nhập trạng thái mới:', d.status);
+                          const newComponentId = prompt('Nhập Component ID mới:', d.componentId || '');
+                          const newHealthCheckId = prompt('Nhập Health Check ID mới:', d.healthCheckId || '');
+                          const newDonationDate = prompt('Nhập ngày đi hiến máu (YYYY-MM-DD):', d.donationDate || '');
+                          if (newStatus && newComponentId && newHealthCheckId && newDonationDate) {
+                            handleUpdate(d.registrationId, {
+                              status: newStatus,
+                              componentId: newComponentId,
+                              healthCheckId: newHealthCheckId,
+                              donationDate: newDonationDate,
+                            });
+                          } else {
+                            setToast({ msg: 'Cập nhật thất bại: Vui lòng nhập đầy đủ thông tin!', type: 'error' });
                           }
                         } else {
-                          setToast({ msg: 'Bạn không có quyền đổi trạng thái!', type: 'error' });
+                          setToast({ msg: 'Bạn không có quyền cập nhật đơn!', type: 'error' });
                         }
                       }}
                       disabled={role !== 'ADMIN' && role !== 'STAFF'}
                     >
-                      Đổi trạng thái
+                      Cập nhật
                     </button>
                     <button
                       className="px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-all animate-fade-in-up hover:scale-105"
