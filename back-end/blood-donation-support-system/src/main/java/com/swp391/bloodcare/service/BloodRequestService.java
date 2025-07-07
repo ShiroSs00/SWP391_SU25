@@ -70,7 +70,6 @@ public class  BloodRequestService {
         br.setEmergency(bloodRequestDTO.isEmergency());
         br.setStatus("Đang xử lý");
         br.setRequestCreationDate(LocalDate.now());
-br.setEmergency(bloodRequestDTO.isEmergency());
 
         BloodRequest savedRequest = bloodRequestRepository.save(br);
 
