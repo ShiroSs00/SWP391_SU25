@@ -10,7 +10,13 @@ package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "blood")
 public class Blood {
@@ -26,10 +32,6 @@ public class Blood {
     @Column(name ="rh")
     private RhFactor rh;
 
-    @JoinColumn(name ="component")
-    @ManyToOne()
-    private Component component;
-
     @Column(name ="is_rare_blood")
     private Boolean isRareBlood;
 
@@ -41,79 +43,6 @@ public class Blood {
     private String bloodMatch;
 
 
-    public Blood() {
-    }
-
-    public Blood(String bloodCode, BloodType bloodType, RhFactor rh, Component component, Boolean isRareBlood, int quantity, String bloodMatch) {
-        this.bloodCode = bloodCode;
-        this.bloodType = bloodType;
-        this.rh = rh;
-        this.component = component;
-        this.isRareBlood = isRareBlood;
-        this.quantity = quantity;
-        this.bloodMatch = bloodMatch;
-    }
-
-    public String getBloodCode() {
-        return bloodCode;
-    }
-
-    public void setBloodCode(String bloodCode) {
-        this.bloodCode = bloodCode;
-    }
-
-    public BloodType getBloodType() {
-        return bloodType;
-    }
-
-    public void setBloodType(BloodType bloodType) {
-        this.bloodType = bloodType;
-    }
-
-    public RhFactor getRh() {
-        return rh;
-    }
-
-    public void setRh(RhFactor rh) {
-        this.rh = rh;
-    }
-
-    public Component getComponent() {
-        return component;
-    }
-
-    public void setComponent(Component component) {
-        this.component = component;
-    }
-
-    public Boolean isRareBlood() {
-        return isRareBlood;
-    }
-
-    public void setRareBlood(Boolean rareBlood) {
-        this.isRareBlood = rareBlood;
-    }
-
-    public Boolean getRareBlood() {
-        return isRareBlood;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public String getBloodMatch() {
-        return bloodMatch;
-    }
-
-    public void setBloodMatch(String bloodMatch) {
-        this.bloodMatch = bloodMatch;
-    }
-
     public enum BloodType{
         A, B, AB, O
     }
@@ -123,7 +52,4 @@ public class Blood {
         POSITIVE, NEGATIVE
     }
 
-    public enum BloodStatus {
-        AVAILABLE, USED, EXPIRED
-    }
 }

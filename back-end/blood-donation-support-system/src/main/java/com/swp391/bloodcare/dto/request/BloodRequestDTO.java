@@ -30,5 +30,5 @@ public class BloodRequestDTO {
     @Max(value = 500, message = "Số lượng máu không được vượt quá 500ml")
     private Integer volume;
 
-    private boolean isEmergency = false;
+    private boolean emergency;
 }

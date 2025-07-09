@@ -91,18 +91,17 @@ public class AfterDonationService {
         //update trạng thái cho lịch sử
         bloodDonationHistoryService.updateFromAfterDonation(existing);
 
-        //update tăng cho số lần hiến máu && set ngày nghỉ
-        if("Đã hoàn thành".equalsIgnoreCase(dto.getStatus())){
-            String accountId = existing.getHealthCheck().getDonationRegistration().getAccount().getAccountId();
-            //tăng số lần
-            profileService.increaseBloodDonationCount(accountId);
-
-            if(existing.getBlood() != null && existing.getBlood().getComponent()!= null){
-                String componentName = existing.getBlood().getComponent().getComponent();
-                //set ngày nghỉ
-                profileService.updateRestDateBasedOnDonation(accountId,componentName);
-            }
-        }
+//        //update tăng cho số lần hiến máu && set ngày nghỉ
+//        if("Đã hoàn thành".equalsIgnoreCase(dto.getStatus())){
+//            String accountId = existing.getHealthCheck().getDonationRegistration().getAccount().getAccountId();
+//            //tăng số lần
+//            profileService.increaseBloodDonationCount(accountId);
+//
+//            if(existing.getBlood() != null){
+//                //set ngày nghỉ
+//                profileService.updateRestDateBasedOnDonation(accountId,componentName);
+//            }
+//        }
 
         return toDTO(afterRepo.save(existing));
     }

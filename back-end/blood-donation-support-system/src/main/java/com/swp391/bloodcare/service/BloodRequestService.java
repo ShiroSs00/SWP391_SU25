@@ -43,8 +43,7 @@ public class  BloodRequestService {
     @Autowired
     private BloodRepository bloodRepository;
 
-    @Autowired
-    private WaitingListService waitingListService;
+
 
 
     // tạo đơn xin máu
@@ -69,7 +68,6 @@ public class  BloodRequestService {
         br.setEmergency(bloodRequestDTO.isEmergency());
         br.setStatus("Đang xử lý");
         br.setRequestCreationDate(LocalDate.now());
-        br.setEmergency(bloodRequestDTO.isEmergency());
 
         BloodRequest savedRequest = bloodRequestRepository.save(br);
 
@@ -118,10 +116,6 @@ public class  BloodRequestService {
         String oldStatus = request.getStatus();
         request.setStatus(nStatus);
         BloodRequest saved = bloodRequestRepository.save(request);
-
-        if("APPROVED".equals(nStatus) && !"APPROVED".equals(oldStatus)){
-            waitingListService.createWaitingList(saved);
-        }
         return convertToResponseDTO(saved);
     }
 

@@ -13,7 +13,6 @@ public class BloodDTO {
     private String bloodCode;
     private Blood.BloodType bloodType;
     private Blood.RhFactor rhFactor;
-    private String component;
     private Boolean isRareBlood;
     private Integer quantity;
     private String bloodMatch;
@@ -22,8 +21,7 @@ public class BloodDTO {
         this.bloodCode = blood.getBloodCode();
         this.bloodType = blood.getBloodType();
         this.rhFactor = blood.getRh();
-        this.component = blood.getComponent() != null ? blood.getComponent().getComponent() : null;
-        this.isRareBlood = blood.getRareBlood();
+        this.isRareBlood = blood.getIsRareBlood();
         this.quantity = blood.getQuantity();
         this.bloodMatch = blood.getBloodMatch();
     }

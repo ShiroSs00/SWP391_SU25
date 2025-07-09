@@ -18,10 +18,8 @@ public interface BloodRepository extends JpaRepository<Blood, String> {
     @Query("SELECT b FROM Blood b WHERE " +
             "(:bloodCode IS NULL OR b.bloodCode = :bloodCode) AND " +
             "(:rh IS NULL OR b.rh = :rh) AND " +
-            "(:component IS NULL OR b.component = :component) AND " +
             "(:isRareBlood IS NULL OR b.isRareBlood = :isRareBlood)")
     List<Blood> findByCriteria(@Param("bloodCode") String bloodCode,
                                @Param("rh") Blood.RhFactor rh,
-                               @Param("component") String component,
                                @Param("isRareBlood") Boolean isRareBlood);
 }

@@ -3,10 +3,8 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.BloodBagDTO;
 import com.swp391.bloodcare.entity.AfterDonationBlood;
 import com.swp391.bloodcare.entity.BloodBag;
-import com.swp391.bloodcare.entity.WaitingList;
 import com.swp391.bloodcare.repository.AfterDonationRepository;
 import com.swp391.bloodcare.repository.BloodBagRepository;
-import com.swp391.bloodcare.repository.WaitingListRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +19,7 @@ import java.util.stream.Collectors;
 public class BloodBagService {
 
     private final BloodBagRepository bloodBagRepository;
-    private final WaitingListRepository waitingListRepository;
+
     private final AfterDonationRepository afterDonationRepository;
 
     public BloodBagDTO createBloodBag(BloodBagDTO dto) {
@@ -40,12 +38,7 @@ public class BloodBagService {
         entity.setBagId(newId);
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : "Available");
 
-        // Gán WaitingList nếu có
-        if (dto.getWaitingListId() != null) {
-            WaitingList waitingList = waitingListRepository.findById(dto.getWaitingListId())
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy danh sách chờ"));
-            entity.setWaitingList(waitingList);
-        }
+
 
         // Gán AfterDonationBlood nếu có
         if (dto.getAfterDonationId() != null) {
@@ -94,13 +87,7 @@ public class BloodBagService {
         if (dto.getExpirationDate() != null) existing.setExpirationDate(dto.getExpirationDate());
         if (dto.getStatus() != null && !dto.getStatus().isBlank()) existing.setStatus(dto.getStatus());
 
-        if (dto.getWaitingListId() != null) {
-            WaitingList waitingList = waitingListRepository.findById(dto.getWaitingListId())
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy danh sách chờ"));
-            existing.setWaitingList(waitingList);
-        } else {
-            existing.setWaitingList(null);
-        }
+
 
         BloodBag saved = bloodBagRepository.save(existing);
         return BloodBagDTO.fromEntity(saved);

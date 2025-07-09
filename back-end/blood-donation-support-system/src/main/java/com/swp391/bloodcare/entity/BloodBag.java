@@ -48,9 +48,6 @@ public class BloodBag {
     @NotNull
     private AfterDonationBlood afterDonationBlood;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wait_list_id")
-    private WaitingList waitingList;
 
     // ===================== ENUM =====================
     public enum Volume {

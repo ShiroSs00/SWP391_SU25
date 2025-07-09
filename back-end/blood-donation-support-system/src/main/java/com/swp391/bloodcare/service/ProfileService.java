@@ -177,21 +177,21 @@ public class ProfileService {
         profileRepository.save(profile);
     }
 
-    public void updateRestDateBasedOnDonation(String accountId, String componentName) {
-        Profile profile = profileRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy profile cho accountId: " + accountId));
-
-        long daysToRest = switch (componentName.toUpperCase()) {
-            case "WHOLE"     -> 84;
-            case "RBC"       -> 56;
-            case "PLASMA"    -> 14;
-            case "PLATELET"  -> 14;
-            default          -> 30;
-        };
-
-        profile.setRestDate(LocalDate.now().plusDays(daysToRest));
-        profileRepository.save(profile);
-    }
+//    public void updateRestDateBasedOnDonation(String accountId) {
+//        Profile profile = profileRepository.findByAccountId(accountId)
+//                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy profile cho accountId: " + accountId));
+//
+//        long daysToRest = switch (componentName.toUpperCase()) {
+//            case "WHOLE"     -> 84;
+//            case "RBC"       -> 56;
+//            case "PLASMA"    -> 14;
+//            case "PLATELET"  -> 14;
+//            default          -> 30;
+//        };
+//
+//        profile.setRestDate(LocalDate.now().plusDays(daysToRest));
+//        profileRepository.save(profile);
+//    }
 
     public List<ProfileResponseDTO> findProfilesByBloodAndDistance(String bloodCode, Double radiusKm) {
         double lat = FACILITY_LATITUDE;

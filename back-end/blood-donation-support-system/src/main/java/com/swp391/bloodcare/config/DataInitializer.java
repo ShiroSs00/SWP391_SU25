@@ -1,25 +1,34 @@
 package com.swp391.bloodcare.config;
 
 import com.swp391.bloodcare.entity.Account;
+import com.swp391.bloodcare.entity.Blood;
+
+import com.swp391.bloodcare.entity.Component;
 import com.swp391.bloodcare.entity.Role;
 import com.swp391.bloodcare.repository.AccountRepository;
+import com.swp391.bloodcare.repository.BloodRepository;
+import com.swp391.bloodcare.repository.ComponentRepository;
 import com.swp391.bloodcare.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Component
+@org.springframework.stereotype.Component
 @RequiredArgsConstructor
 public class DataInitializer {
 
     private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
+
+    private final ComponentRepository componentRepository;
+    private final BloodRepository bloodRepository;
+
     private final PasswordEncoder passwordEncoder;
 
     @EventListener(ApplicationReadyEvent.class)
@@ -109,6 +118,22 @@ public class DataInitializer {
         } else {
             System.out.println("ℹ️ Member account already exists.");
         }
+
+        // === Khởi tạo các thành phần máu (Component) ===
+        String[] components = {"101","102","103","104"};
+        String[] description = {"Toàn phần", "Hồng cầu", "Tiểu cầu", "Huyết tương"};
+
+        for(int i = 0; i < components.length; i++) {
+            String name = components[i];
+            if(!componentRepository.existsById(name)) {
+                Component component = new Component();
+                component.setComponent(name);
+                component.setDescription(description[i]);
+                componentRepository.save(component);
+            }
+        }
+
+        // === Khởi tạo các loại máu ===
 
     }
 }

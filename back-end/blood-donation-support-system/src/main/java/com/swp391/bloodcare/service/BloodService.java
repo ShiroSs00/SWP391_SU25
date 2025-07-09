@@ -30,29 +30,19 @@ public class BloodService {
         if(bloodRepository.findByBloodCode(bloodDTO.getBloodCode()).isPresent()) {
             throw new IllegalArgumentException("Blood code đã tồn tại: " + bloodDTO.getBloodCode());
         }
-
-        Component c = null;
-        if(bloodDTO.getComponent() != null) {
-            c = componentService.findById(bloodDTO.getComponent());
-            if(c == null){
-                throw new IllegalArgumentException("Component không tồn tại: " + bloodDTO.getComponent());
-            }
-        }
         Blood blood = new Blood();
         blood.setBloodType(bloodDTO.getBloodType());
         blood.setBloodCode(bloodDTO.getBloodCode());
         blood.setRh(bloodDTO.getRhFactor());
-        blood.setComponent(c);
-        blood.setRareBlood(bloodDTO.getIsRareBlood());
+        blood.setIsRareBlood(bloodDTO.getIsRareBlood());
         blood.setQuantity(bloodDTO.getQuantity());
         blood.setBloodMatch(bloodDTO.getBloodMatch());
-
         Blood savedBlood = bloodRepository.save(blood);
         return new BloodDTO(savedBlood);
     }
 
-    public List<BloodDTO> searchByCriteriaDTO(String bloodCode, Blood.RhFactor rh, String component, Boolean isRareBlood){
-        List<Blood> bloodList = bloodRepository.findByCriteria(bloodCode, rh, component, isRareBlood);
+    public List<BloodDTO> searchByCriteriaDTO(String bloodCode, Blood.RhFactor rh, Boolean isRareBlood){
+        List<Blood> bloodList = bloodRepository.findByCriteria(bloodCode, rh, isRareBlood);
         return bloodList.stream()
                 .map(BloodDTO::new)
                 .collect(Collectors.toList());
@@ -91,29 +81,12 @@ public class BloodService {
         if(!blood.isPresent()) {
             throw new IllegalArgumentException("Blood record không tồn tại: " + bloodCode);
         }
-
         Blood eBlood = blood.get();
-
-        Component c = null;
-        if(bloodDTO.getComponent() != null) {
-            c = componentService.findById(bloodDTO.getComponent());
-            if (c == null) {
-                throw new IllegalArgumentException("Component không tồn tại: " + bloodDTO.getComponent());
-            }
-        }
-
         eBlood.setBloodType(bloodDTO.getBloodType());
         eBlood.setRh(bloodDTO.getRhFactor());
-        eBlood.setComponent(c);
-        eBlood.setRareBlood(bloodDTO.getIsRareBlood());
-
-
-            eBlood.setQuantity(bloodDTO.getQuantity());
-
-
+        eBlood.setIsRareBlood(bloodDTO.getIsRareBlood());
+        eBlood.setQuantity(bloodDTO.getQuantity());
         eBlood.setBloodMatch(bloodDTO.getBloodMatch());
-
-
         Blood savedBlood = bloodRepository.save(eBlood);
         return new BloodDTO(savedBlood);
     }
