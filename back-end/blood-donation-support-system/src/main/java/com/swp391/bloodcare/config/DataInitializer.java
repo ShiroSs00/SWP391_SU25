@@ -134,29 +134,6 @@ public class DataInitializer {
         }
 
         // === Khởi tạo các loại máu ===
-        for(Blood.BloodType type : Blood.BloodType.values()) {
-            for(Blood.RhFactor rh : Blood.RhFactor.values()) {
-                for(Component component : componentRepository.findAll()){
-                    String rhShort = rh == Blood.RhFactor.POSITIVE?"P":"N";
-                    String bloodCode = type.name() + rhShort + "_" + component.getComponent();
-
-                    if(!bloodRepository.existsById(bloodCode)) {
-                        Blood blood = new Blood();
-                        blood.setBloodCode(bloodCode);
-                        blood.setBloodType(type);
-                        blood.setRh(rh);
-                        blood.setComponent(component);
-
-                        //đánh dấu máu hiếm
-                        boolean isRare = rh == Blood.RhFactor.NEGATIVE;
-                        blood.setRareBlood(isRare);
-                        blood.setQuantity(0);
-                        blood.setBloodMatch("");
-                        bloodRepository.save(blood);
-                    }
-                }
-            }
-        }
 
     }
 }

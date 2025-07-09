@@ -44,9 +44,6 @@ public class BloodBagDTO {
                 .afterDonationId(
                         bag.getAfterDonationBlood() != null ? bag.getAfterDonationBlood().getIdAfterDonation() : null
                 )
-                .waitingListId(
-                        bag.getWaitingList() != null ? bag.getWaitingList().getWaitListId() : null
-                )
                 .build();
     }
 
