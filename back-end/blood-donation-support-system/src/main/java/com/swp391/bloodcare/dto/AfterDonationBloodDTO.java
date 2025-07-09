@@ -1,7 +1,6 @@
 package com.swp391.bloodcare.dto;
 
 import com.swp391.bloodcare.entity.AfterDonationBlood;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -21,11 +20,10 @@ public class AfterDonationBloodDTO {
     @NotNull(message = "Vui lòng xác định máu có thể sử dụng không")
     private Boolean isBloodUsable;
 
-    @NotBlank(message = "Trạng thái không được để trống")
-    private String status;
-
     @Size(max = 500, message = "Ghi chú tối đa 500 ký tự")
     private String note;
+
+    private AfterDonationBlood.Status status;
 
     private String healthCheckId;
     private String bloodId;

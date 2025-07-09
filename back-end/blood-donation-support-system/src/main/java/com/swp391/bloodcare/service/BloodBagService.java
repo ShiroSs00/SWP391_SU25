@@ -3,8 +3,10 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.BloodBagDTO;
 import com.swp391.bloodcare.entity.AfterDonationBlood;
 import com.swp391.bloodcare.entity.BloodBag;
+import com.swp391.bloodcare.entity.Component;
 import com.swp391.bloodcare.repository.AfterDonationRepository;
 import com.swp391.bloodcare.repository.BloodBagRepository;
+import com.swp391.bloodcare.repository.ComponentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,35 +24,36 @@ public class BloodBagService {
 
     private final AfterDonationRepository afterDonationRepository;
 
+    private final ComponentRepository componentRepository;
+
     public BloodBagDTO createBloodBag(BloodBagDTO dto) {
-        // Validate volume không null
         if (dto.getVolume() == null) {
             throw new IllegalArgumentException("Thể tích túi máu là bắt buộc (ML_250, ML_350, ML_450)");
         }
 
-        // Tạo mã túi máu duy nhất
         String newId;
         do {
             newId = generateBloodBagId();
         } while (bloodBagRepository.existsByBagId(newId));
 
-        BloodBag entity = BloodBagDTO.toEntity(dto);
+        Component component = componentRepository.findById(dto.getComponentId())
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Component với ID: " + dto.getComponentId()));
+        BloodBag entity = BloodBagDTO.toEntity(dto, component);
         entity.setBagId(newId);
-        entity.setStatus(dto.getStatus() != null ? dto.getStatus() : "Available");
+        entity.setStatus(dto.getStatus() != null ? dto.getStatus() : BloodBag.Status.VALID);
+        entity.setComponent(component);
 
-
-
-        // Gán AfterDonationBlood nếu có
         if (dto.getAfterDonationId() != null) {
             AfterDonationBlood afterDonation = afterDonationRepository.findAfterDonationBloodByIdAfterDonation(dto.getAfterDonationId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy dữ liệu sau hiến"));
             entity.setAfterDonationBlood(afterDonation);
-            afterDonation.setBloodBag(entity); // quan trọng nếu dùng mappedBy
+            afterDonation.getBloodBag().add(entity);
         }
 
         BloodBag saved = bloodBagRepository.save(entity);
         return BloodBagDTO.fromEntity(saved);
     }
+
 
     @Transactional
     public Map<String, List<String>> deleteBloodBags(List<String> bagIds) {
@@ -85,10 +88,14 @@ public class BloodBagService {
         if (dto.getVolume() != null) existing.setVolume(dto.getVolume());
         if (dto.getCollectedDate() != null) existing.setCollectedDate(dto.getCollectedDate());
         if (dto.getExpirationDate() != null) existing.setExpirationDate(dto.getExpirationDate());
-        if (dto.getStatus() != null && !dto.getStatus().isBlank()) existing.setStatus(dto.getStatus());
-
-
-
+        if (dto.getStatus() != null) {
+            existing.setStatus(dto.getStatus());
+        }
+        if (dto.getComponentId() != null) {
+            Component component = componentRepository.findById(dto.getComponentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Component với ID: " + dto.getComponentId()));
+            existing.setComponent(component);
+        }
         BloodBag saved = bloodBagRepository.save(existing);
         return BloodBagDTO.fromEntity(saved);
     }

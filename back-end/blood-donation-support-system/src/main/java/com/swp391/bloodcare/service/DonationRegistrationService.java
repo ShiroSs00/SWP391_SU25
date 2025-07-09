@@ -99,6 +99,13 @@ public class DonationRegistrationService {
     }
 
     private boolean canRegister(String accountId, LocalDate newDonationDate) {
+
+        Account account = accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tài khoản"));
+        if (account.getProfile() == null) {
+            throw new IllegalStateException("Tài khoản chưa tạo hồ sơ cá nhân. Vui lòng hoàn tất hồ sơ trước khi đăng ký hiến máu.");
+        }
+
         List<DonationRegistration> completedRegs = donationRegistrationRepository
                 .findByAccountAccountId(accountId).stream()
                 .filter(reg -> reg.getStatus() == DonationRegistration.Status.PASSED)

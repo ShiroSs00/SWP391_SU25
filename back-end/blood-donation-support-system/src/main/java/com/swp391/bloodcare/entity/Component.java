@@ -1,46 +1,40 @@
 package com.swp391.bloodcare.entity;
 
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import lombok.*;
+import java.util.Date;
 
 @Entity
-@Table(name ="component")
+@Table(name = "component")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Component {
+
     @Id
-    private String component;
+    @Column(name = "component_id")
+    @NotBlank(message = "Mã thành phần không được để trống")
+    private String componentId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false)
+    @NotNull(message = "Loại thành phần không được để trống")
+    private String type;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "expiration_date")
+    @Future(message = "Hạn sử dụng phải là một ngày trong tương lai")
+    private Date expirationDate;
+
+    @Size(max = 500, message = "Mô tả không được quá 500 ký tự")
+    @Column(name = "description")
     private String description;
 
-    public Component(String component, String description) {
-        this.component = component;
-        this.description = description;
-    }
-
-    public Component() {
-    }
-
-    public String getComponent() {
-        return component;
-    }
-
-    public void setComponent(String component) {
-        this.component = component;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String toString() {
-        return "Component{" +
-                "component='" + component + '\'' +
-                ", description='" + description + '\'' +
-                '}';
-    }
+    @OneToOne
+    @JoinColumn(name = "bag_id", nullable = false)
+    @NotNull(message = "Thành phần máu phải gắn với túi máu")
+    private BloodBag bloodBag;
 }

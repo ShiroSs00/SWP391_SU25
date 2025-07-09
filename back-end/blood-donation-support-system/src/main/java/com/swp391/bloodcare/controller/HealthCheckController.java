@@ -1,5 +1,6 @@
 package com.swp391.bloodcare.controller;
 
+import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.HealthCheckDTO;
 import com.swp391.bloodcare.service.HealthCheckService;
 import jakarta.validation.Valid;
@@ -22,19 +23,21 @@ public class HealthCheckController {
     }
 
     @GetMapping("/getall")
-    public ResponseEntity<List<HealthCheckDTO>> getAllHealthCheck() {
-        return ResponseEntity.ok(healthCheckService.getAllHealthChecks());
+    public ResponseEntity<ApiResponse<List<HealthCheckDTO>>> getAllHealthCheck() {
+        List<HealthCheckDTO> list = healthCheckService.getAllHealthChecks();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy tất cả bản ghi kiểm tra sức khỏe thành công", list));
     }
 
     @PutMapping("/update/{healthCheckId}")
-    public ResponseEntity<HealthCheckDTO> updateHealthCheck(
+    public ResponseEntity<ApiResponse<HealthCheckDTO>> updateHealthCheck(
             @PathVariable String healthCheckId,
             @Valid @RequestBody HealthCheckDTO updatedHealthCheckDTO) {
-        return ResponseEntity.ok(healthCheckService.updateHealthCheckById(healthCheckId, updatedHealthCheckDTO));
+        HealthCheckDTO updated = healthCheckService.updateHealthCheckById(healthCheckId, updatedHealthCheckDTO);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật bản ghi thành công", updated));
     }
 
     @PostMapping("/create/{registrationId}")
-    public ResponseEntity<?> createHealthCheck(
+    public ResponseEntity<ApiResponse<HealthCheckDTO>> createHealthCheck(
             @PathVariable String registrationId,
             @Valid @RequestBody HealthCheckDTO dto,
             BindingResult bindingResult
@@ -44,51 +47,35 @@ public class HealthCheckController {
             bindingResult.getFieldErrors().forEach(err ->
                     errors.put(err.getField(), err.getDefaultMessage())
             );
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", "failed",
-                    "errors", errors
-            ));
+            ApiResponse<HealthCheckDTO> response = new ApiResponse<>(false, "Dữ liệu không hợp lệ", null, errors);
+            return ResponseEntity.badRequest().body(response);
         }
 
         try {
             HealthCheckDTO created = healthCheckService.createHealthCheck(registrationId, dto);
-            return ResponseEntity.ok(Map.of(
-                    "status", "success",
-                    "message", "Tạo bản ghi kiểm tra sức khỏe thành công",
-                    "data", created
-            ));
+            return ResponseEntity.ok(new ApiResponse<>(true, "Tạo bản ghi kiểm tra sức khỏe thành công", created));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", "failed",
-                    "message", e.getMessage()
-            ));
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>(false, e.getMessage(), null)
+            );
         }
     }
 
-
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Map<String, Object>> deleteHealthCheck(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<HealthCheckDTO>> deleteHealthCheck(@PathVariable String id) {
         HealthCheckDTO deleted = healthCheckService.deleteHealthCheck(id);
-        return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "message", "Đã xóa thành công bản ghi kiểm tra sức khỏe",
-                "data", deleted
-        ));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Đã xóa thành công bản ghi kiểm tra sức khỏe", deleted));
     }
 
     @GetMapping("/get-by-registration/{registrationId}")
-    public ResponseEntity<HealthCheckDTO> getByRegistration(@PathVariable String registrationId) {
-        return ResponseEntity.ok(healthCheckService.getHealthCheckByRegistration(registrationId));
+    public ResponseEntity<ApiResponse<HealthCheckDTO>> getByRegistration(@PathVariable String registrationId) {
+        HealthCheckDTO dto = healthCheckService.getHealthCheckByRegistration(registrationId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy bản ghi thành công", dto));
     }
 
     @DeleteMapping("/delete-multiple")
-    public ResponseEntity<Map<String, Object>> deleteMultipleHealthChecks(@RequestBody List<String> ids) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> deleteMultipleHealthChecks(@RequestBody List<String> ids) {
         Map<String, Object> result = healthCheckService.deleteMultipleHealthChecksSafe(ids);
-        return ResponseEntity.ok(Map.of(
-                "status", "partial-success",
-                "message", "Đã xử lý xóa danh sách kiểm tra sức khỏe",
-                "data", result
-        ));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Đã xử lý xóa danh sách kiểm tra sức khỏe", result));
     }
-
 }

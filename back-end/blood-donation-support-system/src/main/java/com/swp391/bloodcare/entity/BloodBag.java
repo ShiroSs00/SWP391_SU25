@@ -20,36 +20,47 @@ public class BloodBag {
 
     @Id
     @Column(name = "bag_id")
-    @NotBlank
+    @NotBlank(message = "ID túi máu không được để trống")
     private String bagId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "volume", nullable = false)
-    @NotNull
+    @NotNull(message = "Thể tích không được để trống")
     private Volume volume;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     @Column(name = "collected_date", nullable = false)
-    @NotNull
+    @NotNull(message = "Ngày lấy máu không được để trống")
     private Date collectedDate;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     @Column(name = "expiration_date", nullable = false)
-    @NotNull
+    @NotNull(message = "Ngày hết hạn không được để trống")
     private Date expirationDate;
 
-    @Column(nullable = false)
-    @NotBlank
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    @NotNull(message = "Trạng thái túi máu không được để trống")
+    private Status status;
 
-    @OneToOne(mappedBy = "bloodBag", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
-    @NotNull
+    @NotNull(message = "Loại túi máu không được để trống")
+    @OneToOne(mappedBy = "bloodBag", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Component component;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "after_donation_id")
+    @NotNull(message = "Túi máu phải gắn với một đơn sau hiến")
     private AfterDonationBlood afterDonationBlood;
 
+    public enum Status {
+        VALID,      // CÒN HẠN
+        EXPIRED     // HẾT HẠN
+    }
 
-    // ===================== ENUM =====================
+    @Getter
     public enum Volume {
         ML_250(250),
         ML_350(350),
@@ -59,10 +70,6 @@ public class BloodBag {
 
         Volume(int ml) {
             this.ml = ml;
-        }
-
-        public int getMl() {
-            return ml;
         }
 
         public static Volume fromInt(int ml) {
