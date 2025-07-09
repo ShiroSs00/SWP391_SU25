@@ -35,7 +35,7 @@ public class BloodDonationHistoryService {
             history.setDonationRegistration(donationRegistration);
         }
 
-        history.setStatus(mapRegistrationStatusToHistoryStatus(donationRegistration.getStatus()));
+        history.setStatus(mapRegistrationStatusToHistoryStatus(donationRegistration.getStatus().name()));
         return repository.save(history);
     }
 

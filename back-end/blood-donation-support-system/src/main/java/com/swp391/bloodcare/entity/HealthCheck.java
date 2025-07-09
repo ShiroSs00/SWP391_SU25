@@ -57,12 +57,11 @@ public class HealthCheck {
     @Column(name = "note")
     private String note;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "registration_id")
     @NotNull(message = "Phải liên kết với một đơn đăng ký")
     private DonationRegistration donationRegistration;
 
-    @OneToOne(mappedBy = "healthCheck", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "healthCheck", cascade = CascadeType.ALL, orphanRemoval = true)
     private AfterDonationBlood afterDonationBlood;
 }
-

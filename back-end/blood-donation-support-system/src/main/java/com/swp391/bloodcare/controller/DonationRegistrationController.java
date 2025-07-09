@@ -1,11 +1,13 @@
 package com.swp391.bloodcare.controller;
 
+import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.DonationRegistrationDTO;
 import com.swp391.bloodcare.entity.DonationRegistration;
 import com.swp391.bloodcare.service.DonationRegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -25,18 +27,19 @@ public class DonationRegistrationController {
     }
 
     @GetMapping("/getall")
-    public ResponseEntity<List<DonationRegistrationDTO>> getAllDonationRegistration() {
-        return ResponseEntity.ok(donationRegistrationService.getAllDonationRegistrations());
+    public ResponseEntity<ApiResponse<List<DonationRegistrationDTO>>> getAllDonationRegistration() {
+        List<DonationRegistrationDTO> list = donationRegistrationService.getAllDonationRegistrations();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy tất cả đơn đăng ký thành công", list));
     }
 
     @GetMapping("/get-by-event/{eventId}")
-    public ResponseEntity<List<DonationRegistrationDTO>> getByEventId(@PathVariable String eventId) {
-        return ResponseEntity.ok(donationRegistrationService.getByEventId(eventId));
+    public ResponseEntity<ApiResponse<List<DonationRegistrationDTO>>> getByEventId(@PathVariable String eventId) {
+        List<DonationRegistrationDTO> list = donationRegistrationService.getByEventId(eventId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy danh sách đăng ký theo sự kiện thành công", list));
     }
 
-
     @PostMapping({"/create", "/create/{eventId}"})
-    public ResponseEntity<?> createDonationRegistration(
+    public ResponseEntity<ApiResponse<DonationRegistrationDTO>> createDonationRegistration(
             @PathVariable(name = "eventId", required = false) String eventId,
             @Valid @RequestBody DonationRegistrationDTO dto) {
         try {
@@ -45,31 +48,20 @@ public class DonationRegistrationController {
             dto.setEventId(eventId);
             DonationRegistrationDTO saved = donationRegistrationService.createDonation(dto, accountId);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "status", "success",
-                    "message", eventId == null ? "Tạo đăng ký hiến trực tiếp thành công!" : "Tạo đăng ký sự kiện thành công!",
-                    "data", saved
-            ));
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "status", "failed",
-                    "message", e.getMessage()
-            ));
+            String msg = eventId == null ? "Tạo đăng ký hiến trực tiếp thành công!" : "Tạo đăng ký sự kiện thành công!";
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, msg, saved));
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "status", "error",
-                    "message", "Đã xảy ra lỗi khi tạo đơn đăng ký",
-                    "error", e.getMessage()
-            ));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ApiResponse<>(false, "Đã xảy ra lỗi khi tạo đơn đăng ký", null));
         }
     }
 
-
     @PutMapping("/update-donation-date/{id}")
-    public ResponseEntity<?> updateDonationDate(
+    public ResponseEntity<ApiResponse<DonationRegistrationDTO>> updateDonationDate(
             @PathVariable String id,
-            @RequestBody Map<String, String> body // chứa "donationDate"
-    ) {
+            @RequestBody Map<String, String> body) {
         try {
             String dateStr = body.get("donationDate");
             if (dateStr == null || dateStr.isBlank()) {
@@ -78,94 +70,75 @@ public class DonationRegistrationController {
 
             LocalDate donationDate = LocalDate.parse(dateStr);
             DonationRegistrationDTO updated = donationRegistrationService.updateDonationDate(id, donationDate);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật ngày hiến máu thành công", updated));
 
-            return ResponseEntity.ok(Map.of(
-                    "status", "success",
-                    "message", "Cập nhật ngày hiến máu thành công",
-                    "data", updated
-            ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", "failed",
-                    "message", e.getMessage()
-            ));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
 
     @PatchMapping("/update-status/{id}")
-    public ResponseEntity<?> updateStatus(
+    public ResponseEntity<ApiResponse<DonationRegistrationDTO>> updateStatus(
             @PathVariable String id,
-            @RequestBody Map<String, String> body // chứa "status"
-    ) {
+            @RequestBody Map<String, String> body) {
         try {
             String status = body.get("status");
             if (status == null || status.isBlank()) {
                 throw new IllegalArgumentException("Trạng thái không được để trống");
             }
 
-            DonationRegistrationDTO updated = donationRegistrationService.updateStatusOnly(id, status);
+            DonationRegistration.Status statusEnum = DonationRegistration.Status.valueOf(status.toUpperCase());
+            DonationRegistrationDTO updated = donationRegistrationService.updateStatusOnly(id, statusEnum);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật trạng thái thành công", updated));
 
-            return ResponseEntity.ok(Map.of(
-                    "status", "success",
-                    "message", "Cập nhật trạng thái thành công",
-                    "data", updated
-            ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", "failed",
-                    "message", e.getMessage()
-            ));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
 
-
-
-
-
-
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteDonationRegistration(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> deleteDonationRegistration(@PathVariable String id) {
         donationRegistrationService.deleteDonationRegistration(id);
-        return ResponseEntity.ok("✅ Xóa đơn đăng ký thành công với ID: " + id);
+        return ResponseEntity.ok(new ApiResponse<>(true, "✅ Xóa đơn đăng ký thành công với ID: " + id, null));
     }
 
     @GetMapping("get-by-id/{id}")
-    public ResponseEntity<DonationRegistration> getDonationRegistrationById(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<DonationRegistration>> getDonationRegistrationById(@PathVariable String id) {
         DonationRegistration donation = donationRegistrationService.getDonationRegistrationById(id);
-        return ResponseEntity.ok(donation);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy đơn đăng ký theo ID thành công", donation));
     }
 
     @GetMapping("/get-by-account/{accountId}")
-    public ResponseEntity<List<DonationRegistrationDTO>> getByAccount(@PathVariable String accountId) {
-        return ResponseEntity.ok(donationRegistrationService.getByAccountId(accountId));
+    public ResponseEntity<ApiResponse<List<DonationRegistrationDTO>>> getByAccount(@PathVariable String accountId) {
+        List<DonationRegistrationDTO> list = donationRegistrationService.getByAccountId(accountId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy đơn đăng ký theo tài khoản thành công", list));
     }
 
     @GetMapping("/get-by-account-and-event")
-    public ResponseEntity<List<DonationRegistrationDTO>> getByAccountAndEvent(
+    public ResponseEntity<ApiResponse<List<DonationRegistrationDTO>>> getByAccountAndEvent(
             @RequestParam String accountId,
             @RequestParam String eventId) {
-        return ResponseEntity.ok(donationRegistrationService.getByAccountIdAndEventId(accountId, eventId));
+        List<DonationRegistrationDTO> list = donationRegistrationService.getByAccountIdAndEventId(accountId, eventId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy đơn đăng ký theo tài khoản & sự kiện thành công", list));
     }
-
 
     @GetMapping("/direct-donations")
-    public ResponseEntity<List<DonationRegistrationDTO>> getDirectDonations() {
-        return ResponseEntity.ok(donationRegistrationService.getDirectDonationRegistrations());
+    public ResponseEntity<ApiResponse<List<DonationRegistrationDTO>>> getDirectDonations() {
+        List<DonationRegistrationDTO> list = donationRegistrationService.getDirectDonationRegistrations();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy danh sách đăng ký trực tiếp thành công", list));
     }
 
-
-
     @DeleteMapping("/delete-multiple")
-    public ResponseEntity<?> deleteMultipleRegistrations(@RequestBody List<String> ids) {
-        var result = donationRegistrationService.deleteMultipleDonationRegistrationsSafe(ids);
-        return ResponseEntity.ok().body(
-                // Có thể format chuẩn với key: status, message, data
-                Map.of(
-                        "status", "partial-success",
-                        "message", "Đã xử lý xóa danh sách đăng ký",
-                        "data", result
-                )
-        );
+    public ResponseEntity<ApiResponse<Map<String, Object>>> deleteMultipleRegistrations(@RequestBody List<String> ids) {
+        Map<String, Object> result = donationRegistrationService.deleteMultipleDonationRegistrationsSafe(ids);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Đã xử lý xóa danh sách đăng ký", result));
+    }
+
+    @Scheduled(cron = "0 00 0 * * ?", zone = "Asia/Ho_Chi_Minh")
+    @GetMapping("/auto-cancel-expired")
+    public ResponseEntity<ApiResponse<Integer>> autoCancel() {
+        int count = donationRegistrationService.autoCancelExpiredRegistrations();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Đã cập nhật " + count + " đơn quá hạn về trạng thái HỦY", count));
     }
 
 }

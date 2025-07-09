@@ -37,17 +37,15 @@ public class AfterDonationBlood {
     @Size(max = 500)
     private String note;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "health_check_id")
     private HealthCheck healthCheck;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blood_code")
     private Blood blood;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bag_id")
     private BloodBag bloodBag;
 }
-
-

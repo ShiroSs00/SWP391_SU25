@@ -59,7 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/role/**").hasRole("ADMIN")
                         .requestMatchers("/api/achievements/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/api/blood-bags/**").hasAnyRole("STAFF", "ADMIN")
-                        .requestMatchers("/api/event/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/event/**").hasAnyRole( "ADMIN")
                         .requestMatchers("/api/healthcheck/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/after-donation/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")

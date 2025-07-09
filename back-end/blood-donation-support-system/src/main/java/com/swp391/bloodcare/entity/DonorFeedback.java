@@ -15,7 +15,7 @@ public class DonorFeedback {
 
     @Id
     @Column(name = "feed_back_id")
-    private String feedbackID;
+    private String feedbackId;
 
     @Column(name = "process", nullable = false)
     private int process;
@@ -37,7 +37,7 @@ public class DonorFeedback {
             name = "registration_id",
             referencedColumnName = "registration_id",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_feedback_registration")
+            foreignKey = @ForeignKey(name = "Feedback_registration")
     )
     private DonationRegistration donationRegistration;
 
