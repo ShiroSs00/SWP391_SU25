@@ -4,138 +4,171 @@ import com.swp391.bloodcare.dto.DonationRegistrationDTO;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import static com.swp391.bloodcare.dto.DonationRegistrationDTO.toDTO;
-
 
 @Service
 public class DonationRegistrationService {
 
     private final DonationRegistrationRepository donationRegistrationRepository;
-
     private final AccountRepository accountRepository;
-
-    private final HealthCheckRepository healthCheckRepository;
-
-    private final ComponentRepository componentRepository;
-
     private final EventRepository eventRepository;
-
-
     public final FeedbackRepository feedbackRepository;
 
-    @Autowired
-    private BloodDonationHistoryService bloodDonationHistoryService;
-
-    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, HealthCheckRepository healthCheckRepository, ComponentRepository componentRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
-
+    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
         this.donationRegistrationRepository = donationRegistrationRepository;
         this.accountRepository = accountRepository;
-        this.healthCheckRepository = healthCheckRepository;
-        this.componentRepository = componentRepository;
         this.eventRepository = eventRepository;
         this.feedbackRepository = feedbackRepository;
     }
 
-    public DonationRegistrationDTO createDonationByUsername(String accountId, String eventId) {
-        Account account = accountRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public DonationRegistrationDTO createDonation(@Valid DonationRegistrationDTO dto, String accountId) {
+        String eventId = dto.getEventId();
+        LocalDate donationDate = dto.getDonationDate();
+        validateDonation(accountId, donationDate, eventId, false);
 
-        String donationId;
-        do {
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            int randomCode = new Random().nextInt(1000);
-            String randomPart = String.format("%03d", randomCode);
-            donationId = "RD-" + timestamp + "-" + randomPart;
-        } while (donationRegistrationRepository.existsByRegistrationId(donationId));
+        Account acc = accountRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tài khoản"));
 
-        DonationRegistration donationRegistration = new DonationRegistration();
-        donationRegistration.setRegistrationId(donationId);
-        donationRegistration.setDateCreated(new Date());
-        donationRegistration.setStatus("Đang đợi");
-        donationRegistration.setAccount(account);
+        BloodDonationEvent event = (eventId != null && !eventId.isBlank())
+                ? eventRepository.findByEventId(eventId).orElse(null)
+                : null;
 
-        // Chỉ gán sự kiện nếu eventId không null và tồn tại
+        DonationRegistration reg = DonationRegistration.builder()
+                .donationDate(donationDate)
+                .account(acc)
+                .event(event)
+                .dateCreated(new Date())
+                .status(DonationRegistration.Status.PENDING)
+                .build();
+
+        reg.setRegistrationId(generateUniqueIdWithRetry());
+
+        try {
+            return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi lưu đơn đăng ký: " + e.getMessage(), e);
+        }
+    }
+
+    private void validateDonation(String accountId, LocalDate donationDate, String eventId, boolean isUpdate) {
+        LocalDate today = LocalDate.now();
+
+        if (donationDate == null) {
+            throw new IllegalArgumentException("Ngày hiến máu không được để trống");
+        }
+
         if (eventId != null && !eventId.isBlank()) {
             BloodDonationEvent event = eventRepository.findByEventId(eventId)
-                    .orElseThrow(() -> new EntityNotFoundException("Event not found with ID: " + eventId));
-            donationRegistration.setEvent(event);
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + eventId));
+
+            LocalDate endDate = event.getEndDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            if (donationDate.isBefore(today) || donationDate.isAfter(endDate)) {
+                throw new IllegalArgumentException("Ngày hiến máu phải nằm trong khoảng từ hôm nay đến ngày kết thúc sự kiện");
+            }
+        } else {
+            LocalDate max = today.plusDays(20);
+            if (!donationDate.isAfter(today) || donationDate.isAfter(max)) {
+                throw new IllegalArgumentException("Ngày hiến máu phải lớn hơn hôm nay và không quá 20 ngày tới");
+            }
         }
 
-        bloodDonationHistoryService.create(donationRegistration);
+        if (!canRegister(accountId, donationDate)) {
+            throw new IllegalStateException("Không đủ thời gian nghỉ giữa 2 lần hiến máu (tối thiểu 12 tuần)");
+        }
 
-        return toDTO(donationRegistrationRepository.save(donationRegistration));
+        if (!isUpdate) {
+            boolean hasPending = donationRegistrationRepository
+                    .findByAccountAccountId(accountId)
+                    .stream()
+                    .anyMatch(reg -> reg.getStatus() == DonationRegistration.Status.PENDING);
+
+            if (hasPending) {
+                throw new IllegalStateException("Tài khoản đã có đơn hiến máu 'Đang đợi'. Không thể tạo thêm.");
+            }
+        }
     }
 
+    private boolean canRegister(String accountId, LocalDate newDonationDate) {
+        List<DonationRegistration> completedRegs = donationRegistrationRepository
+                .findByAccountAccountId(accountId).stream()
+                .filter(reg -> reg.getStatus() == DonationRegistration.Status.PASSED)
+                .sorted(Comparator.comparing(DonationRegistration::getDonationDate).reversed())
+                .toList();
 
-    public DonationRegistrationDTO updateDonationRegistration(String id, DonationRegistrationDTO dto) {
-        DonationRegistration existing = donationRegistrationRepository.findByRegistrationId(id)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đăng ký với ID: " + id));
+        if (completedRegs.isEmpty()) return true;
 
-        if (dto.getDateCreated() != null) {
-            existing.setDateCreated(dto.getDateCreated());
-        }
-
-        if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
-            existing.setStatus(dto.getStatus());
-        }
-
-        if (dto.getEventId() != null) {
-            BloodDonationEvent event = eventRepository.findByEventId(dto.getEventId())
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện"));
-            existing.setEvent(event);
-        }
-
-        if (dto.getAccountId() != null) {
-            Account account = accountRepository.findByAccountId(dto.getAccountId())
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tài khoản"));
-            existing.setAccount(account);
-        }
-
-        if (dto.getComponentId() != null) {
-            Component component = componentRepository.findByComponent(dto.getComponentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy thành phần"));
-            existing.setComponent(component);
-        }
-
-        if (dto.getHealthCheckId() != null) {
-            HealthCheck healthCheck = healthCheckRepository.findByHealthCheckId(dto.getHealthCheckId())
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy khám sức khỏe"));
-            existing.setHealthCheck(healthCheck);
-        }
-
-        if (dto.getDonorFeedbackId() != null) {
-            DonorFeedback feedback = feedbackRepository.findDonorFeedbackByFeedbackID(dto.getDonorFeedbackId())
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phản hồi người hiến"));
-            existing.setDonorFeedback(feedback);
-        }
-
-
-        DonationRegistration saved = donationRegistrationRepository.save(existing);
-        //update history
-        bloodDonationHistoryService.create(existing);
-        return DonationRegistrationDTO.toDTO(saved);
-
-
-
+        LocalDate lastDonationDate = completedRegs.stream()
+                .map(DonationRegistration::getDonationDate)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Không tìm thấy lịch sử hiến máu"));
+        LocalDate earliestAllowed = lastDonationDate.plusWeeks(12);
+        return !newDonationDate.isBefore(earliestAllowed);
     }
 
+    @Transactional
+    public int autoCancelExpiredRegistrations() {
+        LocalDate today = LocalDate.now();
 
+        List<DonationRegistration> expiredRegistrations = donationRegistrationRepository.findAll().stream()
+                .filter(reg -> reg.getStatus() == DonationRegistration.Status.PENDING)
+                .filter(reg -> reg.getDonationDate().isBefore(today))
+                .collect(Collectors.toList());
+
+        expiredRegistrations.forEach(reg -> reg.setStatus(DonationRegistration.Status.CANCELLED));
+        donationRegistrationRepository.saveAll(expiredRegistrations);
+
+        return expiredRegistrations.size(); // trả về số lượng đã cập nhật
+    }
+
+    private String generateUniqueIdWithRetry() {
+        for (int i = 0; i < 5; i++) {
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            int rand = new Random().nextInt(900) + 100;
+            String id = "RD-" + timestamp + "-" + rand;
+
+            if (!donationRegistrationRepository.existsByRegistrationId(id)) {
+                return id;
+            }
+        }
+        throw new RuntimeException("Không thể tạo ID duy nhất sau " + 5 + " lần thử");
+    }
+
+    public DonationRegistrationDTO updateStatusOnly(String id, DonationRegistration.Status newStatus) {
+        DonationRegistration reg = donationRegistrationRepository.findByRegistrationId(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn đăng ký với ID: " + id));
+
+        reg.setStatus(newStatus);
+        return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
+    }
+
+    public DonationRegistrationDTO updateDonationDate(String id, LocalDate newDonationDate) {
+        DonationRegistration reg = donationRegistrationRepository.findByRegistrationId(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn đăng ký với ID: " + id));
+
+        String accountId = reg.getAccount().getAccountId();
+        String eventId = reg.getEvent() != null ? reg.getEvent().getEventId() : null;
+
+        validateDonation(accountId, newDonationDate, eventId, true);
+
+        reg.setDonationDate(newDonationDate);
+        return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
+    }
 
     public void deleteDonationRegistration(String id) {
         DonationRegistration donorRegis = donationRegistrationRepository.findByRegistrationId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đăng ký với ID: " + id));
         donationRegistrationRepository.delete(donorRegis);
     }
-
 
     public List<DonationRegistrationDTO> getAllDonationRegistrations() {
         return donationRegistrationRepository.findAll()
@@ -149,12 +182,10 @@ public class DonationRegistrationService {
     }
 
     public List<DonationRegistrationDTO> getByAccountId(String accountId) {
-        // ⚠️ Kiểm tra account tồn tại
         if (!accountRepository.existsByAccountId(accountId)) {
             throw new EntityNotFoundException("Không tìm thấy tài khoản với ID: " + accountId);
         }
 
-        // ✅ Lấy các đơn đăng ký
         List<DonationRegistrationDTO> result = donationRegistrationRepository.findByAccountAccountId(accountId)
                 .stream()
                 .map(DonationRegistrationDTO::toDTO)
@@ -166,8 +197,6 @@ public class DonationRegistrationService {
 
         return result;
     }
-
-
 
     public List<DonationRegistrationDTO> getByEventId(String eventId) {
         if (!eventRepository.existsByEventId(eventId)) {
@@ -193,11 +222,7 @@ public class DonationRegistrationService {
                 .collect(Collectors.toList());
     }
 
-
-
-
     public List<DonationRegistrationDTO> getByAccountIdAndEventId(String accountId, String eventId) {
-        // ⚠️ Kiểm tra account và event có tồn tại không
         if (!accountRepository.existsByAccountId(accountId)) {
             throw new EntityNotFoundException("Không tìm thấy tài khoản với ID: " + accountId);
         }
@@ -206,7 +231,6 @@ public class DonationRegistrationService {
             throw new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + eventId);
         }
 
-        // ✅ Tìm các đơn đăng ký theo accountId + eventId
         List<DonationRegistrationDTO> result = donationRegistrationRepository
                 .findByAccountAccountIdAndEventEventId(accountId, eventId)
                 .stream()
@@ -219,9 +243,6 @@ public class DonationRegistrationService {
 
         return result;
     }
-
-
-
 
     @Transactional
     public Map<String, Object> deleteMultipleDonationRegistrationsSafe(List<String> ids) {
@@ -236,10 +257,10 @@ public class DonationRegistrationService {
                 deleted.add(id);
             } catch (EntityNotFoundException e) {
                 errors.put(id, "Không tìm thấy đơn đăng ký");
-                throw e; // ❗ phải ném ra lại nếu dùng @Transactional
+                throw e;
             } catch (Exception e) {
                 errors.put(id, "Lỗi không xác định: " + e.getMessage());
-                throw e; // ❗ nếu không rollback-only sẽ xảy ra ngầm
+                throw e;
             }
         }
 
@@ -248,6 +269,4 @@ public class DonationRegistrationService {
         result.put("errors", errors);
         return result;
     }
-
-
 }

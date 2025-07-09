@@ -8,7 +8,10 @@ import com.swp391.bloodcare.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +46,27 @@ public class AchievementService {
         Achievement newAchievement = findAchievementByDonationCount(count);
         profile.setAchievement(newAchievement);
         profileRepository.save(profile);
+    }
+
+
+
+    public Map<String, List<String>> deleteAchievementsByNames(List<String> names) {
+        List<String> deleted = new ArrayList<>();
+        List<String> notFound = new ArrayList<>();
+
+        for (String name : names) {
+            if (achievementRepository.existsById(name)) {
+                achievementRepository.deleteById(name);
+                deleted.add(name);
+            } else {
+                notFound.add(name);
+            }
+        }
+
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("deleted", deleted);
+        result.put("notFound", notFound);
+        return result;
     }
 
 

@@ -55,8 +55,6 @@ public class AccountService {
                 return new ApiResponse<>(false,"Email đã tồn tại",null);
             }
 
-
-
             Account account = new Account();
             account.setAccountId(UUID.randomUUID().toString());
             account.setUserName(accountRegistration.getUsername());
@@ -92,6 +90,8 @@ public class AccountService {
             address.setDistrict(accountRegistration.getAddress().getDistrict());
             address.setWard(accountRegistration.getAddress().getWard());
             address.setStreet(accountRegistration.getAddress().getStreet());
+            address.setLongitude(accountRegistration.getAddress().getLongitude());
+            address.setLatitude(accountRegistration.getAddress().getLatitude());
 
             profile.setAddress(address);
             profile.setNumberOfBloodDonation(0);
@@ -250,6 +250,84 @@ public class AccountService {
         }
         dto.setCreationDate(account.getCreationDate());
         return dto;
+    }
+
+    //tạo tài khoản nâng cao cho admin (có thể set role)
+    @Transactional
+    public ApiResponse<String> createAccountByAdmin(AccountRegistrationDTO accountRegistration) {
+        try {
+            // Kiểm tra quyền admin
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String currentAccountId = auth.getName();
+            Account currentUser = accountRepository.findAccountByAccountId(currentAccountId);
+
+            if (currentUser == null || !"ADMIN".equals(currentUser.getRole().getRole())) {
+                return new ApiResponse<>(false, "Bạn không có quyền thực hiện chức năng này", null);
+            }
+
+            // Kiểm tra tài khoản đã tồn tại
+            if (accountRepository.existsByUserNameIgnoreCase(accountRegistration.getUsername())) {
+                return new ApiResponse<>(false, "Tài khoản đã tồn tại", null);
+            }
+
+            if (accountRepository.existsByEmailIgnoreCase(accountRegistration.getEmail())) {
+                return new ApiResponse<>(false, "Email đã tồn tại", null);
+            }
+
+            // Tạo account mới
+            Account account = new Account();
+            account.setAccountId(UUID.randomUUID().toString());
+            account.setUserName(accountRegistration.getUsername());
+            account.setEmail(accountRegistration.getEmail());
+            account.setPassword(passwordEncoder.encode(accountRegistration.getPassword()));
+            account.setActive(true); // Admin tạo thì mặc định active
+            account.setCreationDate(LocalDate.now());
+
+            // Set role theo yêu cầu (admin có thể chỉ định role)
+            String roleName = accountRegistration.getRoleName() != null ?
+                    accountRegistration.getRoleName() : "MEMBER";
+
+            Role role = roleRepository.findByRole(roleName)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy role: " + roleName));
+            account.setRole(role);
+
+            Account savedAccount = accountRepository.save(account);
+
+            // Tạo profile
+            Profile profile = new Profile();
+            String profileId = generateProfileId();
+            profile.setProfileId(profileId);
+            profile.setAccount(savedAccount);
+
+            profile.setName(accountRegistration.getName());
+            profile.setPhone(accountRegistration.getPhone());
+
+
+            profile.setGender(accountRegistration.isGender());
+
+            // Set địa chỉ
+            if (accountRegistration.getAddress() != null) {
+                Address address = new Address();
+                address.setCity(accountRegistration.getAddress().getCity());
+                address.setDistrict(accountRegistration.getAddress().getDistrict());
+                address.setWard(accountRegistration.getAddress().getWard());
+                address.setStreet(accountRegistration.getAddress().getStreet());
+                address.setLongitude(accountRegistration.getAddress().getLongitude());
+                address.setLatitude(accountRegistration.getAddress().getLatitude());
+                profile.setAddress(address);
+            }
+
+            profile.setNumberOfBloodDonation(0);
+            profile.setRestDate(LocalDate.now());
+
+            profileRepository.save(profile);
+
+            return new ApiResponse<>(true, "Tạo tài khoản thành công! Role: " + roleName, savedAccount.getAccountId());
+
+        } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new ApiResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
+        }
     }
 
 }

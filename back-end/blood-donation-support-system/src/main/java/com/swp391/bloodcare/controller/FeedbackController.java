@@ -1,9 +1,12 @@
 package com.swp391.bloodcare.controller;
 
+import jakarta.validation.Valid;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import com.swp391.bloodcare.dto.DonorFeedbackDTO;
 import com.swp391.bloodcare.service.FeedbackService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -51,12 +54,24 @@ public class FeedbackController {
     }
 
     @PostMapping("/create/{registrationId}")
-    public ResponseEntity<DonorFeedbackDTO> createFeedback(
+    public ResponseEntity<?> createFeedback(
             @PathVariable String registrationId,
-            @RequestBody DonorFeedbackDTO feedbackDTO) {
+            @Valid @RequestBody DonorFeedbackDTO feedbackDTO,
+            BindingResult result) {
+        if (result.hasErrors()) {
+            List<String> errors = result.getFieldErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toList();
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "failed",
+                    "errors", errors
+            ));
+        }
+
         DonorFeedbackDTO created = feedbackService.createFeedback(registrationId, feedbackDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
+
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboardSummary() {
@@ -66,7 +81,7 @@ public class FeedbackController {
     @PutMapping("/update/{registrationId}")
     public ResponseEntity<DonorFeedbackDTO> updateFeedback(
             @PathVariable String registrationId,
-            @RequestBody DonorFeedbackDTO updatedDTO) {
+            @Valid @RequestBody DonorFeedbackDTO updatedDTO) {
         DonorFeedbackDTO updated = feedbackService.updateFeedbackByRegistrationId(registrationId, updatedDTO);
         return ResponseEntity.ok(updated);
     }

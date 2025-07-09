@@ -47,7 +47,7 @@ public class FeedbackService {
         }
 
         DonorFeedback feedback = toEntity(dto);
-        feedback.setFeedbackID(Optional.ofNullable(dto.getFeedbackID()).orElse(generateFeedbackId()));
+        feedback.setFeedbackId(Optional.ofNullable(dto.getFeedbackId()).orElse(generateFeedbackId()));
         feedback.setDonationRegistration(registration);
 
         return fromEntity(feedbackRepository.save(feedback));
@@ -71,14 +71,19 @@ public class FeedbackService {
 
     @Transactional
     public DonorFeedbackDTO deleteFeedback(String feedbackId) {
-        DonorFeedback existing = feedbackRepository.findDonorFeedbackByFeedbackID(feedbackId)
+        DonorFeedback existing = feedbackRepository.findDonorFeedbackByFeedbackId(feedbackId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phản hồi với ID: " + feedbackId));
+
+        if (existing.getDonationRegistration() != null) {
+            existing.getDonationRegistration().setDonorFeedback(null);
+        }
 
         existing.setDonationRegistration(null);
         feedbackRepository.delete(existing);
 
-        return fromEntity(existing);
+        return DonorFeedbackDTO.fromEntity(existing);
     }
+
 
     @Transactional
     public Map<String, Object> deleteMultipleFeedbacksSafe(List<String> ids) {
@@ -87,7 +92,7 @@ public class FeedbackService {
 
         for (String id : ids) {
             try {
-                DonorFeedback fb = feedbackRepository.findDonorFeedbackByFeedbackID(id)
+                DonorFeedback fb = feedbackRepository.findDonorFeedbackByFeedbackId(id)
                         .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy phản hồi với ID: " + id));
                 feedbackRepository.delete(fb);
                 deleted.add(id);
