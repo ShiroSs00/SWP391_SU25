@@ -18,6 +18,7 @@ public class BloodDonationEventDTO {
     @Size(max = 255, message = "Tên sự kiện không được vượt quá 255 ký tự")
     private String nameOfEvent;
 
+    @PastOrPresent(message = "Ngày tạo không được ở tương lai")
     private Date creationDate;
 
     @NotNull(message = "Ngày bắt đầu không được để trống")
@@ -37,9 +38,13 @@ public class BloodDonationEventDTO {
     @Size(max = 255, message = "Địa điểm không được quá 255 ký tự")
     private String location;
 
-    @NotBlank(message = "Trạng thái không được để trống")
-    private String status;
+    private BloodDonationEvent.Status status;
 
+    @NotNull(message = "Kinh phí không được để trống")
+    @Min(value = 0, message = "Kinh phí dự kiến phải >= 0")
+    private Long expectedCost;
+
+    @Size(max = 50, message = "ID người tạo không được vượt quá 50 ký tự")
     private String accountId;
 
     public static BloodDonationEventDTO toDTO(BloodDonationEvent event) {
@@ -53,6 +58,7 @@ public class BloodDonationEventDTO {
                 .actualVolume(event.getActualVolume())
                 .location(event.getLocation())
                 .status(event.getStatus())
+                .expectedCost(event.getExectedCost())
                 .accountId(event.getAccount() != null ? event.getAccount().getAccountId() : null)
                 .build();
     }

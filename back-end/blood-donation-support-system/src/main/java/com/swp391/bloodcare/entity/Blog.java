@@ -3,6 +3,7 @@ package com.swp391.bloodcare.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import java.util.Date;
@@ -35,6 +36,15 @@ public class Blog {
     @Column(name = "tag_name")
     @Size(max = 100, message = "Tag tối đa 100 ký tự")
     private String tagName;
+
+
+    @Column(name = "image")
+    @Pattern(
+            regexp = "^(http|https)://.*\\.(jpg|jpeg|png|gif)$",
+            message = "Ảnh phải là link hợp lệ và kết thúc bằng .jpg, .jpeg, .png hoặc .gif"
+    )
+    private String img;
+
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)

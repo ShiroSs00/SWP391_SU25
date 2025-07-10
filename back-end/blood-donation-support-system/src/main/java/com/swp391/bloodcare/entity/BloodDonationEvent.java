@@ -21,6 +21,12 @@ import java.util.List;
 @ToString(exclude = {"donationRegistrations"})
 public class BloodDonationEvent {
 
+    public enum Status {
+        UPCOMING,    // Sắp diễn ra
+        ONGOING,     // Đang diễn ra
+        FINISHED     // Đã kết thúc
+    }
+
     @Id
     @Column(name = "event_id")
     @NotBlank(message = "Event ID không được để trống")
@@ -56,9 +62,15 @@ public class BloodDonationEvent {
     @Size(max = 255, message = "Địa điểm không được quá 255 ký tự")
     private String location;
 
-    @Column(name = "status")
-    @NotBlank(message = "Trạng thái không được để trống")
-    private String status;
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "Trạng thái không được để trống")
+    private Status status;
+
+    @NotNull(message = "Kinh phí không được để trống")
+    @Column(name = "exected_cost")
+    @Min(value = 0, message = "Kinh phí thực tế phải >= 0")
+    private Long exectedCost;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id_create")

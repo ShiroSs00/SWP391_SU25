@@ -1,6 +1,7 @@
 package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.AfterDonationBloodDTO;
+import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.service.AfterDonationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,52 +22,43 @@ public class AfterDonationBloodController {
     }
 
     @GetMapping("/getall")
-    public ResponseEntity<List<AfterDonationBloodDTO>> getAll() {
-        return ResponseEntity.ok(afterDonationService.getAll());
+    public ResponseEntity<ApiResponse<List<AfterDonationBloodDTO>>> getAll() {
+        List<AfterDonationBloodDTO> data = afterDonationService.getAll();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy tất cả bản ghi sau hiến thành công", data));
     }
 
     @PostMapping("/create/{healthCheckId}")
-    public ResponseEntity<AfterDonationBloodDTO> create(@PathVariable String healthCheckId,
-                                                        @Valid @RequestBody AfterDonationBloodDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                afterDonationService.create(healthCheckId, dto)
-        );
+    public ResponseEntity<ApiResponse<AfterDonationBloodDTO>> create(
+            @PathVariable String healthCheckId,
+            @Valid @RequestBody AfterDonationBloodDTO dto) {
+        AfterDonationBloodDTO created = afterDonationService.create(healthCheckId, dto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ApiResponse<>(true, "Tạo bản ghi sau hiến thành công", created));
     }
 
     @PutMapping("/update/{idAfterDonation}")
-    public ResponseEntity<AfterDonationBloodDTO> update(@PathVariable String idAfterDonation,
-                                                        @Valid @RequestBody AfterDonationBloodDTO dto) {
-        return ResponseEntity.ok(
-                afterDonationService.updateById(idAfterDonation, dto)
-        );
+    public ResponseEntity<ApiResponse<AfterDonationBloodDTO>> update(
+            @PathVariable String idAfterDonation,
+            @Valid @RequestBody AfterDonationBloodDTO dto) {
+        AfterDonationBloodDTO updated = afterDonationService.updateById(idAfterDonation, dto);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật bản ghi sau hiến thành công", updated));
     }
 
-
-
     @GetMapping("/get-by-healthcheck/{healthCheckId}")
-    public ResponseEntity<AfterDonationBloodDTO> getByHealthCheck(@PathVariable String healthCheckId) {
-        return ResponseEntity.ok(
-                afterDonationService.getByHealthCheckId(healthCheckId)
-        );
+    public ResponseEntity<ApiResponse<AfterDonationBloodDTO>> getByHealthCheck(@PathVariable String healthCheckId) {
+        AfterDonationBloodDTO result = afterDonationService.getByHealthCheckId(healthCheckId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy bản ghi theo kiểm tra sức khỏe thành công", result));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Map<String, Object>> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<AfterDonationBloodDTO>> delete(@PathVariable String id) {
         AfterDonationBloodDTO deleted = afterDonationService.delete(id);
-        return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "message", "Đã xóa bản ghi sau hiến",
-                "data", deleted
-        ));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Đã xóa bản ghi sau hiến", deleted));
     }
 
     @DeleteMapping("/delete-multiple")
-    public ResponseEntity<Map<String, Object>> deleteMultiple(@RequestBody List<String> ids) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> deleteMultiple(@RequestBody List<String> ids) {
         Map<String, Object> result = afterDonationService.deleteMultiple(ids);
-        return ResponseEntity.ok(Map.of(
-                "status", "partial-success",
-                "message", "Đã xử lý danh sách xóa",
-                "data", result
-        ));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Đã xử lý danh sách xóa", result));
     }
 }

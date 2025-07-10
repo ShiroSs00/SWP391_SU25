@@ -10,11 +10,11 @@ import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.HealthCheckRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 import static com.swp391.bloodcare.dto.AfterDonationBloodDTO.toDTO;
@@ -24,20 +24,15 @@ public class AfterDonationService {
     private final AfterDonationRepository afterRepo;
     private final HealthCheckRepository healthCheckRepo;
     private final BloodRepository bloodRepo;
-
     private final BloodDonationHistoryService bloodDonationHistoryService;
+    private final ProfileRepository profileRepo;
 
-    private final ProfileService profileService;
-
-    @Autowired
-    private ProfileRepository profileRepo;
-
-    public AfterDonationService(AfterDonationRepository afterRepo, HealthCheckRepository healthCheckRepo, BloodRepository bloodRepo, BloodDonationHistoryService bloodDonationHistoryService, ProfileService profileService) {
+    public AfterDonationService(AfterDonationRepository afterRepo, HealthCheckRepository healthCheckRepo, BloodRepository bloodRepo, BloodDonationHistoryService bloodDonationHistoryService, ProfileRepository profileRepo) {
         this.afterRepo = afterRepo;
         this.healthCheckRepo = healthCheckRepo;
         this.bloodRepo = bloodRepo;
         this.bloodDonationHistoryService = bloodDonationHistoryService;
-        this.profileService = profileService;
+        this.profileRepo = profileRepo;
     }
 
     public List<AfterDonationBloodDTO> getAll() {
@@ -88,20 +83,16 @@ public class AfterDonationService {
             existing.setStatus(dto.getStatus());
         if (dto.getNote() != null && !dto.getNote().isBlank())
             existing.setNote(dto.getNote());
-        //update trạng thái cho lịch sử
         bloodDonationHistoryService.updateFromAfterDonation(existing);
 
-//        //update tăng cho số lần hiến máu && set ngày nghỉ
-//        if("Đã hoàn thành".equalsIgnoreCase(dto.getStatus())){
-//            String accountId = existing.getHealthCheck().getDonationRegistration().getAccount().getAccountId();
-//            //tăng số lần
-//            profileService.increaseBloodDonationCount(accountId);
-//
-//            if(existing.getBlood() != null){
-//                //set ngày nghỉ
-//                profileService.updateRestDateBasedOnDonation(accountId,componentName);
-//            }
-//        }
+        Profile profile = existing.getHealthCheck().getDonationRegistration().getAccount().getProfile();
+
+        if("PASS".equalsIgnoreCase(dto.getStatus().name())){
+            profile.setNumberOfBloodDonation(profile.getNumberOfBloodDonation() + 1);
+            if(existing.getBlood() != null){
+                profile.setRestDate(LocalDate.now().plusDays(84));
+            }
+        }
 
         return toDTO(afterRepo.save(existing));
     }

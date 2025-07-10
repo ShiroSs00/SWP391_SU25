@@ -35,7 +35,7 @@ public class BloodDonationHistoryService {
             history.setDonationRegistration(donationRegistration);
         }
 
-        history.setStatus(mapRegistrationStatusToHistoryStatus(donationRegistration.getStatus()));
+        history.setStatus(mapRegistrationStatusToHistoryStatus(donationRegistration.getStatus().name()));
         return repository.save(history);
     }
 
@@ -145,7 +145,7 @@ public class BloodDonationHistoryService {
             AfterDonationBlood after = healthCheck.getAfterDonationBlood();
             if (after != null && after.getBlood() != null) {
                 dto.setBloodCode(after.getBlood().getBloodCode());
-                dto.setAfterDonationBlood(after.getStatus());
+                dto.setAfterDonationBlood(after.getStatus().name());
             }
         }
 
@@ -181,7 +181,7 @@ public class BloodDonationHistoryService {
     }
 
     private String mapAfterDonationStatusToHistoryStatus(AfterDonationBlood afterDonation) {
-        String status = afterDonation.getStatus();
+        String status = afterDonation.getStatus().name();
         Boolean isUsable = afterDonation.getIsBloodUsable();
 
         if (status == null) return "DONATION_UNDER_REVIEW";

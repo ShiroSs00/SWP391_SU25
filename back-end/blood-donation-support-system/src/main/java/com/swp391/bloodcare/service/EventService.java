@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,13 +51,13 @@ public class EventService {
                 .nameOfEvent(dto.getNameOfEvent())
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
+                .exectedCost(dto.getExpectedCost())
                 .expectedBloodVolume(dto.getExpectedBloodVolume())
                 .actualVolume(0L) // Gán mặc định, không lấy từ DTO
                 .location(dto.getLocation())
-                .status(dto.getStatus())
                 .account(account)
                 .build();
-
+        updateEventStatus(event);
         return toDTO(eventRepository.save(event));
     }
 
@@ -71,14 +73,69 @@ public class EventService {
 
 
         setEntityFromDTO(existing, dto);
+        updateEventStatus(existing);
         return toDTO(eventRepository.save(existing));
     }
 
+    @Transactional
     public void deleteEvent(String id) {
         BloodDonationEvent event = eventRepository.findByEventId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + id));
+        event.getDonationRegistrations().size();
+        event.getDonationRegistrations().clear();
+        eventRepository.save(event);
         eventRepository.delete(event);
     }
+
+    @Transactional
+    public int autoUpdateEventStatuses() {
+        Date now = new Date();
+        List<BloodDonationEvent> allEvents = eventRepository.findAll();
+
+        int updated = 0;
+
+        for (BloodDonationEvent event : allEvents) {
+            BloodDonationEvent.Status oldStatus = event.getStatus();
+            BloodDonationEvent.Status newStatus;
+
+            if (now.before(event.getStartDate())) {
+                newStatus = BloodDonationEvent.Status.UPCOMING;
+            } else if (now.after(event.getEndDate())) {
+                newStatus = BloodDonationEvent.Status.FINISHED;
+            } else {
+                newStatus = BloodDonationEvent.Status.ONGOING;
+            }
+
+            if (!newStatus.equals(oldStatus)) {
+                event.setStatus(newStatus);
+                updated++;
+            }
+        }
+
+        eventRepository.saveAll(allEvents);
+        return updated;
+    }
+
+
+    public void updateEventStatus(BloodDonationEvent event) {
+        LocalDate today = LocalDate.now();
+
+        LocalDate start = event.getStartDate().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+        LocalDate end = event.getEndDate().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        if (today.isBefore(start)) {
+            event.setStatus(BloodDonationEvent.Status.UPCOMING);
+        } else if ((today.isEqual(start) || today.isAfter(start)) && today.isBefore(end.plusDays(1))) {
+            event.setStatus(BloodDonationEvent.Status.ONGOING);
+        } else {
+            event.setStatus(BloodDonationEvent.Status.FINISHED);
+        }
+    }
+
 
     public List<BloodDonationEventDTO> getAllEvents() {
         return eventRepository.findAll()
@@ -119,6 +176,9 @@ public class EventService {
             try {
                 BloodDonationEvent event = eventRepository.findByEventId(id)
                         .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + id));
+                event.getDonationRegistrations().size();
+                event.getDonationRegistrations().clear();
+                eventRepository.save(event);
                 eventRepository.delete(event);
                 deleted.add(id);
             } catch (EntityNotFoundException e) {
@@ -134,14 +194,16 @@ public class EventService {
         return result;
     }
 
+
+
     private void setEntityFromDTO(BloodDonationEvent event, BloodDonationEventDTO dto) {
         if (dto.getNameOfEvent() != null) event.setNameOfEvent(dto.getNameOfEvent());
         if (dto.getStartDate() != null) event.setStartDate(dto.getStartDate());
         if (dto.getEndDate() != null) event.setEndDate(dto.getEndDate());
         if (dto.getExpectedBloodVolume() != null) event.setExpectedBloodVolume(dto.getExpectedBloodVolume());
         if (dto.getLocation() != null) event.setLocation(dto.getLocation());
-        if (dto.getStatus() != null) event.setStatus(dto.getStatus());
         if (dto.getActualVolume() != null) event.setActualVolume(dto.getActualVolume());
+        if(dto.getExpectedCost() != null) event.setExectedCost(dto.getExpectedCost());
 
         if (dto.getAccountId() != null && !dto.getAccountId().isBlank()) {
             Account account = accountRepository.findById(dto.getAccountId())

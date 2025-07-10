@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface FeedbackRepository extends JpaRepository<DonorFeedback, Long> {
     Optional<DonorFeedback> findByDonationRegistrationRegistrationId(String donationRegistrationRegistrationId);
 
-    Optional<DonorFeedback> findDonorFeedbackByFeedbackID(String feedbackID);
+    Optional<DonorFeedback> findDonorFeedbackByFeedbackId(String feedbackID);
 
     List<DonorFeedback> findByDonationRegistration_Event_EventId(String donationRegistrationEventEventId);
 }

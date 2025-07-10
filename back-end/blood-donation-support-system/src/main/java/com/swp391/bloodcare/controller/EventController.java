@@ -1,11 +1,13 @@
 package com.swp391.bloodcare.controller;
 
+import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.BloodDonationEventDTO;
 import com.swp391.bloodcare.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -23,58 +25,75 @@ public class EventController {
     private final EventService eventService;
 
     @PostMapping("/create")
-    public ResponseEntity<?> create(@Valid @RequestBody BloodDonationEventDTO dto, BindingResult bindingResult) {
+    public ResponseEntity<ApiResponse<BloodDonationEventDTO>> create(@Valid @RequestBody BloodDonationEventDTO dto,
+                                                                     BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(getValidationErrors(bindingResult));
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>(false, "Dữ liệu không hợp lệ", null, getValidationErrors(bindingResult))
+            );
         }
 
         String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.ok(eventService.createEvent(dto, accountId));
+        BloodDonationEventDTO created = eventService.createEvent(dto, accountId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Tạo sự kiện thành công", created));
+    }
+
+    @Scheduled(cron = "0 00 0 * * ?", zone = "Asia/Ho_Chi_Minh")
+    public void runEventStatusUpdate() {
+        int count = eventService.autoUpdateEventStatuses();
+        System.out.println("🔁 Cập nhật trạng thái " + count + " sự kiện máu theo ngày hiện tại.");
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> update(@PathVariable String id,
-                                    @Valid @RequestBody BloodDonationEventDTO dto,
-                                    BindingResult bindingResult) {
+    public ResponseEntity<ApiResponse<BloodDonationEventDTO>> update(@PathVariable String id,
+                                                                     @Valid @RequestBody BloodDonationEventDTO dto,
+                                                                     BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(getValidationErrors(bindingResult));
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>(false, "Dữ liệu không hợp lệ", null, getValidationErrors(bindingResult))
+            );
         }
 
-        return ResponseEntity.ok(eventService.updateEvent(id, dto));
+        BloodDonationEventDTO updated = eventService.updateEvent(id, dto);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật sự kiện thành công", updated));
     }
 
     @GetMapping("/getall")
-    public ResponseEntity<List<BloodDonationEventDTO>> getAll() {
-        return ResponseEntity.ok(eventService.getAllEvents());
+    public ResponseEntity<ApiResponse<List<BloodDonationEventDTO>>> getAll() {
+        List<BloodDonationEventDTO> list = eventService.getAllEvents();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy danh sách sự kiện thành công", list));
     }
 
     @GetMapping("/get-by-id/{id}")
-    public ResponseEntity<BloodDonationEventDTO> getById(@PathVariable String id) {
-        return ResponseEntity.ok(eventService.getEventById(id));
+    public ResponseEntity<ApiResponse<BloodDonationEventDTO>> getById(@PathVariable String id) {
+        BloodDonationEventDTO event = eventService.getEventById(id);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy chi tiết sự kiện thành công", event));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         eventService.deleteEvent(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Xóa sự kiện thành công", null));
     }
 
     @DeleteMapping("/delete-multiple")
-    public ResponseEntity<Map<String, Object>> deleteMultiple(@RequestBody List<String> ids) {
-        return ResponseEntity.ok(eventService.deleteMultipleEventsSafe(ids));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> deleteMultiple(@RequestBody List<String> ids) {
+        Map<String, Object> result = eventService.deleteMultipleEventsSafe(ids);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Xóa nhiều sự kiện thành công", result));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<BloodDonationEventDTO>> search(@RequestParam("keyword") String keyword) {
-        return ResponseEntity.ok(eventService.searchByName(keyword));
+    public ResponseEntity<ApiResponse<List<BloodDonationEventDTO>>> search(@RequestParam("keyword") String keyword) {
+        List<BloodDonationEventDTO> list = eventService.searchByName(keyword);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Tìm kiếm sự kiện thành công", list));
     }
 
     @GetMapping("/by-end-date-range")
-    public ResponseEntity<List<BloodDonationEventDTO>> getByEndDateRange(
+    public ResponseEntity<ApiResponse<List<BloodDonationEventDTO>>> getByEndDateRange(
             @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date from,
-            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date to
-    ) {
-        return ResponseEntity.ok(eventService.getByEndDateRange(from, to));
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date to) {
+        List<BloodDonationEventDTO> list = eventService.getByEndDateRange(from, to);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy sự kiện theo khoảng ngày kết thúc", list));
     }
 
     private Map<String, String> getValidationErrors(BindingResult bindingResult) {

@@ -2,6 +2,7 @@ package com.swp391.bloodcare.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp391.bloodcare.entity.BloodBag;
+import com.swp391.bloodcare.entity.Component;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -22,17 +23,17 @@ public class BloodBagDTO {
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date collectedDate;
 
-    @NotNull(message = "Vui lòng nhập hạn sử dụng")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date expirationDate;
 
     @NotNull(message = "Trạng thái túi máu không được để trống")
-    private String status;
+    private BloodBag.Status status;
 
     @NotNull(message = "Túi máu phải được gắn với thông tin sau hiến máu")
     private String afterDonationId;
 
-    private String waitingListId;
+    @NotNull(message = "Loại túi máu không được để trống")
+    private String componentId;
 
     public static BloodBagDTO fromEntity(BloodBag bag) {
         return BloodBagDTO.builder()
@@ -41,19 +42,23 @@ public class BloodBagDTO {
                 .collectedDate(bag.getCollectedDate())
                 .expirationDate(bag.getExpirationDate())
                 .status(bag.getStatus())
-                .afterDonationId(
-                        bag.getAfterDonationBlood() != null ? bag.getAfterDonationBlood().getIdAfterDonation() : null
-                )
+                .componentId(bag.getComponent() != null ? bag.getComponent().getComponentId() : null)
+                .afterDonationId(bag.getAfterDonationBlood() != null
+                        ? bag.getAfterDonationBlood().getIdAfterDonation()
+                        : null)
                 .build();
     }
 
-    public static BloodBag toEntity(BloodBagDTO dto) {
+    public static BloodBag toEntity(BloodBagDTO dto, Component component) {
         return BloodBag.builder()
                 .bagId(dto.getBagId())
                 .volume(dto.getVolume())
                 .collectedDate(dto.getCollectedDate())
                 .expirationDate(dto.getExpirationDate())
                 .status(dto.getStatus())
+                .component(component)
                 .build();
     }
+
 }
+

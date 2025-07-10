@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DonorFeedbackDTO {
 
-    private String feedbackID;
+    private String feedbackId;
 
     @NotNull(message = "Đánh giá quy trình không được để trống")
     @Min(value = 1, message = "Quy trình phải từ 1 đến 5")
@@ -43,7 +43,7 @@ public class DonorFeedbackDTO {
 
     public static DonorFeedbackDTO fromEntity(DonorFeedback fb) {
         return new DonorFeedbackDTO(
-                fb.getFeedbackID(),
+                fb.getFeedbackId(),
                 fb.getProcess(),
                 fb.getBloodTest(),
                 fb.getPostDonationCare(),
@@ -55,7 +55,7 @@ public class DonorFeedbackDTO {
 
     public static DonorFeedback toEntity(DonorFeedbackDTO dto) {
         DonorFeedback fb = new DonorFeedback();
-        fb.setFeedbackID(dto.getFeedbackID());
+        fb.setFeedbackId(dto.getFeedbackId());
         fb.setProcess(dto.getProcess());
         fb.setBloodTest(dto.getBloodTest());
         fb.setPostDonationCare(dto.getPostDonationCare());

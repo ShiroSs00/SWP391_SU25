@@ -13,10 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-
+import java.util.List;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
 @org.springframework.stereotype.Component
@@ -65,9 +66,9 @@ public class DataInitializer {
             Role role = roleRepository.findById("ADMIN").orElseThrow();
             admin.setRole(role);
             accountRepository.save(admin);
-            System.out.println("✅ Admin account created: admin / 12345678");
+            System.out.println("Admin account created: admin / 12345678");
         } else {
-            System.out.println("ℹ️ Admin account already exists.");
+            System.out.println("Admin account already exists.");
         }
 
         // Tạo tài khoản staff nếu chưa tồn tại
@@ -86,9 +87,9 @@ public class DataInitializer {
             Role role = roleRepository.findById("STAFF").orElseThrow();
             staff.setRole(role);
             accountRepository.save(staff);
-            System.out.println("✅ Staff account created: staff / 12345678");
+            System.out.println("Staff account created: staff / 12345678");
         } else {
-            System.out.println("ℹ️ Staff account already exists.");
+            System.out.println("Staff account already exists.");
         }
         // Tạo role MEMBER nếu chưa có
         if (!roleRepository.existsById("MEMBER")) {
@@ -114,26 +115,54 @@ public class DataInitializer {
             Role role = roleRepository.findById("MEMBER").orElseThrow();
             member.setRole(role);
             accountRepository.save(member);
-            System.out.println("✅ Member account created: member / 12345678");
+            System.out.println("Member account created: member / 12345678");
         } else {
-            System.out.println("ℹ️ Member account already exists.");
+            System.out.println("Member account already exists.");
         }
 
-        // === Khởi tạo các thành phần máu (Component) ===
-        String[] components = {"101","102","103","104"};
-        String[] description = {"Toàn phần", "Hồng cầu", "Tiểu cầu", "Huyết tương"};
+// === Khởi tạo các thành phần máu (Component) mặc định ===
+        String[] ids = {"101", "102", "103", "104"};
+        String[] types = {"Toàn phần", "Hồng cầu", "Tiểu cầu", "Huyết tương"};
+        int[] shelfLifeDays = {35, 42, 5, 365}; // hạn sử dụng tương ứng
 
-        for(int i = 0; i < components.length; i++) {
-            String name = components[i];
-            if(!componentRepository.existsById(name)) {
-                Component component = new Component();
-                component.setComponent(name);
-                component.setDescription(description[i]);
+        for (int i = 0; i < ids.length; i++) {
+            String id = ids[i];
+            if (!componentRepository.existsById(id)) {
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.DAY_OF_YEAR, shelfLifeDays[i]);
+                Date expirationDate = cal.getTime();
+
+                Component component = Component.builder()
+                        .componentId(id)
+                        .type(types[i])
+                        .description("Thành phần máu: " + types[i])
+                        .expirationDate(expirationDate)
+                        .build();
+
                 componentRepository.save(component);
             }
         }
 
+
         // === Khởi tạo các loại máu ===
+        List<String> rareBloodTypes = List.of("AB_NEGATIVE", "B_NEGATIVE", "A_NEGATIVE", "O_NEGATIVE");
+
+        for (Blood.BloodType type : Blood.BloodType.values()) {
+            for (Blood.RhFactor rh : Blood.RhFactor.values()) {
+                String code = type.name() + "_" + rh.name(); // Ví dụ: A_POSITIVE
+                if (!bloodRepository.existsById(code)) {
+                    Blood blood = new Blood();
+                    blood.setBloodCode(code);
+                    blood.setBloodType(type);
+                    blood.setRh(rh);
+                    blood.setIsRareBlood(rareBloodTypes.contains(code));
+                    blood.setQuantity(0);
+                    blood.setBloodMatch("");
+
+                    bloodRepository.save(blood);
+                }
+            }
+        }
 
     }
 }

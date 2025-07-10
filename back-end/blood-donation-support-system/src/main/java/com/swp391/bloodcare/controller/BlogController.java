@@ -1,81 +1,79 @@
 package com.swp391.bloodcare.controller;
 
+import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.BlogDTO;
 import com.swp391.bloodcare.service.BlogService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
-
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/blog")
-
+@RequiredArgsConstructor
 public class BlogController {
+
     private final BlogService blogService;
 
-    public BlogController(BlogService blogService) {
-        this.blogService = blogService;
-    }
-
     @GetMapping("/latest")
-    public ResponseEntity<List<BlogDTO>> getLatestBlogs() {
+    public ResponseEntity<ApiResponse<List<BlogDTO>>> getLatestBlogs() {
         List<BlogDTO> latestBlogs = blogService.getLatestBlogs();
-        return ResponseEntity.ok(latestBlogs);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy blog mới nhất thành công", latestBlogs));
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createBlog(@Valid @RequestBody BlogDTO dto, BindingResult bindingResult) {
+    public ResponseEntity<ApiResponse<?>> createBlog(@Valid @RequestBody BlogDTO dto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            List<String> errors = bindingResult.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .toList();
-            return ResponseEntity.badRequest().body(Map.of("errors", errors));
+            Map<String, String> errors = bindingResult.getFieldErrors().stream()
+                    .collect(Collectors.toMap(
+                            fieldError -> fieldError.getField(),
+                            DefaultMessageSourceResolvable::getDefaultMessage,
+                            (e1, e2) -> e1 // nếu trùng field, giữ lỗi đầu tiên
+                    ));
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>(false, "Dữ liệu không hợp lệ", null, errors)
+            );
         }
+
         String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.status(201).body(blogService.createBlogByUserName(dto, accountId));
+        BlogDTO created = blogService.createBlogByUserName(dto, accountId);
+        return ResponseEntity.status(201).body(new ApiResponse<>(true, "Tạo blog thành công", created));
     }
 
+    @GetMapping("/getall")
+    public ResponseEntity<ApiResponse<List<BlogDTO>>> getAll() {
+        List<BlogDTO> allBlogs = blogService.getAllBlogs();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy danh sách blog thành công", allBlogs));
+    }
 
+    @GetMapping("/getbyid/{id}")
+    public ResponseEntity<ApiResponse<BlogDTO>> getById(@PathVariable String id) {
+        BlogDTO blog = blogService.getBlogById(id);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy blog thành công", blog));
+    }
 
-
-    @GetMapping("/get_all")
-        public ResponseEntity<List<BlogDTO>> getAll() {
-            return ResponseEntity.ok(blogService.getAllBlogs());
-        }
-
-        @GetMapping("/get_by_id/{id}")
-        public ResponseEntity<BlogDTO> getById(@PathVariable String id) {
-            return ResponseEntity.ok(blogService.getBlogById(id));
-        }
-
-        @PutMapping("/update/{id}")
-        public ResponseEntity<BlogDTO> update(@PathVariable String id, @RequestBody BlogDTO dto) {
-            return ResponseEntity.ok(blogService.updateBlog(id, dto));
-        }
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<BlogDTO>> update(@PathVariable String id, @RequestBody BlogDTO dto) {
+        BlogDTO updated = blogService.updateBlog(id, dto);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật blog thành công", updated));
+    }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> delete(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<BlogDTO>> delete(@PathVariable String id) {
         BlogDTO deleted = blogService.deleteBlog(id);
-        return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "message", "✅ Đã xóa blog thành công",
-                "data", deleted
-        ));
+        return ResponseEntity.ok(new ApiResponse<>(true, "✅ Đã xóa blog thành công", deleted));
     }
 
-
     @DeleteMapping("/delete-multiple")
-    public ResponseEntity<?> deleteMultiple(@RequestBody List<String> ids) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> deleteMultiple(@RequestBody List<String> ids) {
         Map<String, Object> result = blogService.deleteMultipleBlogsSafe(ids);
-        return ResponseEntity.ok(Map.of(
-                "status", "partial-success",
-                "message", "Đã xử lý xóa danh sách blog",
-                "data", result
-        ));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Đã xử lý xóa danh sách blog", result));
     }
 }
