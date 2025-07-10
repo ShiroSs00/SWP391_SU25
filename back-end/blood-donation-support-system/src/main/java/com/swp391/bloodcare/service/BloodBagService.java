@@ -1,10 +1,8 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.BloodBagDTO;
-import com.swp391.bloodcare.entity.AfterDonationBlood;
 import com.swp391.bloodcare.entity.BloodBag;
 import com.swp391.bloodcare.entity.Component;
-import com.swp391.bloodcare.repository.AfterDonationRepository;
 import com.swp391.bloodcare.repository.BloodBagRepository;
 import com.swp391.bloodcare.repository.ComponentRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,7 +20,6 @@ public class BloodBagService {
 
     private final BloodBagRepository bloodBagRepository;
 
-    private final AfterDonationRepository afterDonationRepository;
 
     private final ComponentRepository componentRepository;
 
@@ -43,15 +40,19 @@ public class BloodBagService {
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : BloodBag.Status.VALID);
         entity.setComponent(component);
 
-        if (dto.getAfterDonationId() != null) {
-            AfterDonationBlood afterDonation = afterDonationRepository.findAfterDonationBloodByIdAfterDonation(dto.getAfterDonationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy dữ liệu sau hiến"));
-            entity.setAfterDonationBlood(afterDonation);
-            afterDonation.getBloodBag().add(entity);
-        }
-
         BloodBag saved = bloodBagRepository.save(entity);
         return BloodBagDTO.fromEntity(saved);
+    }
+
+    @Transactional
+    public int autoUpdateExpiredStatus() {
+        List<BloodBag> expiredBags = bloodBagRepository.findByExpirationDateBeforeAndStatus(
+                new Date(), BloodBag.Status.VALID);
+        for (BloodBag bag : expiredBags) {
+            bag.setStatus(BloodBag.Status.EXPIRED);
+        }
+        bloodBagRepository.saveAll(expiredBags);
+        return expiredBags.size();
     }
 
 
@@ -108,11 +109,6 @@ public class BloodBagService {
         bloodBagRepository.deleteBloodBagBybagId(bagId);
     }
 
-    public BloodBagDTO findByAfterDonationId(String afterDonationId) {
-        BloodBag bag = bloodBagRepository.findByAfterDonationBlood_IdAfterDonation(afterDonationId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy túi máu từ AfterDonation ID"));
-        return BloodBagDTO.fromEntity(bag);
-    }
 
     public List<BloodBagDTO> getAllBloodBags() {
         return bloodBagRepository.findAll()
@@ -121,8 +117,8 @@ public class BloodBagService {
                 .collect(Collectors.toList());
     }
 
-    // ===================== PRIVATE ======================
-    private static String generateBloodBagId() {
+
+    public static String generateBloodBagId() {
         String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         int randomNum = new Random().nextInt(900) + 100; // 100–999
         return "BG-" + timestamp + "-" + randomNum;

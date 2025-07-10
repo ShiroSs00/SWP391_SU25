@@ -15,7 +15,6 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"afterDonationBlood"})
 public class BloodBag {
 
     @Id
@@ -46,14 +45,16 @@ public class BloodBag {
     private Status status;
 
     @NotNull(message = "Loại túi máu không được để trống")
-    @OneToOne(mappedBy = "bloodBag", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @ManyToOne( fetch = FetchType.LAZY)
+    @JoinColumn(name = "component_id")
     private Component component;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "after_donation_id")
-    @NotNull(message = "Túi máu phải gắn với một đơn sau hiến")
-    private AfterDonationBlood afterDonationBlood;
+    @JoinColumn(name = "blood_code")
+    private Blood blood;
+
+
+
 
     public enum Status {
         VALID,      // CÒN HẠN

@@ -6,8 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "after_donation_blood")
 @Getter
@@ -22,7 +20,7 @@ public class AfterDonationBlood {
         PENDING,    // Đang chờ xét nghiệm
         PASSED,     // Máu đạt yêu cầu
         FAILED,     // Không đạt (do chất lượng)
-        REJECTED    // Loại bỏ (do có bệnh truyền nhiễm)
+        SEPARATED    // Đã tách máu
     }
 
     @Id
@@ -53,9 +51,7 @@ public class AfterDonationBlood {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blood_code")
+    @NotNull(message = "Nhóm máu không được để trống")
     private Blood blood;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bag_id")
-    private List<BloodBag> bloodBag;
 }

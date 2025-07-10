@@ -1,23 +1,20 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.AfterDonationBloodDTO;
-import com.swp391.bloodcare.entity.AfterDonationBlood;
-import com.swp391.bloodcare.entity.Blood;
-import com.swp391.bloodcare.entity.HealthCheck;
-import com.swp391.bloodcare.entity.Profile;
-import com.swp391.bloodcare.repository.AfterDonationRepository;
-import com.swp391.bloodcare.repository.BloodRepository;
-import com.swp391.bloodcare.repository.HealthCheckRepository;
-import com.swp391.bloodcare.repository.ProfileRepository;
+import com.swp391.bloodcare.entity.*;
+import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
-
 import static com.swp391.bloodcare.dto.AfterDonationBloodDTO.toDTO;
+import static com.swp391.bloodcare.service.BloodBagService.generateBloodBagId;
 
 @Service
 public class AfterDonationService {
@@ -26,15 +23,25 @@ public class AfterDonationService {
     private final BloodRepository bloodRepo;
     private final BloodDonationHistoryService bloodDonationHistoryService;
     private final ProfileRepository profileRepo;
+    private final BloodBagRepository bloodBagRepo;
+    private final ComponentRepository componentRepository;
 
-    public AfterDonationService(AfterDonationRepository afterRepo, HealthCheckRepository healthCheckRepo, BloodRepository bloodRepo, BloodDonationHistoryService bloodDonationHistoryService, ProfileRepository profileRepo) {
+    public AfterDonationService(
+            AfterDonationRepository afterRepo,
+            HealthCheckRepository healthCheckRepo,
+            BloodRepository bloodRepo,
+            BloodDonationHistoryService bloodDonationHistoryService,
+            ProfileRepository profileRepo,
+            BloodBagRepository bloodBagRepo,
+            ComponentRepository componentRepository) {
         this.afterRepo = afterRepo;
         this.healthCheckRepo = healthCheckRepo;
         this.bloodRepo = bloodRepo;
         this.bloodDonationHistoryService = bloodDonationHistoryService;
         this.profileRepo = profileRepo;
+        this.bloodBagRepo = bloodBagRepo;
+        this.componentRepository = componentRepository;
     }
-
     public List<AfterDonationBloodDTO> getAll() {
         return afterRepo.findAll().stream().map(AfterDonationBloodDTO::toDTO).toList();
     }
@@ -49,14 +56,14 @@ public class AfterDonationService {
         }
 
         AfterDonationBlood entity = AfterDonationBloodDTO.toEntity(dto);
-        entity.setIdAfterDonation(generateId());
+        entity.setIdAfterDonation(generateAfterDonationId());
         entity.setHealthCheck(healthCheck);
+        entity.setStatus(AfterDonationBlood.Status.PENDING);
 
         if (dto.getBloodId() != null) {
             Blood blood = bloodRepo.findByBloodCode(dto.getBloodId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Blood"));
 
-            //set blood code
             Profile profile = healthCheck.getDonationRegistration().getAccount().getProfile();
             if(profile.getBloodCode() == null){
                 profile.setBloodCode(blood);
@@ -64,11 +71,131 @@ public class AfterDonationService {
             }
 
             entity.setBlood(blood);
-
         }
 
         return toDTO(afterRepo.save(entity));
     }
+
+    @Transactional
+    public Map<String, Object> separateManually(List<String> afterDonationIds) {
+        Map<String, String> result = new HashMap<>();
+
+        for (String id : afterDonationIds) {
+            AfterDonationBlood after = afterRepo.findAfterDonationBloodByIdAfterDonation(id)
+                    .orElse(null);
+
+            if (after == null) {
+                result.put(id, "Không tìm thấy đơn máu");
+                continue;
+            }
+
+            if (after.getStatus() == AfterDonationBlood.Status.SEPARATED) {
+                result.put(id, "Đã được tách trước đó");
+                continue;
+            }
+
+            if (!Boolean.TRUE.equals(after.getIsBloodUsable())) {
+                result.put(id, "Máu không đạt chất lượng");
+                continue;
+            }
+
+            LocalDateTime createdAt = after.getHealthCheck()
+                    .getDonationRegistration()
+                    .getDateCreated()
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+
+            // ❌ Nếu quá 24h thì không cho tách nữa
+            if (Duration.between(createdAt, LocalDateTime.now()).toHours() > 24) {
+                result.put(id, "Đã quá thời gian tách, máu sẽ được xử lý tự động");
+                continue;
+            }
+
+            List<BloodBag> bags = createSeparatedBags(after);
+            bloodBagRepo.saveAll(bags);
+            after.setStatus(AfterDonationBlood.Status.SEPARATED);
+            afterRepo.save(after);
+            result.put(id, "Đã tách thành công thành phần máu");
+        }
+
+        return Map.of("result", result);
+    }
+
+
+
+
+    private String generateAfterDonationId() {
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        int rand = new Random().nextInt(900) + 100;
+        return "AD-" + timestamp + "-" + rand;
+    }
+
+
+    private List<BloodBag> createSeparatedBags(AfterDonationBlood after) {
+        String[][] components = {
+                {"102", "125", "42"},    // Hồng cầu
+                {"103", "60", "5"},      // Tiểu cầu
+                {"104", "65", "365"}     // Huyết tương
+        };
+
+        List<BloodBag> bags = new ArrayList<>();
+        for (String[] c : components) {
+            Component component = componentRepository.findById(c[0]).orElseThrow();
+            int volume = Integer.parseInt(c[1]);
+            int expire = Integer.parseInt(c[2]);
+
+            BloodBag bag = BloodBag.builder()
+                    .bagId(generateBloodBagId())
+                    .blood(after.getBlood())
+                    .volume(BloodBag.Volume.fromInt(volume))
+                    .component(component)
+                    .expirationDate(java.sql.Date.valueOf(LocalDate.now().plusDays(expire)))
+                    .collectedDate(new Date())
+                    .status(BloodBag.Status.VALID)
+                    .build();
+
+            bags.add(bag);
+        }
+
+        return bags;
+    }
+
+
+    @Transactional
+    public void autoSeparateExpired() {
+        List<AfterDonationBlood> afterList = afterRepo.findAll();
+
+        for (AfterDonationBlood after : afterList) {
+            if (after.getStatus() == AfterDonationBlood.Status.SEPARATED) continue;
+            if (!Boolean.TRUE.equals(after.getIsBloodUsable())) continue;
+
+            LocalDateTime createdAt = after.getHealthCheck()
+                    .getDonationRegistration()
+                    .getDateCreated()
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+
+            if (Duration.between(createdAt, LocalDateTime.now()).toHours() > 24) {
+                Component component = componentRepository.findById("101").orElseThrow();
+                BloodBag wholeBag = BloodBag.builder()
+                        .bagId(generateBloodBagId())
+                        .blood(after.getBlood())
+                        .volume(BloodBag.Volume.ML_250)
+                        .component(component)
+                        .expirationDate(java.sql.Date.valueOf(LocalDate.now().plusDays(35)))
+                        .collectedDate(new Date())
+                        .status(BloodBag.Status.VALID)
+                        .build();
+
+                bloodBagRepo.save(wholeBag);
+                after.setStatus(AfterDonationBlood.Status.SEPARATED);
+                afterRepo.save(after);
+            }
+        }
+    }
+
 
     @Transactional
     public AfterDonationBloodDTO updateById(String idAfterDonation, AfterDonationBloodDTO dto) {
@@ -132,9 +259,4 @@ public class AfterDonationService {
         return toDTO(entity);
     }
 
-    private String generateId() {
-        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        int rand = new Random().nextInt(900) + 100;
-        return "AD-" + timestamp + "-" + rand;
-    }
 }

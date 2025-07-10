@@ -38,12 +38,13 @@ public class ComponentController {
 
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Component>>> getAllComponents() {
-        List<Component> components = componentService.getAll();
-        ApiResponse<List<Component>> response = new ApiResponse<>(
-                true, "Components retrieved successfully", components);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public ResponseEntity<ApiResponse<List<ComponentDTO>>> getAllComponents() {
+        List<ComponentDTO> components = componentService.getAll();
+        ApiResponse<List<ComponentDTO>> response = new ApiResponse<>(
+                true, "Lấy danh sách thành phần máu thành công", components);
+        return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Component>> getComponentById(@PathVariable String id) {

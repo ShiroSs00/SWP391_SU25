@@ -29,9 +29,6 @@ public class BloodBagDTO {
     @NotNull(message = "Trạng thái túi máu không được để trống")
     private BloodBag.Status status;
 
-    @NotNull(message = "Túi máu phải được gắn với thông tin sau hiến máu")
-    private String afterDonationId;
-
     @NotNull(message = "Loại túi máu không được để trống")
     private String componentId;
 
@@ -43,9 +40,6 @@ public class BloodBagDTO {
                 .expirationDate(bag.getExpirationDate())
                 .status(bag.getStatus())
                 .componentId(bag.getComponent() != null ? bag.getComponent().getComponentId() : null)
-                .afterDonationId(bag.getAfterDonationBlood() != null
-                        ? bag.getAfterDonationBlood().getIdAfterDonation()
-                        : null)
                 .build();
     }
 

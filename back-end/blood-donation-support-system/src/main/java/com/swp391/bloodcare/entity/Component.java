@@ -19,7 +19,6 @@ public class Component {
     @NotBlank(message = "Mã thành phần không được để trống")
     private String componentId;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     @NotNull(message = "Loại thành phần không được để trống")
     private String type;
@@ -33,8 +32,4 @@ public class Component {
     @Column(name = "description")
     private String description;
 
-    @OneToOne
-    @JoinColumn(name = "bag_id", nullable = false)
-    @NotNull(message = "Thành phần máu phải gắn với túi máu")
-    private BloodBag bloodBag;
 }

@@ -6,6 +6,7 @@ import com.swp391.bloodcare.service.AfterDonationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,16 @@ public class AfterDonationBloodController {
         AfterDonationBloodDTO created = afterDonationService.create(healthCheckId, dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(true, "Tạo bản ghi sau hiến thành công", created));
+    }
+
+    @PostMapping("/manual-separate")
+    public ResponseEntity<?> separateManual(@RequestBody List<String> ids) {
+        return ResponseEntity.ok(afterDonationService.separateManually(ids));
+    }
+
+    @Scheduled(cron = "0 * * * * *")
+    public void autoSeparateExpired() {
+        afterDonationService.autoSeparateExpired();
     }
 
     @PutMapping("/update/{idAfterDonation}")

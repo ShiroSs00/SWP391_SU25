@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -19,12 +20,10 @@ public class BloodBagController {
 
     private final BloodBagService bloodBagService;
 
-    @PostMapping("/create/{afterDonationBloodId}")
+    @PostMapping("/create")
     public ResponseEntity<ApiResponse<BloodBagDTO>> createBloodBag(
-            @Valid @RequestBody BloodBagDTO dto,
-            @PathVariable String afterDonationBloodId) {
+            @Valid @RequestBody BloodBagDTO dto) {
         try {
-            dto.setAfterDonationId(afterDonationBloodId);
             BloodBagDTO created = bloodBagService.createBloodBag(dto);
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     new ApiResponse<>(true, "Tạo túi máu thành công", created)
@@ -38,6 +37,18 @@ public class BloodBagController {
                     new ApiResponse<>(false, "Lỗi khi tạo túi máu: " + e.getMessage(), null)
             );
         }
+    }
+
+    @GetMapping("/auto-update-expired")
+    public String manuallyUpdateExpiredBags() {
+        int updatedCount = bloodBagService.autoUpdateExpiredStatus();
+        return "Đã cập nhật " + updatedCount + " túi máu hết hạn.";
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void scheduledUpdateExpiredBags() {
+        int updatedCount = bloodBagService.autoUpdateExpiredStatus();
+        System.out.println("[AUTO EXPIRE] Đã cập nhật " + updatedCount + " túi máu hết hạn.");
     }
 
     @PutMapping("/update/{bagId}")
@@ -75,19 +86,6 @@ public class BloodBagController {
         }
     }
 
-    @GetMapping("/find-by-afterid/{afterDonationId}")
-    public ResponseEntity<ApiResponse<BloodBagDTO>> findByAfterDonationId(@PathVariable String afterDonationId) {
-        try {
-            BloodBagDTO bag = bloodBagService.findByAfterDonationId(afterDonationId);
-            return ResponseEntity.ok(
-                    new ApiResponse<>(true, "✅ Tìm thấy túi máu theo afterDonationId", bag)
-            );
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    new ApiResponse<>(false, e.getMessage(), null)
-            );
-        }
-    }
 
     @GetMapping("/getall")
     public ResponseEntity<ApiResponse<List<BloodBagDTO>>> getAllBloodBags() {

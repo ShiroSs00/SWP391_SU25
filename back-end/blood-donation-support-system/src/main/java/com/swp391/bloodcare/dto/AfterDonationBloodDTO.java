@@ -1,6 +1,7 @@
 package com.swp391.bloodcare.dto;
 
 import com.swp391.bloodcare.entity.AfterDonationBlood;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,10 @@ public class AfterDonationBloodDTO {
 
     private AfterDonationBlood.Status status;
 
+    @NotBlank(message = "Không tìm được mã đơn kiểm tra sức khỏe ")
     private String healthCheckId;
+
+    @NotNull(message = "Nhóm máu không được để trống")
     private String bloodId;
 
     public static AfterDonationBloodDTO toDTO(AfterDonationBlood entity) {

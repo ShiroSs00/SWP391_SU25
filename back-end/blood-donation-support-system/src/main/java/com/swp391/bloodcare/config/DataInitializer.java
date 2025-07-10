@@ -121,25 +121,28 @@ public class DataInitializer {
         }
 
 // === Khởi tạo các thành phần máu (Component) mặc định ===
-        String[] ids = {"101", "102", "103", "104"};
-        String[] types = {"Toàn phần", "Hồng cầu", "Tiểu cầu", "Huyết tương"};
-        int[] shelfLifeDays = {35, 42, 5, 365}; // hạn sử dụng tương ứng
+        String[] componentIds = {"101", "102", "103", "104"};
+        String[] componentTypes = {"Toàn phần", "Hồng cầu", "Tiểu cầu", "Huyết tương"};
+        int[] shelfLifeInDays = {35, 42, 5, 365}; // Số ngày hạn sử dụng tương ứng
 
-        for (int i = 0; i < ids.length; i++) {
-            String id = ids[i];
+        for (int i = 0; i < componentIds.length; i++) {
+            String id = componentIds[i];
+            String type = componentTypes[i];
+            int daysToExpire = shelfLifeInDays[i];
+
             if (!componentRepository.existsById(id)) {
-                Calendar cal = Calendar.getInstance();
-                cal.add(Calendar.DAY_OF_YEAR, shelfLifeDays[i]);
-                Date expirationDate = cal.getTime();
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.DAY_OF_YEAR, daysToExpire);
+                Date expirationDate = calendar.getTime();
 
-                Component component = Component.builder()
+                Component newComponent = Component.builder()
                         .componentId(id)
-                        .type(types[i])
-                        .description("Thành phần máu: " + types[i])
+                        .type(type)
+                        .description("Thành phần máu: " + type)
                         .expirationDate(expirationDate)
                         .build();
 
-                componentRepository.save(component);
+                componentRepository.save(newComponent);
             }
         }
 
