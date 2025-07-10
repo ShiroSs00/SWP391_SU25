@@ -2,8 +2,9 @@ package com.swp391.bloodcare.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp391.bloodcare.entity.BloodBag;
-import com.swp391.bloodcare.entity.Component;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.*;
 
 import java.util.Date;
@@ -19,6 +20,7 @@ public class BloodBagDTO {
     @NotNull(message = "Vui lòng chọn thể tích túi máu (250ml, 350ml hoặc 450ml)")
     private BloodBag.Volume volume;
 
+    @PastOrPresent(message = "Ngày tách phải nhỏ hơn hoặc bằng ngày hiện tại")
     @NotNull(message = "Vui lòng nhập ngày lấy máu")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date collectedDate;
@@ -26,11 +28,18 @@ public class BloodBagDTO {
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date expirationDate;
 
-    @NotNull(message = "Trạng thái túi máu không được để trống")
     private BloodBag.Status status;
 
     @NotNull(message = "Loại túi máu không được để trống")
     private String componentId;
+
+    @NotNull(message = "Số lượng không được để trống")
+    @Min(value = 1, message = "Phải lấy ít nhất là 1")
+    private int quantity;
+
+    @NotNull(message = "Nhóm máu không được để trống")
+    private String bloodCode;
+
 
     public static BloodBagDTO fromEntity(BloodBag bag) {
         return BloodBagDTO.builder()
@@ -39,20 +48,13 @@ public class BloodBagDTO {
                 .collectedDate(bag.getCollectedDate())
                 .expirationDate(bag.getExpirationDate())
                 .status(bag.getStatus())
+                .quantity(bag.getQuantity())
+                .bloodCode(bag.getBlood().getBloodCode())
                 .componentId(bag.getComponent() != null ? bag.getComponent().getComponentId() : null)
                 .build();
     }
 
-    public static BloodBag toEntity(BloodBagDTO dto, Component component) {
-        return BloodBag.builder()
-                .bagId(dto.getBagId())
-                .volume(dto.getVolume())
-                .collectedDate(dto.getCollectedDate())
-                .expirationDate(dto.getExpirationDate())
-                .status(dto.getStatus())
-                .component(component)
-                .build();
-    }
+
 
 }
 

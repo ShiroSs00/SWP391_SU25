@@ -16,8 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
 @org.springframework.stereotype.Component
@@ -131,20 +129,17 @@ public class DataInitializer {
             int daysToExpire = shelfLifeInDays[i];
 
             if (!componentRepository.existsById(id)) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.DAY_OF_YEAR, daysToExpire);
-                Date expirationDate = calendar.getTime();
-
                 Component newComponent = Component.builder()
                         .componentId(id)
                         .type(type)
                         .description("Thành phần máu: " + type)
-                        .expirationDate(expirationDate)
+                        .expirationDays(daysToExpire)
                         .build();
 
                 componentRepository.save(newComponent);
             }
         }
+
 
 
         // === Khởi tạo các loại máu ===

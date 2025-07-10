@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -19,7 +18,7 @@ public class ComponentDTO {
     private String type;
 
     @Future(message = "Hạn sử dụng phải là một ngày trong tương lai")
-    private Date expirationDate;
+    private Integer expirationDays;
 
     @Size(max = 500, message = "Mô tả không được quá 500 ký tự")
     private String description;

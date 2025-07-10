@@ -1,6 +1,8 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.AfterDonationBloodDTO;
+import com.swp391.bloodcare.dto.BloodBagDTO;
+import com.swp391.bloodcare.dto.request.BloodBagCreateRequest;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,7 +15,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import static com.swp391.bloodcare.dto.AfterDonationBloodDTO.toDTO;
 import static com.swp391.bloodcare.service.BloodBagService.generateBloodBagId;
 
 @Service
@@ -43,19 +44,19 @@ public class AfterDonationService {
         this.componentRepository = componentRepository;
     }
     public List<AfterDonationBloodDTO> getAll() {
-        return afterRepo.findAll().stream().map(AfterDonationBloodDTO::toDTO).toList();
+        return afterRepo.findAll().stream().map(this::toDTO).toList();
     }
 
     @Transactional
-    public AfterDonationBloodDTO create(String healthCheckId, AfterDonationBloodDTO dto) {
-        HealthCheck healthCheck = healthCheckRepo.findByHealthCheckId(healthCheckId)
+    public AfterDonationBloodDTO create(AfterDonationBloodDTO dto) {
+        HealthCheck healthCheck = healthCheckRepo.findByHealthCheckId(dto.getHealthCheckId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy HealthCheck"));
 
-        if (afterRepo.findByHealthCheck_HealthCheckId(healthCheckId).isPresent()) {
+        if (afterRepo.findByHealthCheck_HealthCheckId(dto.getHealthCheckId()).isPresent()) {
             throw new IllegalStateException("Đã tồn tại dữ liệu sau hiến cho HealthCheck này");
         }
 
-        AfterDonationBlood entity = AfterDonationBloodDTO.toEntity(dto);
+        AfterDonationBlood entity = toEntity(dto);
         entity.setIdAfterDonation(generateAfterDonationId());
         entity.setHealthCheck(healthCheck);
         entity.setStatus(AfterDonationBlood.Status.PENDING);
@@ -77,50 +78,79 @@ public class AfterDonationService {
     }
 
     @Transactional
-    public Map<String, Object> separateManually(List<String> afterDonationIds) {
+    public Map<String, Object> separateManually(BloodBagCreateRequest request) {
         Map<String, String> result = new HashMap<>();
 
-        for (String id : afterDonationIds) {
+        // Kiểm tra các đơn máu
+        for (String id : request.getAfterDonationIds()) {
             AfterDonationBlood after = afterRepo.findAfterDonationBloodByIdAfterDonation(id)
-                    .orElse(null);
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + id));
 
-            if (after == null) {
-                result.put(id, "Không tìm thấy đơn máu");
-                continue;
+            if (after.getStatus() != AfterDonationBlood.Status.PASSED) {
+                throw new IllegalStateException("Đơn máu " + id + " không hợp lệ hoặc đã được tách trước đó ");
             }
-
-            if (after.getStatus() == AfterDonationBlood.Status.SEPARATED) {
-                result.put(id, "Đã được tách trước đó");
-                continue;
-            }
-
-            if (!Boolean.TRUE.equals(after.getIsBloodUsable())) {
-                result.put(id, "Máu không đạt chất lượng");
-                continue;
-            }
-
-            LocalDateTime createdAt = after.getHealthCheck()
-                    .getDonationRegistration()
-                    .getDateCreated()
-                    .toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-
-            // ❌ Nếu quá 24h thì không cho tách nữa
-            if (Duration.between(createdAt, LocalDateTime.now()).toHours() > 24) {
-                result.put(id, "Đã quá thời gian tách, máu sẽ được xử lý tự động");
-                continue;
-            }
-
-            List<BloodBag> bags = createSeparatedBags(after);
-            bloodBagRepo.saveAll(bags);
-            after.setStatus(AfterDonationBlood.Status.SEPARATED);
-            afterRepo.save(after);
-            result.put(id, "Đã tách thành công thành phần máu");
         }
 
-        return Map.of("result", result);
+        // Kiểm tra các thành phần và nhóm máu
+        for (BloodBagDTO dto : request.getBloodBags()) {
+            if (!componentRepository.existsById(dto.getComponentId())) {
+                throw new IllegalArgumentException("Không tìm thấy thành phần máu: " + dto.getComponentId());
+            }
+
+            if (!bloodRepo.existsById(dto.getBloodCode())) {
+                throw new IllegalArgumentException("Không tìm thấy nhóm máu: " + dto.getBloodCode());
+            }
+        }
+
+        // Cập nhật trạng thái các đơn máu
+        for (String id : request.getAfterDonationIds()) {
+            AfterDonationBlood after = afterRepo.findAfterDonationBloodByIdAfterDonation(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + id));
+            after.setStatus(AfterDonationBlood.Status.SEPARATED);
+            afterRepo.save(after);
+            result.put(id, "Cập nhật trạng thái: ĐÃ TÁCH");
+        }
+
+        // Tạo các túi máu
+        for (BloodBagDTO dto : request.getBloodBags()) {
+            Blood blood = bloodRepo.findById(dto.getBloodCode())
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm máu: " + dto.getBloodCode()));
+
+            Component component = componentRepository.findById(dto.getComponentId())
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thành phần máu: " + dto.getComponentId()));
+
+            if (dto.getCollectedDate() == null) {
+                throw new IllegalArgumentException("Ngày tách máu (collectedDate) không được để trống");
+            }
+
+            LocalDate collectedDate = dto.getCollectedDate().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+
+            LocalDate expirationDate = collectedDate.plusDays(component.getExpirationDays());
+
+            BloodBag.Status status = expirationDate.isBefore(LocalDate.now())
+                    ? BloodBag.Status.EXPIRED
+                    : BloodBag.Status.VALID;
+
+            BloodBag bag = BloodBag.builder()
+                    .bagId(generateBloodBagId())
+                    .volume(dto.getVolume())
+                    .collectedDate(dto.getCollectedDate())
+                    .expirationDate(java.sql.Date.valueOf(expirationDate))
+                    .component(component)
+                    .status(status)
+                    .blood(blood)
+                    .quantity(dto.getQuantity())
+                    .build();
+
+            bloodBagRepo.save(bag);
+        }
+
+        return Map.of("message", "Đã tách thành công các túi máu thủ công", "after", result);
     }
+
+
+
 
 
 
@@ -132,34 +162,6 @@ public class AfterDonationService {
     }
 
 
-    private List<BloodBag> createSeparatedBags(AfterDonationBlood after) {
-        String[][] components = {
-                {"102", "125", "42"},    // Hồng cầu
-                {"103", "60", "5"},      // Tiểu cầu
-                {"104", "65", "365"}     // Huyết tương
-        };
-
-        List<BloodBag> bags = new ArrayList<>();
-        for (String[] c : components) {
-            Component component = componentRepository.findById(c[0]).orElseThrow();
-            int volume = Integer.parseInt(c[1]);
-            int expire = Integer.parseInt(c[2]);
-
-            BloodBag bag = BloodBag.builder()
-                    .bagId(generateBloodBagId())
-                    .blood(after.getBlood())
-                    .volume(BloodBag.Volume.fromInt(volume))
-                    .component(component)
-                    .expirationDate(java.sql.Date.valueOf(LocalDate.now().plusDays(expire)))
-                    .collectedDate(new Date())
-                    .status(BloodBag.Status.VALID)
-                    .build();
-
-            bags.add(bag);
-        }
-
-        return bags;
-    }
 
 
     @Transactional
@@ -259,4 +261,30 @@ public class AfterDonationService {
         return toDTO(entity);
     }
 
+    private AfterDonationBlood toEntity(AfterDonationBloodDTO dto) {
+        AfterDonationBlood entity = new AfterDonationBlood();
+        entity.setInfectiousDiseasesChecked(dto.getInfectiousDiseasesChecked());
+        entity.setIsBloodUsable(dto.getIsBloodUsable());
+        entity.setStatus(dto.getStatus());
+        entity.setHealthCheck(
+                healthCheckRepo.findByHealthCheckId(dto.getHealthCheckId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy HealthCheck với ID: " + dto.getHealthCheckId()))
+        );
+        entity.setNote(dto.getNote());
+        return entity;
+    }
+
+    private AfterDonationBloodDTO toDTO(AfterDonationBlood entity) {
+        AfterDonationBloodDTO dto = new AfterDonationBloodDTO();
+        dto.setIdAfterDonation(entity.getIdAfterDonation());
+        dto.setInfectiousDiseasesChecked(entity.getInfectiousDiseasesChecked());
+        dto.setIsBloodUsable(entity.getIsBloodUsable());
+        dto.setStatus(entity.getStatus());
+        dto.setNote(entity.getNote());
+        if (entity.getHealthCheck() != null)
+            dto.setHealthCheckId(entity.getHealthCheck().getHealthCheckId());
+        if (entity.getBlood() != null)
+            dto.setBloodId(entity.getBlood().getBloodCode());
+        return dto;
+    }
 }

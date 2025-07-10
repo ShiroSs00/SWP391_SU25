@@ -59,7 +59,7 @@ public class BloodBagController {
             dto.setBagId(bagId);
             BloodBagDTO updated = bloodBagService.updateBloodBag(dto);
             return ResponseEntity.ok(
-                    new ApiResponse<>(true, "✅ Cập nhật túi máu thành công", updated)
+                    new ApiResponse<>(true, "Cập nhật túi máu thành công", updated)
             );
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -77,7 +77,7 @@ public class BloodBagController {
         try {
             bloodBagService.deleteBloodBag(bagId);
             return ResponseEntity.ok(
-                    new ApiResponse<>(true, "🗑️ Đã xóa túi máu thành công", null)
+                    new ApiResponse<>(true, "Đã xóa túi máu thành công", null)
             );
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -91,7 +91,7 @@ public class BloodBagController {
     public ResponseEntity<ApiResponse<List<BloodBagDTO>>> getAllBloodBags() {
         List<BloodBagDTO> bags = bloodBagService.getAllBloodBags();
         return ResponseEntity.ok(
-                new ApiResponse<>(true, "✅ Lấy danh sách túi máu thành công", bags)
+                new ApiResponse<>(true, "Lấy danh sách túi máu thành công", bags)
         );
     }
 

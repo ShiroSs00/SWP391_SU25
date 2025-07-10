@@ -3,7 +3,6 @@ package com.swp391.bloodcare.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import java.util.Date;
 
 @Entity
 @Table(name = "component")
@@ -23,10 +22,11 @@ public class Component {
     @NotNull(message = "Loại thành phần không được để trống")
     private String type;
 
-    @Temporal(TemporalType.DATE)
-    @Column(name = "expiration_date")
-    @Future(message = "Hạn sử dụng phải là một ngày trong tương lai")
-    private Date expirationDate;
+    @Column(name = "expiration_days")
+    @NotNull(message = "Số ngày hết hạn không được để trống")
+    @Min(value = 1, message = "Số ngày hết hạn phải lớn hơn 0")
+    private Integer expirationDays;
+
 
     @Size(max = 500, message = "Mô tả không được quá 500 ký tự")
     @Column(name = "description")

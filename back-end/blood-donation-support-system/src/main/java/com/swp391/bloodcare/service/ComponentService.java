@@ -5,10 +5,8 @@ import com.swp391.bloodcare.entity.Component;
 import com.swp391.bloodcare.repository.ComponentRepository;
 
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,8 +15,12 @@ import java.util.stream.Collectors;
 @Transactional
 public class ComponentService {
 
-    @Autowired
-    private ComponentRepository componentRepository;
+
+    private final ComponentRepository componentRepository;
+
+    public ComponentService(ComponentRepository componentRepository) {
+        this.componentRepository = componentRepository;
+    }
 
     public Component findById(String id) {
         return componentRepository.findById(id).orElse(null);
@@ -49,7 +51,7 @@ public class ComponentService {
         ComponentDTO dto = new ComponentDTO();
         dto.setComponentId(component.getComponentId());
         dto.setType(component.getType());
-        dto.setExpirationDate(component.getExpirationDate());
+        dto.setExpirationDays(component.getExpirationDays());
         dto.setDescription(component.getDescription());
 
 
@@ -62,7 +64,7 @@ public class ComponentService {
         Component component = new Component();
         component.setComponentId(dto.getComponentId());
         component.setType(dto.getType());
-        component.setExpirationDate(dto.getExpirationDate());
+        component.setExpirationDays(dto.getExpirationDays());
         component.setDescription(dto.getDescription());
 
         return component;
@@ -85,8 +87,8 @@ public class ComponentService {
             component.setDescription(dto.getDescription());
 
             // Optional: Cho phép update các field khác nếu cần
-            if (dto.getExpirationDate() != null && dto.getExpirationDate().after(new Date())) {
-                component.setExpirationDate(dto.getExpirationDate());
+            if (dto.getExpirationDays() != null ) {
+                component.setExpirationDays(dto.getExpirationDays());
             }
 
             if (dto.getType() != null) {

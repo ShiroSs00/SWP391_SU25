@@ -4,6 +4,7 @@ import com.swp391.bloodcare.dto.BloodBagDTO;
 import com.swp391.bloodcare.entity.BloodBag;
 import com.swp391.bloodcare.entity.Component;
 import com.swp391.bloodcare.repository.BloodBagRepository;
+import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.ComponentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ public class BloodBagService {
 
     private final ComponentRepository componentRepository;
 
+    private final BloodRepository  bloodRepository;
+
     public BloodBagDTO createBloodBag(BloodBagDTO dto) {
         if (dto.getVolume() == null) {
             throw new IllegalArgumentException("Thể tích túi máu là bắt buộc (ML_250, ML_350, ML_450)");
@@ -35,11 +38,10 @@ public class BloodBagService {
 
         Component component = componentRepository.findById(dto.getComponentId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Component với ID: " + dto.getComponentId()));
-        BloodBag entity = BloodBagDTO.toEntity(dto, component);
+        BloodBag entity = toEntity(dto, component);
         entity.setBagId(newId);
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : BloodBag.Status.VALID);
         entity.setComponent(component);
-
         BloodBag saved = bloodBagRepository.save(entity);
         return BloodBagDTO.fromEntity(saved);
     }
@@ -55,6 +57,19 @@ public class BloodBagService {
         return expiredBags.size();
     }
 
+    private BloodBag toEntity(BloodBagDTO dto, Component component) {
+        return BloodBag.builder()
+                .bagId(dto.getBagId())
+                .volume(dto.getVolume())
+                .collectedDate(dto.getCollectedDate())
+                .expirationDate(dto.getExpirationDate())
+                .status(dto.getStatus())
+                .component(component)
+                .quantity(dto.getQuantity())
+                .blood(bloodRepository.findByBloodCode(dto.getBloodCode())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu " + dto.getBloodCode())))
+                .build();
+    }
 
     @Transactional
     public Map<String, List<String>> deleteBloodBags(List<String> bagIds) {
