@@ -19,6 +19,28 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     Optional<Account> findByUserName(String userName);
     Optional<Account> findByEmail(String email);
 
+    // Tìm những người có thể hiến máu gần vị trí yêu cầu
+    //cần xem lại địa chỉ
+    @Query("SELECT a FROM Account a " +
+            "WHERE a.profile.bloodCode IN :compatibleBloodTypes " +
+            "AND a.profile.address.city LIKE %:location% " +
+            "AND a.email IS NOT NULL " +
+            "AND a.isActive = true")
+    List<Account> findPotentialDonors(
+            @Param("compatibleBloodTypes") List<String> compatibleBloodTypes,
+            @Param("location") String location
+    );
+    // Tìm người hiến máu theo nhóm máu
+    @Query("SELECT a FROM Account a " +
+            "WHERE a.profile.bloodCode = :bloodType " +
+            "AND a.isActive = true")
+    List<Account> findDonorsByBloodType(@Param("bloodType") String bloodType);
+
+    // Tìm người hiến máu theo vị trí
+    @Query("SELECT a FROM Account a " +
+            "WHERE a.profile.address.city LIKE %:location% " +
+            "AND a.isActive = true")
+    List<Account> findDonorsByLocation(@Param("location") String location);
 
 
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Account a WHERE LOWER(a.userName) = LOWER(:username)")

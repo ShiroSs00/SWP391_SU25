@@ -96,28 +96,6 @@ public class BloodRequestController {
         }
     }
 
-    // Cập nhật trạng thái
-    @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(
-            @PathVariable String id,
-            @RequestBody Map<String,String> statusUpdate) {
-        try {
-            String newStatus = statusUpdate.get("status");
-            BloodRequestResponseDTO responseDTO = bloodRequestService.updateStatus(id, newStatus);
-
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Cập nhật trạng thái thành công",
-                    "data", responseDTO
-            ));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-            ));
-        }
-    }
     //Lấy danh sách đơn Emergency
     @GetMapping("/emergency")
     public ResponseEntity<?> getEmergencyRequests() {
@@ -151,4 +129,40 @@ public class BloodRequestController {
         }
     }
 
+    @PutMapping("/{requestId}/approve")
+    public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> approveRequest(@PathVariable String requestId, @RequestParam String accountId) {
+        try{
+            BloodRequestResponseDTO response = bloodRequestService.approve(requestId, accountId);
+            return ResponseEntity.ok(new ApiResponse<>(true,"Đã thông qua", response));
+        }catch(Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/{requestId}/reject")
+    public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> rejectRequest(@PathVariable String requestId, @RequestParam String accountId, @RequestParam String reason) {
+        try{
+
+            BloodRequestResponseDTO response = bloodRequestService.reject(requestId, accountId, reason);
+            return ResponseEntity.ok(new ApiResponse<>(true,"Từ chối và đăng đợi", response));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+
+    }
+
+    // Kiểm tra tương thích máu
+    @GetMapping("/blood-compatibility")
+    public ResponseEntity<Boolean> checkBloodCompatibility(
+            @RequestParam String donorBloodCode,
+            @RequestParam String recipientBloodCode) {
+        boolean isCompatible = bloodRequestService.isBloodCompatible(donorBloodCode, recipientBloodCode);
+        return ResponseEntity.ok(isCompatible);
+    }
+
+    @GetMapping("/compatible-donors/{recipientBloodCode}")
+    public ResponseEntity<List<String>> getCompatibleDonors(@PathVariable String recipientBloodCode) {
+        List<String> compatibleDonors = bloodRequestService.getCompatibleDonorBloodTypes(recipientBloodCode);
+        return ResponseEntity.ok(compatibleDonors);
+    }
 }
