@@ -60,7 +60,7 @@ public class DataInitializer {
             admin.setUserName("admin");
             admin.setPassword(passwordEncoder.encode("12345678"));
             admin.setEmail("admin@system.local");
-            admin.setActive(true);
+            admin.setIsActive(true);
             Role role = roleRepository.findById("ADMIN").orElseThrow();
             admin.setRole(role);
             accountRepository.save(admin);
@@ -81,7 +81,7 @@ public class DataInitializer {
             staff.setUserName("staff");
             staff.setPassword(passwordEncoder.encode("12345678"));
             staff.setEmail("staff@hospital.local");
-            staff.setActive(true);
+            staff.setIsActive(true);
             Role role = roleRepository.findById("STAFF").orElseThrow();
             staff.setRole(role);
             accountRepository.save(staff);
@@ -109,7 +109,7 @@ public class DataInitializer {
             member.setUserName("member");
             member.setPassword(passwordEncoder.encode("12345678"));
             member.setEmail("member@user.local");
-            member.setActive(true);
+            member.setIsActive(true);
             Role role = roleRepository.findById("MEMBER").orElseThrow();
             member.setRole(role);
             accountRepository.save(member);

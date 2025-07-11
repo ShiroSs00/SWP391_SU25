@@ -1,6 +1,5 @@
 package com.swp391.bloodcare.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,7 +13,7 @@ import java.util.Date;
 @Builder
 public class NotificationDTO {
 
-    private String notificationId; // Có thể null khi tạo mới
+    private String notificationId;
 
     @NotNull(message = "Account ID không được để trống")
     private String accountId;

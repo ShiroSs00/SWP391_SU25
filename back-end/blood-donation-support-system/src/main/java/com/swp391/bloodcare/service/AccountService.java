@@ -60,7 +60,7 @@ public class AccountService {
             account.setUserName(accountRegistration.getUsername());
             account.setEmail(accountRegistration.getEmail());
             account.setPassword(passwordEncoder.encode(accountRegistration.getPassword()));
-            account.setActive(true);
+            account.setIsActive(true);
             account.setCreationDate(LocalDate.now());
 
 
@@ -163,11 +163,11 @@ public class AccountService {
 
             Account account = accountRepository.findAccountByAccountId(accountId);
 
-            if(!account.getActive()){
+            if(!account.getIsActive()){
                 return new ApiResponse<>(false, "Tài khoản đã bị vô hiệu hóa trước đó", null);
             }
 
-            account.setActive(false);
+            account.setIsActive(false);
             accountRepository.save(account);
 
             return new ApiResponse<>(true, "Vô hiệu hóa tài khoản thành công", accountId);
@@ -183,10 +183,10 @@ public class AccountService {
     public ApiResponse<String> activateAccount(String accountId){
         try{
             Account account = accountRepository.findAccountByAccountId(accountId);
-            if(account.getActive()){
+            if(account.getIsActive()){
                 return new ApiResponse<>(false, "Tài khoản đang hoạt động", null);
             }
-            account.setActive(true);
+            account.setIsActive(true);
             accountRepository.save(account);
             return new ApiResponse<>(true, "Kích hoạt tài khoản thành công", accountId);
 
@@ -280,7 +280,7 @@ public class AccountService {
             account.setUserName(accountRegistration.getUsername());
             account.setEmail(accountRegistration.getEmail());
             account.setPassword(passwordEncoder.encode(accountRegistration.getPassword()));
-            account.setActive(true); // Admin tạo thì mặc định active
+            account.setIsActive(true); // Admin tạo thì mặc định active
             account.setCreationDate(LocalDate.now());
 
             // Set role theo yêu cầu (admin có thể chỉ định role)
