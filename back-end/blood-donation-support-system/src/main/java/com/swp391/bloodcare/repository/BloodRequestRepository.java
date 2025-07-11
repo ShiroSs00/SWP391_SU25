@@ -14,9 +14,6 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, Stri
     List<BloodRequest> findByAccount_AccountId(String accountId);
 
 
-    //Tìm đơn theo trạng thái
-    List<BloodRequest> findByStatus(String status);
-
     //Tìm đơn cấp cứu
     List<BloodRequest> findByIsEmergencyTrue();
 

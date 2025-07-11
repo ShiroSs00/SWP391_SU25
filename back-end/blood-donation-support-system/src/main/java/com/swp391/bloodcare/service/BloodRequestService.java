@@ -34,6 +34,7 @@ public class BloodRequestService {
     @Autowired
     private EmailNotifier emailNotifier;
 
+    @Autowired
     private ComponentRepository componentRepository;
 
 
@@ -109,11 +110,6 @@ public class BloodRequestService {
         BloodRequest br = new BloodRequest();
         br.setIdBloodRequest(generateBloodRequestId());
         br.setAccount(account);
-
-
-        //Lấy thông tin máu
-        Blood blood = bloodRepository.findByBloodCode(bloodRequestDTO.getBloodCode()).orElseThrow(()-> new RuntimeException("Không tìm thấy loại máu: " + bloodRequestDTO.getBloodCode()));
-
         br.setBloodCode(blood);
 
         //Lấy thành phần
@@ -136,8 +132,7 @@ public class BloodRequestService {
         BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
         dto.setIdBloodRequest(request.getIdBloodRequest());
         dto.setRequesterName(request.getAccount().getProfile().getName());
-        dto.setAccountName(request.getAccount().getUserName());
-        dto.setPatientName(request.getPatientName());
+        dto.setRequesterName(request.getAccount().getUserName());
         dto.setRequestDate(request.getRequestDate());
         dto.setBloodType(request.getBloodCode().getBloodCode());
         dto.setComponent(request.getComponent().getType());
@@ -168,7 +163,12 @@ public class BloodRequestService {
     public BloodRequestResponseDTO updateStatus(String id, String nStatus) {
         BloodRequest request = bloodRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu: " + id));
-        request.setStatus(nStatus);
+        try {
+            BloodRequest.statusBloodRequest newStatus = BloodRequest.statusBloodRequest.valueOf(nStatus.toUpperCase());
+            request.setStatus(newStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Trạng thái không hợp lệ: " + nStatus);
+        }
         return convertToResponseDTO(bloodRequestRepository.save(request));
     }
 
@@ -220,13 +220,15 @@ public class BloodRequestService {
                 Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
                         Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-       long todayRequestCount = bloodRequestRepository.countByRequestCreationDate(LocalDate.now());
-       if(todayRequestCount > 100){
-           throw new RuntimeException("Hệ thống đã đạt giới hạn đơn xin máu trong ngày");
+        double distance = R * c;
+        long todayRequestCount = bloodRequestRepository.countByRequestCreationDate(LocalDate.now());
+        if (todayRequestCount > 100) {
+            throw new RuntimeException("Hệ thống đã đạt giới hạn đơn xin máu trong ngày");
+        }
 
-       }
+        return distance;
     }
+
 
     public BloodRequestResponseDTO updateBloodRequest(String id, @Valid BloodRequestDTO dto) {
         BloodRequest exit = bloodRequestRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + id));
