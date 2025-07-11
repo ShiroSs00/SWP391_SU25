@@ -2,12 +2,11 @@ package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.request.BloodRequestDTO;
 import com.swp391.bloodcare.dto.request.BloodRequestResponseDTO;
-import com.swp391.bloodcare.entity.Account;
-import com.swp391.bloodcare.entity.Blood;
-import com.swp391.bloodcare.entity.BloodRequest;
+import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.BloodRequestRepository;
+import com.swp391.bloodcare.repository.ComponentRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,11 +38,11 @@ public class  BloodRequestService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private ComponentRepository componentRepository;
 
     @Autowired
     private BloodRepository bloodRepository;
-
-
 
 
     // tạo đơn xin máu
@@ -58,15 +57,21 @@ public class  BloodRequestService {
 
         br.setIdBloodRequest(generateBloodRequestId());
         br.setAccount(account);
-
-
+        //Lấy thông tin máu
         Blood blood = bloodRepository.findByBloodCode(bloodRequestDTO.getBloodCode()).orElseThrow(()-> new RuntimeException("Không tìm thấy loại máu: " + bloodRequestDTO.getBloodCode()));
         br.setBloodCode(blood);
-        br.setPatientName(bloodRequestDTO.getPatientName());
+
+        //Lấy thành phần
+        Component component = componentRepository.findById(bloodRequestDTO.getComponentId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thành phần máu với ID: " + bloodRequestDTO.getComponentId()));
+        br.setComponent(component);
+
         br.setRequestDate(bloodRequestDTO.getRequestDate());
-        br.setVolume(bloodRequestDTO.getVolume());
+        BloodBag.Volume volumeEnum = BloodBag.Volume.fromInt(bloodRequestDTO.getVolume());
+        br.setVolume(volumeEnum);
+
         br.setEmergency(bloodRequestDTO.isEmergency());
-        br.setStatus("Đang xử lý");
+        br.setStatus(BloodRequest.statusBloodRequest.PENDING);
         br.setRequestCreationDate(LocalDate.now());
 
         BloodRequest savedRequest = bloodRequestRepository.save(br);
@@ -78,13 +83,13 @@ public class  BloodRequestService {
         BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
         dto.setIdBloodRequest(request.getIdBloodRequest());
         dto.setRequesterName(request.getAccount().getProfile().getName()); // Tên người đăng ký
-        dto.setAccountName(request.getAccount().getUserName()); // Tên tài khoản
-        dto.setPatientName(request.getPatientName());
-        dto.setRequestDate(request.getRequestDate());
         dto.setBloodType(request.getBloodCode().getBloodCode()); // Assuming Blood has getBloodType()
+        dto.setComponent(request.getComponent().getType());
         dto.setEmergency(request.isEmergency());
         dto.setStatus(request.getStatus());
-        dto.setVolume(request.getVolume());
+        // Thể tích (nếu là enum Volume)
+        dto.setVolume(request.getVolume() != null ? request.getVolume().getMl() : null);
+        dto.setRequestDate(request.getRequestDate());
         dto.setRequestCreationDate(request.getRequestCreationDate());
         return dto;
     }
@@ -157,8 +162,41 @@ public class  BloodRequestService {
            throw new RuntimeException("Hệ thống đã đạt giới hạn đơn xin máu trong ngày");
 
        }
+    }
 
+    public BloodRequestResponseDTO updateBloodRequest(String id, @Valid BloodRequestDTO dto) {
+        BloodRequest exit = bloodRequestRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + id));
 
+        if(!exit.getStatus().equals(BloodRequest.statusBloodRequest.PENDING.name())){
+            throw new IllegalStateException("Chỉ có thể chỉnh sửa đơn khi trạng thái là PENDING.");
+        }
 
+        // Nếu có requestDate mới
+        if (dto.getRequestDate() != null) {
+            if (dto.getRequestDate().isBefore(LocalDate.now())) {
+                throw new IllegalArgumentException("Ngày nhận không hợp lệ.");
+            }
+            exit.setRequestDate(dto.getRequestDate());
+        }
+
+        if (dto.getVolume() != null) {
+            exit.setVolume(BloodBag.Volume.fromInt(dto.getVolume()));
+        }
+
+        if (dto.getBloodCode() != null) {
+            Blood blood = bloodRepository.findByBloodCode(dto.getBloodCode())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy loại máu: " + dto.getBloodCode()));
+            exit.setBloodCode(blood);
+        }
+
+        if (dto.getComponentId() != null) {
+            Component component = componentRepository.findById(dto.getComponentId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thành phần máu với ID: " + dto.getComponentId()));
+            exit.setComponent(component);
+        }
+        exit.setEmergency(dto.isEmergency());
+
+        BloodRequest updated = bloodRequestRepository.save(exit);
+        return convertToResponseDTO(updated);
     }
 }

@@ -13,20 +13,21 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class BloodRequestDTO {
 
-    @NotBlank(message = "Tên bệnh nhân không được để trống")
-    private String patientName;
+    @NotBlank(message = "ID tài khoản không được để trống")
+    private String accountId;
 
     @NotNull(message = "Ngày nhận không được bỏ trống")
-    @Future(message = "Ngày này đã qua")
+    @Future(message = "Ngày nhận phải là tương lai")
     private LocalDate requestDate;
 
     @NotBlank(message = "Mã máu không được bỏ trống")
     private String bloodCode;
 
-
+    @NotBlank(message = "ID thành phần máu không được để trống")
+    private String componentId;
 
     @NotNull(message = "Số lượng máu không được để trống")
-    @Min(value = 1, message = "Số lượng máu phải lớn hơn 0")
+    @Min(value = 1, message = "Số lượng máu phải lớn hơn 0ml")
     @Max(value = 500, message = "Số lượng máu không được vượt quá 500ml")
     private Integer volume;
 

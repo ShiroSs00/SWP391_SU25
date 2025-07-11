@@ -6,9 +6,11 @@ import com.swp391.bloodcare.entity.BloodBag;
 import com.swp391.bloodcare.entity.Component;
 import com.swp391.bloodcare.repository.AfterDonationRepository;
 import com.swp391.bloodcare.repository.BloodBagRepository;
+import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.ComponentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,9 @@ public class BloodBagService {
     private final AfterDonationRepository afterDonationRepository;
 
     private final ComponentRepository componentRepository;
+
+    @Autowired
+    private BloodService bloodService;
 
     public BloodBagDTO createBloodBag(BloodBagDTO dto) {
         if (dto.getVolume() == null) {
@@ -48,6 +53,8 @@ public class BloodBagService {
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy dữ liệu sau hiến"));
             entity.setAfterDonationBlood(afterDonation);
             afterDonation.getBloodBag().add(entity);
+
+            bloodService.increseQuantity(afterDonation.getBlood());
         }
 
         BloodBag saved = bloodBagRepository.save(entity);

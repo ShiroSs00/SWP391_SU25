@@ -136,4 +136,19 @@ public class BloodRequestController {
             ));
         }
     }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> updateBloodRequest(
+            @PathVariable String id,
+            @Valid @RequestBody BloodRequestDTO dto) {
+        try {
+            BloodRequestResponseDTO updated = bloodRequestService.updateBloodRequest(id, dto);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật đơn thành công", updated));
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(false, "Lỗi hệ thống", null));
+        }
+    }
+
 }

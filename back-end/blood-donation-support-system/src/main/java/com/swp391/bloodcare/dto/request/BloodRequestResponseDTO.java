@@ -1,5 +1,6 @@
 package com.swp391.bloodcare.dto.request;
 
+import com.swp391.bloodcare.entity.BloodRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,13 +13,12 @@ import java.time.LocalDate;
 public class BloodRequestResponseDTO {
     private String idBloodRequest;
     private String requesterName; // Tên người đăng ký từ profile
-    private String accountName; // Tên tài khoản
-    private String patientName;
-    private LocalDate requestDate;
     private String bloodType;
+    private String component;
     private boolean emergency;
-    private String status;
-    private int volume;
+    private BloodRequest.statusBloodRequest status;
+    private Integer volume;
+    private LocalDate requestDate;
     private LocalDate requestCreationDate;
 
 }

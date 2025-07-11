@@ -19,8 +19,6 @@ public class BloodService {
     @Autowired
     private BloodRepository bloodRepository;
 
-    @Autowired
-    private ComponentService componentService;
 
     //tạo mới
     public BloodDTO createBlood(BloodDTO bloodDTO) {
@@ -89,6 +87,20 @@ public class BloodService {
         eBlood.setBloodMatch(bloodDTO.getBloodMatch());
         Blood savedBlood = bloodRepository.save(eBlood);
         return new BloodDTO(savedBlood);
+    }
+
+    public void increseQuantity(Blood blood){
+        if(blood == null) return;
+        long currentQuantity = blood.getQuantity();
+        blood.setQuantity(currentQuantity + 1);
+        bloodRepository.save(blood);
+    }
+
+    public void decreseQuantity(Blood blood){
+        if (blood == null) return;
+        long currentQuantity = blood.getQuantity();
+        blood.setQuantity(Math.max(0, currentQuantity - 1));
+        bloodRepository.save(blood);
     }
 
 

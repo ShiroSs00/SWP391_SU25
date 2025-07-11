@@ -57,7 +57,8 @@ public class BloodBag {
 
     public enum Status {
         VALID,      // CÒN HẠN
-        EXPIRED     // HẾT HẠN
+        EXPIRED,     // HẾT HẠN
+        USED        //Đã sử dụng
     }
 
     @Getter
