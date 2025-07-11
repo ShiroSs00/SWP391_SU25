@@ -7,5 +7,4 @@ import java.util.Optional;
 public interface ComponentRepository extends JpaRepository<Component, String> {
     boolean existsByComponentId(String componentId);
 
-    Optional<Component> findByComponentId(String componentId);
 }

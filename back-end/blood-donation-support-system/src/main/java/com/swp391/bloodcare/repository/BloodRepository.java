@@ -22,4 +22,15 @@ public interface BloodRepository extends JpaRepository<Blood, String> {
     List<Blood> findByCriteria(@Param("bloodCode") String bloodCode,
                                @Param("rh") Blood.RhFactor rh,
                                @Param("isRareBlood") Boolean isRareBlood);
+
+    @Query("""
+    SELECT b, COUNT(bb)
+    FROM AfterDonationBlood adb
+    JOIN adb.bloodBag bb
+    JOIN adb.blood b
+    WHERE adb.isBloodUsable = true AND bb.status = 'VALID'
+    GROUP BY b
+""")
+    List<Object[]> findAllBloodWithUsableBagCount();
+
 }

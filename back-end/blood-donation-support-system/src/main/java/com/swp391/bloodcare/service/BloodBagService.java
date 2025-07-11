@@ -8,6 +8,7 @@ import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.ComponentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class BloodBagService {
 
 
     private final ComponentRepository componentRepository;
+
 
     private final BloodRepository  bloodRepository;
 
@@ -42,6 +44,7 @@ public class BloodBagService {
         entity.setBagId(newId);
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : BloodBag.Status.VALID);
         entity.setComponent(component);
+
         BloodBag saved = bloodBagRepository.save(entity);
         return BloodBagDTO.fromEntity(saved);
     }

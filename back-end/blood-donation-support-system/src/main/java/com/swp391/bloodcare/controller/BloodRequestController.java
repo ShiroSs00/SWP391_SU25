@@ -138,6 +138,7 @@ public class BloodRequestController {
         }
     }
 
+
     @GetMapping("/match-top20/{id}")
     public ResponseEntity<List<Profile>> matchTop20Donors(@PathVariable String id) {
         BloodRequest request = bloodRequestService.getByIdRaw(id);
@@ -150,4 +151,19 @@ public class BloodRequestController {
         bloodRequestService.sendUrgentDonationRequest(request);
         return ResponseEntity.ok("Đã gửi mail cho 20 người phù hợp nhất.");
     }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> updateBloodRequest(
+            @PathVariable String id,
+            @Valid @RequestBody BloodRequestDTO dto) {
+        try {
+            BloodRequestResponseDTO updated = bloodRequestService.updateBloodRequest(id, dto);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật đơn thành công", updated));
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(false, "Lỗi hệ thống", null));
+        }
+    }
+
 }

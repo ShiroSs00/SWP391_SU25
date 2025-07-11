@@ -84,4 +84,19 @@ public class BloodController {
                     .body("Lỗi khi xóa blood record: " + e.getMessage());
         }
     }
+
+    @PutMapping("/update/{bloodCode}")
+    public ResponseEntity<ApiResponse<BloodDTO>> updateBlood(@PathVariable String bloodCode, @RequestBody BloodDTO bloodDTO) {
+        try{
+            BloodDTO update = bloodService.updateBlood(bloodCode, bloodDTO);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật blood record thành công", update));
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Lỗi khi cập nhật blood record: " + e.getMessage(), null));
+        }
+    }
+
 }
