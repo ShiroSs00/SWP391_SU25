@@ -16,4 +16,10 @@ public class Address {
     private String street;
     private Double latitude;
     private Double longitude;
+
+    @Override
+    public String toString() {
+        return street + ", " + ward  + ", "+ district+ ", " + city;
+
+    }
 }

@@ -13,7 +13,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class BloodRequestDTO {
 
-    @NotBlank(message = "ID tài khoản không được để trống")
     private String accountId;
 
     @NotNull(message = "Ngày nhận không được bỏ trống")

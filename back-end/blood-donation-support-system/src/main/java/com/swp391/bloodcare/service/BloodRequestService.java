@@ -41,6 +41,22 @@ public class BloodRequestService {
     @Autowired
     private BloodRepository bloodRepository;
 
+
+    @Autowired
+    private BloodService bloodService;
+
+    @Autowired
+    private BloodBagRepository bloodBagRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private BloodCompatibilityService bloodCompatibilityService;
+
+    @Autowired
+    private NotificationService notificationService;
+
     public List<Profile> matchTop20Donors(BloodRequest request) {
         return profileRepository.findAll().stream()
                 .filter(p -> p.getAccount().getIsActive())
@@ -97,7 +113,6 @@ public class BloodRequestService {
 
 
     // tạo đơn xin máu
-
     public BloodRequest createBloodRequest(@Valid BloodRequestDTO bloodRequestDTO, String accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản: " + accountId));
@@ -127,12 +142,14 @@ public class BloodRequestService {
 
         return bloodRequestRepository.save(br);
     }
-
     public BloodRequestResponseDTO convertToResponseDTO(BloodRequest request) {
         BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
         dto.setIdBloodRequest(request.getIdBloodRequest());
         dto.setRequesterName(request.getAccount().getProfile().getName());
-        dto.setRequesterName(request.getAccount().getUserName());
+        dto.setRequesterPhone(request.getAccount().getProfile().getPhone());
+        dto.setRequesterEmail(request.getAccount().getEmail());
+        dto.setRequesterAddress(request.getAccount().getProfile().getAddress().toString());
+
         dto.setRequestDate(request.getRequestDate());
         dto.setBloodType(request.getBloodCode().getBloodCode());
         dto.setComponent(request.getComponent().getType());
@@ -141,8 +158,15 @@ public class BloodRequestService {
         dto.setVolume(request.getVolume() != null ? request.getVolume().getMl() : null);
         dto.setRequestDate(request.getRequestDate());
         dto.setRequestCreationDate(request.getRequestCreationDate());
+
+        dto.setRejectionReason(request.getRejectionReason());
+        dto.setProcessedBy(request.getProcessedBy());
+        dto.setProcessedDate(request.getProcessedDate());
+        if(request.getBloodBag() != null)
+            dto.setBloodBagId(request.getBloodBag().getBagId());
         return dto;
     }
+
 
     public List<BloodRequestResponseDTO> getAllBloodRequests() {
         return bloodRequestRepository.findAll().stream()
@@ -160,18 +184,69 @@ public class BloodRequestService {
         return bloodRequestRepository.findById(id).map(this::convertToResponseDTO);
     }
 
-    public BloodRequestResponseDTO updateStatus(String id, String nStatus) {
-        BloodRequest request = bloodRequestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu: " + id));
-        try {
-            BloodRequest.statusBloodRequest newStatus = BloodRequest.statusBloodRequest.valueOf(nStatus.toUpperCase());
-            request.setStatus(newStatus);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Trạng thái không hợp lệ: " + nStatus);
+
+    //Admin - Staff thông qua
+    @Transactional
+    public BloodRequestResponseDTO approve(String requestId, String accountId) {
+        BloodRequest request = bloodRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + requestId));
+
+        if(!request.getStatus().equals(BloodRequest.statusBloodRequest.PENDING)) {
+            throw new IllegalStateException("Chỉ có thể xử lý đơn khi trạng thái là PENDING.");
         }
-        return convertToResponseDTO(bloodRequestRepository.save(request));
+        //tìm túi máu phù hợp
+        Optional<BloodBag> suitableBloodBag = findSuitableBloodBag(request);
+        if(suitableBloodBag.isPresent()) {
+            BloodBag bag = suitableBloodBag.get();
+            request.setBloodBag(bag);
+            request.setStatus(BloodRequest.statusBloodRequest.APPROVE);
+            request.setProcessedBy(accountId);
+            request.setProcessedDate(LocalDate.now());
+
+            bag.setStatus(BloodBag.Status.USED);
+            bloodBagRepository.save(bag);
+
+            sendApprovalNotification(request);
+
+            BloodRequest savedRequest = bloodRequestRepository.save(request);
+            return convertToResponseDTO(savedRequest);
+        } else {
+            throw new RuntimeException("Không tìm thấy túi máu phù hợp cho đơn yêu cầu này.");
+        }
     }
 
+    /**
+     * Admin reject đơn xin máu
+     * @param requestId ID đơn xin máu
+     * @param adminId ID admin xử lý
+     * @param rejectionReason Lý do từ chối
+     * @return BloodRequestResponseDTO
+     */
+    @Transactional
+    public BloodRequestResponseDTO reject(String requestId, String adminId, String rejectionReason) {
+        BloodRequest request = bloodRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + requestId));
+
+        if (!request.getStatus().equals(BloodRequest.statusBloodRequest.PENDING)) {
+            throw new IllegalStateException("Chỉ có thể xử lý đơn khi trạng thái là PENDING.");
+        }
+
+        // Cập nhật trạng thái đơn
+        request.setStatus(BloodRequest.statusBloodRequest.REJECT);
+        request.setProcessedBy(adminId);
+        request.setProcessedDate(LocalDate.now());
+        request.setRejectionReason(rejectionReason);
+
+        // Tìm kiếm người hiến máu tiềm năng gần khu vực
+        findAndNotifyPotentialDonors(request);
+
+        BloodRequest savedRequest = bloodRequestRepository.save(request);
+        return convertToResponseDTO(savedRequest);
+    }
+
+
+
+    //Lấy danh sách đơn cấp cứu
     public List<BloodRequestResponseDTO> getEmergencyRequests() {
         return bloodRequestRepository.findByIsEmergencyTrue().stream()
                 .map(this::convertToResponseDTO)
@@ -265,4 +340,107 @@ public class BloodRequestService {
         BloodRequest updated = bloodRequestRepository.save(exit);
         return convertToResponseDTO(updated);
     }
+
+
+    // Bảng tương thích máu - ai có thể hiến cho ai
+    private static final Map<String, List<String>> BLOOD_COMPATIBILITY = new HashMap<>();
+
+    static {
+        // Nhóm máu O- có thể hiến cho tất cả
+        BLOOD_COMPATIBILITY.put("O-", Arrays.asList("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"));
+        // Nhóm máu O+ có thể hiến cho O+, A+, B+, AB+
+        BLOOD_COMPATIBILITY.put("O+", Arrays.asList("O+", "A+", "B+", "AB+"));
+        // Nhóm máu A- có thể hiến cho A+, A-, AB+, AB-
+        BLOOD_COMPATIBILITY.put("A-", Arrays.asList("A+", "A-", "AB+", "AB-"));
+        // Nhóm máu A+ có thể hiến cho A+, AB+
+        BLOOD_COMPATIBILITY.put("A+", Arrays.asList("A+", "AB+"));
+        // Nhóm máu B- có thể hiến cho B+, B-, AB+, AB-
+        BLOOD_COMPATIBILITY.put("B-", Arrays.asList("B+", "B-", "AB+", "AB-"));
+        // Nhóm máu B+ có thể hiến cho B+, AB+
+        BLOOD_COMPATIBILITY.put("B+", Arrays.asList("B+", "AB+"));
+        // Nhóm máu AB- có thể hiến cho AB+, AB-
+        BLOOD_COMPATIBILITY.put("AB-", Arrays.asList("AB+", "AB-"));
+        // Nhóm máu AB+ chỉ có thể hiến cho AB+
+        BLOOD_COMPATIBILITY.put("AB+", Arrays.asList("AB+"));
+    }
+
+    /**
+     * Kiểm tra xem loại máu nào có thể hiến cho nhau
+     * @param donorBloodCode Nhóm máu của người hiến
+     * @param recipientBloodCode Nhóm máu của người nhận
+     * @return true nếu tương thích
+     */
+    public boolean isBloodCompatible(String donorBloodCode, String recipientBloodCode) {
+        return bloodCompatibilityService.isCompatible(donorBloodCode, recipientBloodCode);
+    }
+
+    /**
+     * Lấy danh sách nhóm máu có thể hiến cho nhóm máu cụ thể
+     * @param recipientBloodCode Nhóm máu người nhận
+     * @return Danh sách nhóm máu có thể hiến
+     */
+    public List<String> getCompatibleDonorBloodTypes(String recipientBloodCode) {
+        return bloodCompatibilityService.getCompatibleDonors(recipientBloodCode);
+    }
+
+    /**
+     * Tìm túi máu phù hợp
+     * @param request Đơn xin máu
+     * @return Optional<BloodBag>
+     */
+    private Optional<BloodBag> findSuitableBloodBag(BloodRequest request) {
+        String requestedBloodCode = request.getBloodCode().getBloodCode();
+        String requestedComponent = request.getComponent().getType();
+        BloodBag.Volume requestedVolume = request.getVolume();
+
+        // Tìm túi máu có cùng nhóm máu, thành phần và thể tích
+        return bloodBagRepository.findByBloodCode_BloodCodeAndComponent_TypeAndVolumeAndStatus(
+                requestedBloodCode,
+                requestedComponent,
+                requestedVolume,
+                BloodBag.Status.VALID
+        ).stream().findFirst();
+    }
+
+    /**
+     * Gửi thông báo khi đơn được approve
+     * @param request Đơn xin máu
+     */
+    private void sendApprovalNotification(BloodRequest request) {
+        notificationService.sendApprovalNotification(request);
+    }
+
+    /**
+     * Tìm và thông báo đến những người hiến máu tiềm năng
+     * @param request Đơn xin máu bị reject
+     */
+    private void findAndNotifyPotentialDonors(BloodRequest request) {
+        String requestedBloodCode = request.getBloodCode().getBloodCode();
+        // Lấy danh sách nhóm máu có thể hiến
+        List<String> compatibleBloodTypes = getCompatibleDonorBloodTypes(requestedBloodCode);
+
+
+        Address address = request.getAccount().getProfile().getAddress();
+        Double lat = address.getLatitude();
+        Double lng = address.getLongitude();
+        if (lat == null || lng == null) {
+            throw new IllegalStateException("Không có thông tin tọa độ người nhận máu.");
+        }
+        double searchRadiusKm = 100.0;
+
+        // Tìm các account có nhóm máu tương thích và gần khu vực
+        List<Account> potentialDonors = accountRepository.findNearbyCompatibleDonorsByLatLng(
+                lat, lng, searchRadiusKm, compatibleBloodTypes, request.getAccount().getAccountId()
+        );
+        System.out.println("Số người hiến phù hợp tìm thấy: " + potentialDonors.size());
+        System.out.println("Danh sách blood type tương thích: " + compatibleBloodTypes);
+        System.out.println("Tọa độ: lat=" + lat + ", lng=" + lng);
+
+        // Gửi thông báo đến những người hiến máu tiềm năng
+        notificationService.sendBloodRequestNotification(request, potentialDonors);
+
+        // Gửi thông báo từ chối đến người yêu cầu
+        notificationService.sendRejectionNotification(request);
+    }
+
 }

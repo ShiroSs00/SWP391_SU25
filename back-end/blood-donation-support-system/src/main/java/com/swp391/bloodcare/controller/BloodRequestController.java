@@ -6,6 +6,7 @@ import com.swp391.bloodcare.dto.request.BloodRequestResponseDTO;
 import com.swp391.bloodcare.entity.BloodRequest;
 import com.swp391.bloodcare.entity.Profile;
 import com.swp391.bloodcare.service.BloodRequestService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -97,28 +98,6 @@ public class BloodRequestController {
         }
     }
 
-    // Cập nhật trạng thái
-    @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(
-            @PathVariable String id,
-            @RequestBody Map<String,String> statusUpdate) {
-        try {
-            String newStatus = statusUpdate.get("status");
-            BloodRequestResponseDTO responseDTO = bloodRequestService.updateStatus(id, newStatus);
-
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Cập nhật trạng thái thành công",
-                    "data", responseDTO
-            ));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "success", false,
-                    "message", e.getMessage()
-            ));
-        }
-    }
     //Lấy danh sách đơn Emergency
     @GetMapping("/emergency")
     public ResponseEntity<?> getEmergencyRequests() {
@@ -166,4 +145,58 @@ public class BloodRequestController {
         }
     }
 
+    @PutMapping("/{requestId}/approve")
+    public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> approveRequest(
+            @PathVariable String requestId, Authentication authentication) {
+        try {
+            String account = authentication.getName();
+            BloodRequestResponseDTO response = bloodRequestService.approve(requestId, account);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Đơn xin máu đã được duyệt.", response));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Lỗi hệ thống: " + e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/{requestId}/reject")
+    public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> rejectRequest(
+            @PathVariable String requestId,
+            Authentication authentication,
+            @RequestBody BloodRequestResponseDTO reason) {
+        try {
+            String account = authentication.getName();
+            BloodRequestResponseDTO response = bloodRequestService.reject(requestId, account, reason.getRejectionReason());
+            return ResponseEntity.ok(new ApiResponse<>(true, "Đã từ chối đơn và gửi thông báo.", response));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Lỗi hệ thống: " + e.getMessage(), null));
+        }
+    }
+
+    // Kiểm tra tương thích máu
+    @GetMapping("/blood-compatibility")
+    public ResponseEntity<Boolean> checkBloodCompatibility(
+            @RequestParam String donorBloodCode,
+            @RequestParam String recipientBloodCode) {
+        boolean isCompatible = bloodRequestService.isBloodCompatible(donorBloodCode, recipientBloodCode);
+        return ResponseEntity.ok(isCompatible);
+    }
+
+    @GetMapping("/compatible-donors/{recipientBloodCode}")
+    public ResponseEntity<List<String>> getCompatibleDonors(@PathVariable String recipientBloodCode) {
+        List<String> compatibleDonors = bloodRequestService.getCompatibleDonorBloodTypes(recipientBloodCode);
+        return ResponseEntity.ok(compatibleDonors);
+    }
 }
