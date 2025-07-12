@@ -147,10 +147,10 @@ public class BloodRequestController {
 
     @PutMapping("/{requestId}/approve")
     public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> approveRequest(
-            @PathVariable String requestId,
-            @RequestParam String accountId) {
+            @PathVariable String requestId, Authentication authentication) {
         try {
-            BloodRequestResponseDTO response = bloodRequestService.approve(requestId, accountId);
+            String account = authentication.getName();
+            BloodRequestResponseDTO response = bloodRequestService.approve(requestId, account);
             return ResponseEntity.ok(new ApiResponse<>(true, "Đơn xin máu đã được duyệt.", response));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -167,10 +167,11 @@ public class BloodRequestController {
     @PutMapping("/{requestId}/reject")
     public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> rejectRequest(
             @PathVariable String requestId,
-            @RequestParam String accountId,
-            @RequestParam String reason) {
+            Authentication authentication,
+            @RequestBody BloodRequestResponseDTO reason) {
         try {
-            BloodRequestResponseDTO response = bloodRequestService.reject(requestId, accountId, reason);
+            String account = authentication.getName();
+            BloodRequestResponseDTO response = bloodRequestService.reject(requestId, account, reason.getRejectionReason());
             return ResponseEntity.ok(new ApiResponse<>(true, "Đã từ chối đơn và gửi thông báo.", response));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)

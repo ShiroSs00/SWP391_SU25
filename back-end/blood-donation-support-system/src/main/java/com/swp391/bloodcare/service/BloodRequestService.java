@@ -113,7 +113,6 @@ public class BloodRequestService {
 
 
     // tạo đơn xin máu
-
     public BloodRequest createBloodRequest(@Valid BloodRequestDTO bloodRequestDTO, String accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản: " + accountId));
@@ -143,7 +142,6 @@ public class BloodRequestService {
 
         return bloodRequestRepository.save(br);
     }
-
     public BloodRequestResponseDTO convertToResponseDTO(BloodRequest request) {
         BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
         dto.setIdBloodRequest(request.getIdBloodRequest());
@@ -157,8 +155,13 @@ public class BloodRequestService {
         dto.setVolume(request.getVolume() != null ? request.getVolume().getMl() : null);
         dto.setRequestDate(request.getRequestDate());
         dto.setRequestCreationDate(request.getRequestCreationDate());
+
+        dto.setRejectionReason(request.getRejectionReason());
+        dto.setProcessedBy(request.getProcessedBy());
+        dto.setProcessedDate(request.getProcessedDate());
         return dto;
     }
+
 
     public List<BloodRequestResponseDTO> getAllBloodRequests() {
         return bloodRequestRepository.findAll().stream()
