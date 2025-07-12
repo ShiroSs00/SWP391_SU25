@@ -26,29 +26,9 @@ public class AfterDonationBloodDTO {
     private AfterDonationBlood.Status status;
 
     private String healthCheckId;
+
+    @NotNull(message = "Nhóm máu không được để trống")
     private String bloodId;
 
-    public static AfterDonationBloodDTO toDTO(AfterDonationBlood entity) {
-        AfterDonationBloodDTO dto = new AfterDonationBloodDTO();
-        dto.setIdAfterDonation(entity.getIdAfterDonation());
-        dto.setInfectiousDiseasesChecked(entity.getInfectiousDiseasesChecked());
-        dto.setIsBloodUsable(entity.getIsBloodUsable());
-        dto.setStatus(entity.getStatus());
-        dto.setNote(entity.getNote());
-        if (entity.getHealthCheck() != null)
-            dto.setHealthCheckId(entity.getHealthCheck().getHealthCheckId());
-        if (entity.getBlood() != null)
-            dto.setBloodId(entity.getBlood().getBloodCode());
-        return dto;
-    }
-
-    public static AfterDonationBlood toEntity(AfterDonationBloodDTO dto) {
-        AfterDonationBlood entity = new AfterDonationBlood();
-        entity.setInfectiousDiseasesChecked(dto.getInfectiousDiseasesChecked());
-        entity.setIsBloodUsable(dto.getIsBloodUsable());
-        entity.setStatus(dto.getStatus());
-        entity.setNote(dto.getNote());
-        return entity;
-    }
 
 }

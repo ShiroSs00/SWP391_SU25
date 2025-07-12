@@ -2,10 +2,12 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.AfterDonationBloodDTO;
 import com.swp391.bloodcare.dto.ApiResponse;
+import com.swp391.bloodcare.dto.request.BloodBagCreateRequest;
 import com.swp391.bloodcare.service.AfterDonationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,9 +33,21 @@ public class AfterDonationBloodController {
     public ResponseEntity<ApiResponse<AfterDonationBloodDTO>> create(
             @PathVariable String healthCheckId,
             @Valid @RequestBody AfterDonationBloodDTO dto) {
-        AfterDonationBloodDTO created = afterDonationService.create(healthCheckId, dto);
+        dto.setHealthCheckId(healthCheckId);
+        AfterDonationBloodDTO created = afterDonationService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(true, "Tạo bản ghi sau hiến thành công", created));
+    }
+
+    @PostMapping("/manual-separate")
+    public ResponseEntity<?> separateManual(@Valid @RequestBody BloodBagCreateRequest request) {
+        return ResponseEntity.ok(afterDonationService.separateManually(request));
+    }
+
+
+    @Scheduled(cron = "0 * * * * *")
+    public void autoSeparateExpired() {
+        afterDonationService.autoSeparateExpired();
     }
 
     @PutMapping("/update/{idAfterDonation}")

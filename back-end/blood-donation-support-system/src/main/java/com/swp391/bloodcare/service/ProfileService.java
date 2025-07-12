@@ -135,7 +135,7 @@ public class ProfileService {
         dto.setAccountId(account.getAccountId());
         dto.setUsername(account.getUserName());
         dto.setEmail(account.getEmail());
-        dto.setActive(account.isActive());
+        dto.setActive(account.getIsActive());
         dto.setCreationDate(account.getCreationDate());
 
         //role
@@ -219,7 +219,7 @@ public class ProfileService {
         prd.setUsername(account.getUserName());
         prd.setEmail(account.getEmail());
         prd.setCreationDate(account.getCreationDate());
-        prd.setIsActive(account.isActive());
+        prd.setIsActive(account.getIsActive());
 
         //Proflie info
         prd.setProfileId(profile.getProfileId());

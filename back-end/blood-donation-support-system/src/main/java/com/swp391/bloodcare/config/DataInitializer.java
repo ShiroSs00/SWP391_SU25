@@ -16,8 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
 @org.springframework.stereotype.Component
@@ -62,7 +60,7 @@ public class DataInitializer {
             admin.setUserName("admin");
             admin.setPassword(passwordEncoder.encode("12345678"));
             admin.setEmail("admin@system.local");
-            admin.setActive(true);
+            admin.setIsActive(true);
             Role role = roleRepository.findById("ADMIN").orElseThrow();
             admin.setRole(role);
             accountRepository.save(admin);
@@ -83,7 +81,7 @@ public class DataInitializer {
             staff.setUserName("staff");
             staff.setPassword(passwordEncoder.encode("12345678"));
             staff.setEmail("staff@hospital.local");
-            staff.setActive(true);
+            staff.setIsActive(true);
             Role role = roleRepository.findById("STAFF").orElseThrow();
             staff.setRole(role);
             accountRepository.save(staff);
@@ -111,7 +109,7 @@ public class DataInitializer {
             member.setUserName("member");
             member.setPassword(passwordEncoder.encode("12345678"));
             member.setEmail("member@user.local");
-            member.setActive(true);
+            member.setIsActive(true);
             Role role = roleRepository.findById("MEMBER").orElseThrow();
             member.setRole(role);
             accountRepository.save(member);
@@ -121,27 +119,27 @@ public class DataInitializer {
         }
 
 // === Khởi tạo các thành phần máu (Component) mặc định ===
-        String[] ids = {"101", "102", "103", "104"};
-        String[] types = {"Toàn phần", "Hồng cầu", "Tiểu cầu", "Huyết tương"};
-        int[] shelfLifeDays = {35, 42, 5, 365}; // hạn sử dụng tương ứng
+        String[] componentIds = {"101", "102", "103", "104"};
+        String[] componentTypes = {"Toàn phần", "Hồng cầu", "Tiểu cầu", "Huyết tương"};
+        int[] shelfLifeInDays = {35, 42, 5, 365}; // Số ngày hạn sử dụng tương ứng
 
-        for (int i = 0; i < ids.length; i++) {
-            String id = ids[i];
+        for (int i = 0; i < componentIds.length; i++) {
+            String id = componentIds[i];
+            String type = componentTypes[i];
+            int daysToExpire = shelfLifeInDays[i];
+
             if (!componentRepository.existsById(id)) {
-                Calendar cal = Calendar.getInstance();
-                cal.add(Calendar.DAY_OF_YEAR, shelfLifeDays[i]);
-                Date expirationDate = cal.getTime();
-
-                Component component = Component.builder()
+                Component newComponent = Component.builder()
                         .componentId(id)
-                        .type(types[i])
-                        .description("Thành phần máu: " + types[i])
-                        .expirationDate(expirationDate)
+                        .type(type)
+                        .description("Thành phần máu: " + type)
+                        .expirationDays(daysToExpire)
                         .build();
 
-                componentRepository.save(component);
+                componentRepository.save(newComponent);
             }
         }
+
 
 
         // === Khởi tạo các loại máu ===

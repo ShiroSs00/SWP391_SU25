@@ -1,10 +1,8 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.BloodBagDTO;
-import com.swp391.bloodcare.entity.AfterDonationBlood;
 import com.swp391.bloodcare.entity.BloodBag;
 import com.swp391.bloodcare.entity.Component;
-import com.swp391.bloodcare.repository.AfterDonationRepository;
 import com.swp391.bloodcare.repository.BloodBagRepository;
 import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.ComponentRepository;
@@ -24,12 +22,11 @@ public class BloodBagService {
 
     private final BloodBagRepository bloodBagRepository;
 
-    private final AfterDonationRepository afterDonationRepository;
 
     private final ComponentRepository componentRepository;
 
-    @Autowired
-    private BloodService bloodService;
+
+    private final BloodRepository  bloodRepository;
 
     public BloodBagDTO createBloodBag(BloodBagDTO dto) {
         if (dto.getVolume() == null) {
@@ -43,24 +40,39 @@ public class BloodBagService {
 
         Component component = componentRepository.findById(dto.getComponentId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Component với ID: " + dto.getComponentId()));
-        BloodBag entity = BloodBagDTO.toEntity(dto, component);
+        BloodBag entity = toEntity(dto, component);
         entity.setBagId(newId);
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : BloodBag.Status.VALID);
         entity.setComponent(component);
-
-        if (dto.getAfterDonationId() != null) {
-            AfterDonationBlood afterDonation = afterDonationRepository.findAfterDonationBloodByIdAfterDonation(dto.getAfterDonationId())
-                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy dữ liệu sau hiến"));
-            entity.setAfterDonationBlood(afterDonation);
-            afterDonation.getBloodBag().add(entity);
-
-            bloodService.increseQuantity(afterDonation.getBlood());
-        }
 
         BloodBag saved = bloodBagRepository.save(entity);
         return BloodBagDTO.fromEntity(saved);
     }
 
+    @Transactional
+    public int autoUpdateExpiredStatus() {
+        List<BloodBag> expiredBags = bloodBagRepository.findByExpirationDateBeforeAndStatus(
+                new Date(), BloodBag.Status.VALID);
+        for (BloodBag bag : expiredBags) {
+            bag.setStatus(BloodBag.Status.EXPIRED);
+        }
+        bloodBagRepository.saveAll(expiredBags);
+        return expiredBags.size();
+    }
+
+    private BloodBag toEntity(BloodBagDTO dto, Component component) {
+        return BloodBag.builder()
+                .bagId(dto.getBagId())
+                .volume(dto.getVolume())
+                .collectedDate(dto.getCollectedDate())
+                .expirationDate(dto.getExpirationDate())
+                .status(dto.getStatus())
+                .component(component)
+                .quantity(dto.getQuantity())
+                .blood(bloodRepository.findByBloodCode(dto.getBloodCode())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu " + dto.getBloodCode())))
+                .build();
+    }
 
     @Transactional
     public Map<String, List<String>> deleteBloodBags(List<String> bagIds) {
@@ -115,11 +127,6 @@ public class BloodBagService {
         bloodBagRepository.deleteBloodBagBybagId(bagId);
     }
 
-    public BloodBagDTO findByAfterDonationId(String afterDonationId) {
-        BloodBag bag = bloodBagRepository.findByAfterDonationBlood_IdAfterDonation(afterDonationId)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy túi máu từ AfterDonation ID"));
-        return BloodBagDTO.fromEntity(bag);
-    }
 
     public List<BloodBagDTO> getAllBloodBags() {
         return bloodBagRepository.findAll()
@@ -128,8 +135,8 @@ public class BloodBagService {
                 .collect(Collectors.toList());
     }
 
-    // ===================== PRIVATE ======================
-    private static String generateBloodBagId() {
+
+    public static String generateBloodBagId() {
         String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         int randomNum = new Random().nextInt(900) + 100; // 100–999
         return "BG-" + timestamp + "-" + randomNum;

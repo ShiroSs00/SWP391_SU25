@@ -49,7 +49,7 @@ public class AuthService {
             Account account = accountOtp.get();
 
             // Kiểm tra tài khoản có bị vô hiệu hóa không
-            if (!account.isActive()) {
+            if (!account.getIsActive()) {
                 return new LoginResponse(null, "Account is not active", null, null);
             }
 

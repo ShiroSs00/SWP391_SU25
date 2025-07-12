@@ -1,10 +1,12 @@
 package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.AchievementDTO;
+import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.service.AchievementService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,42 +21,59 @@ public class AchievementController {
     private final AchievementService achievementService;
 
     @GetMapping("/getall")
-    public ResponseEntity<List<AchievementDTO>> getAllAchievements() {
-        return ResponseEntity.ok(achievementService.getAllAchievements());
+    public ResponseEntity<ApiResponse<List<AchievementDTO>>> getAllAchievements() {
+        List<AchievementDTO> data = achievementService.getAllAchievements();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy danh sách thành tựu thành công", data));
     }
 
     @GetMapping("/getbyname/{name}")
-    public ResponseEntity<AchievementDTO> getAchievement(@PathVariable String name) {
-        return ResponseEntity.ok(achievementService.getAchievementByName(name));
+    public ResponseEntity<ApiResponse<AchievementDTO>> getAchievement(@PathVariable String name) {
+        AchievementDTO data = achievementService.getAchievementByName(name);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy thành tựu thành công", data));
     }
 
     @PostMapping("/create")
-    public ResponseEntity<AchievementDTO> createAchievement(@Valid @RequestBody AchievementDTO dto) {
-        return ResponseEntity.ok(achievementService.createAchievement(dto));
+    public ResponseEntity<ApiResponse<AchievementDTO>> createAchievement(@Valid @RequestBody AchievementDTO dto) {
+        AchievementDTO data = achievementService.createAchievement(dto);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Tạo thành tựu thành công", data));
     }
 
+
+    @PostMapping("/check-all")
+    public ResponseEntity<ApiResponse<String>> manualCheckAchievements() {
+        achievementService.checkAndAssignAchievements();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Đã kiểm tra & gán thành tựu cho tất cả user", null));
+    }
+
+    @Scheduled(cron = "0 */5 * * * ?")
+    public void autoCheckAchievements() {
+        achievementService.checkAndAssignAchievements();
+    }
+
+
     @PutMapping("/update/{name}")
-    public ResponseEntity<AchievementDTO> updateAchievement(@PathVariable String name,
-                                                            @Valid @RequestBody AchievementDTO dto) {
-        return ResponseEntity.ok(achievementService.updateAchievement(name, dto));
+    public ResponseEntity<ApiResponse<AchievementDTO>> updateAchievement(@PathVariable String name,
+                                                                         @Valid @RequestBody AchievementDTO dto) {
+        AchievementDTO data = achievementService.updateAchievement(name, dto);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật thành tựu thành công", data));
     }
 
     @DeleteMapping("/delete/{name}")
-    public ResponseEntity<Void> deleteAchievement(@PathVariable String name) {
+    public ResponseEntity<ApiResponse<String>> deleteAchievement(@PathVariable String name) {
         achievementService.deleteAchievementByName(name);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Xóa thành tựu thành công", null));
     }
 
     @GetMapping("/getbyaccount")
-    public ResponseEntity<AchievementDTO> getMyAchievement() {
+    public ResponseEntity<ApiResponse<AchievementDTO>> getMyAchievement() {
         String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return ResponseEntity.ok(achievementService.getAchievementByAccountId(accountId));
+        AchievementDTO data = achievementService.getAchievementByAccountId(accountId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy thành tựu cá nhân thành công", data));
     }
 
     @DeleteMapping("/delete-mutiple")
-    public ResponseEntity<?> deleteMultipleAchievements(@RequestBody List<String> names) {
+    public ResponseEntity<ApiResponse<Map<String, List<String>>>> deleteMultipleAchievements(@RequestBody List<String> names) {
         Map<String, List<String>> result = achievementService.deleteAchievementsByNames(names);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Xóa nhiều thành tựu thành công", result));
     }
-
 }

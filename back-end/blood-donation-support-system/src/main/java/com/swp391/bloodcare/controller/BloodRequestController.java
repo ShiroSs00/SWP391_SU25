@@ -4,6 +4,7 @@ import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.request.BloodRequestDTO;
 import com.swp391.bloodcare.dto.request.BloodRequestResponseDTO;
 import com.swp391.bloodcare.entity.BloodRequest;
+import com.swp391.bloodcare.entity.Profile;
 import com.swp391.bloodcare.service.BloodRequestService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -114,6 +115,20 @@ public class BloodRequestController {
                     "message", e.getMessage()
             ));
         }
+    }
+
+
+    @GetMapping("/match-top20/{id}")
+    public ResponseEntity<List<Profile>> matchTop20Donors(@PathVariable String id) {
+        BloodRequest request = bloodRequestService.getByIdRaw(id);
+        return ResponseEntity.ok(bloodRequestService.matchTop20Donors(request));
+    }
+
+    @PostMapping("/send-mail/{id}")
+    public ResponseEntity<String> sendUrgentMail(@PathVariable String id) {
+        BloodRequest request = bloodRequestService.getByIdRaw(id);
+        bloodRequestService.sendUrgentDonationRequest(request);
+        return ResponseEntity.ok("Đã gửi mail cho 20 người phù hợp nhất.");
     }
 
     @PutMapping("/update/{id}")
