@@ -84,6 +84,8 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     List<Account> findTop10ByOrderByCreationDateDesc();
 
 
+    //Đếm số lượng account theo trạng thái
+    Long countByIsActive(Boolean isActive);
 
     List<Account> findByProfile_Address_DistrictIgnoreCaseAndProfile_BloodCode_BloodTypeInAndProfile_BloodCode_RhIn(
             String district, List<Blood.BloodType> bloodTypes, List<Blood.RhFactor> rhFactors);
