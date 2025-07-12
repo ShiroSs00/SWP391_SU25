@@ -37,7 +37,6 @@ public class Blood {
     @Column(name = "quantity")
     private long quantity;
 
-
     @Column(name ="blood_match")
     private String bloodMatch;
 

@@ -8,7 +8,6 @@ import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.ComponentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,21 +32,38 @@ public class BloodBagService {
             throw new IllegalArgumentException("Thể tích túi máu là bắt buộc (ML_250, ML_350, ML_450)");
         }
 
-        String newId;
-        do {
-            newId = generateBloodBagId();
-        } while (bloodBagRepository.existsByBagId(newId));
-
         Component component = componentRepository.findById(dto.getComponentId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Component với ID: " + dto.getComponentId()));
-        BloodBag entity = toEntity(dto, component);
-        entity.setBagId(newId);
-        entity.setStatus(dto.getStatus() != null ? dto.getStatus() : BloodBag.Status.VALID);
-        entity.setComponent(component);
 
-        BloodBag saved = bloodBagRepository.save(entity);
-        return BloodBagDTO.fromEntity(saved);
+        // Tìm xem có túi nào cùng loại đã tồn tại chưa
+        Optional<BloodBag> existingOpt = bloodBagRepository.findByMatchingAttributes(
+                dto.getBloodCode(),
+                dto.getVolume(),
+                dto.getExpirationDate(),
+                component
+        );
+
+        if (existingOpt.isPresent()) {
+            BloodBag existing = existingOpt.get();
+            existing.setQuantity(existing.getQuantity() + dto.getQuantity());
+            BloodBag updated = bloodBagRepository.save(existing);
+            return BloodBagDTO.fromEntity(updated);
+        } else {
+            String newId;
+            do {
+                newId = generateBloodBagId();
+            } while (bloodBagRepository.existsByBagId(newId));
+
+            BloodBag entity = toEntity(dto, component);
+            entity.setBagId(newId);
+            entity.setStatus(dto.getStatus() != null ? dto.getStatus() : BloodBag.Status.VALID);
+            entity.setComponent(component);
+
+            BloodBag saved = bloodBagRepository.save(entity);
+            return BloodBagDTO.fromEntity(saved);
+        }
     }
+
 
     @Transactional
     public int autoUpdateExpiredStatus() {
