@@ -95,6 +95,8 @@ public class NotificationService {
         return "NT-" + timestamp + "-" + randomNum;
     }
 
+    // ==== Hỗ trợ request ====
+
     public void sendBloodRequestNotification(BloodRequest request, List<Account> potentialDonors) {
         String requestInfo = buildRequestInfo(request);
 

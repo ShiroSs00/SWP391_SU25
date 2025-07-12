@@ -21,15 +21,31 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
     // Tìm những người có thể hiến máu gần vị trí yêu cầu
     //cần xem lại địa chỉ
-    @Query("SELECT a FROM Account a " +
-            "WHERE a.profile.bloodCode IN :compatibleBloodTypes " +
-            "AND a.profile.address.city LIKE %:location% " +
-            "AND a.email IS NOT NULL " +
-            "AND a.isActive = true")
-    List<Account> findPotentialDonors(
-            @Param("compatibleBloodTypes") List<String> compatibleBloodTypes,
-            @Param("location") String location
+    @Query(value = """
+    SELECT * FROM account a
+    JOIN profile p ON a.id = p.account_id
+    JOIN blood b ON p.blood_code = b.blood_code
+    WHERE a.is_active = true
+      AND p.latitude IS NOT NULL AND p.longitude IS NOT NULL
+      AND b.blood_code IN (:compatibleBloodTypes)
+      AND (
+          6371 * acos(
+              cos(radians(:lat)) * cos(radians(p.latitude)) *
+              cos(radians(p.longitude) - radians(:lng)) +
+              sin(radians(:lat)) * sin(radians(p.latitude))
+          )
+      ) <= :radiusKm
+    """, nativeQuery = true)
+    List<Account> findNearbyCompatibleDonorsByLatLng(
+            @Param("lat") Double latitude,
+            @Param("lng") Double longitude,
+            @Param("radiusKm") Double radiusKm,
+            @Param("compatibleBloodTypes") List<String> compatibleBloodTypes
     );
+
+
+
+
     // Tìm người hiến máu theo nhóm máu
     @Query("SELECT a FROM Account a " +
             "WHERE a.profile.bloodCode = :bloodType " +

@@ -42,7 +42,7 @@ public class ComponentService {
             return null;
         }
         ComponentDTO dto = new ComponentDTO();
-        dto.setComponent(component.getComponent());
+        dto.setComponent(component.getComponentId());
         dto.setDescription(component.getDescription());
         return dto;
     }
@@ -52,7 +52,7 @@ public class ComponentService {
             return null;
         }
         Component component = new Component();
-        component.setComponent(componentDTO.getComponent());
+        component.setComponentId(componentDTO.getComponent());
         component.setDescription(componentDTO.getDescription());
         return component;
     }

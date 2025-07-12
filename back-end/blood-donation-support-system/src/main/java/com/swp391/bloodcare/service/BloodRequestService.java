@@ -125,6 +125,7 @@ public class  BloodRequestService {
     }
 
     //Admin - Staff thông qua
+    @Transactional
     public BloodRequestResponseDTO approve(String requestId, String accountId) {
         BloodRequest request = bloodRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + requestId));
@@ -160,6 +161,7 @@ public class  BloodRequestService {
      * @param rejectionReason Lý do từ chối
      * @return BloodRequestResponseDTO
      */
+    @Transactional
     public BloodRequestResponseDTO reject(String requestId, String adminId, String rejectionReason) {
         BloodRequest request = bloodRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + requestId));
@@ -334,17 +336,21 @@ public class  BloodRequestService {
      */
     private void findAndNotifyPotentialDonors(BloodRequest request) {
         String requestedBloodCode = request.getBloodCode().getBloodCode();
-        String requesterLocation = request.getAccount().getProfile().getAddress().toString();
-
         // Lấy danh sách nhóm máu có thể hiến
         List<String> compatibleBloodTypes = getCompatibleDonorBloodTypes(requestedBloodCode);
 
-        // Tìm các account có nhóm máu tương thích và gần khu vực
-        List<Account> potentialDonors = accountRepository.findPotentialDonors(
-                compatibleBloodTypes,
-                requesterLocation
-        );
+        Address address = request.getAccount().getProfile().getAddress();
+        Double lat = address.getLatitude();
+        Double lng = address.getLongitude();
+        if (lat == null || lng == null) {
+            throw new IllegalStateException("Không có thông tin tọa độ người nhận máu.");
+        }
+        double searchRadiusKm = 20.0;
 
+        // Tìm các account có nhóm máu tương thích và gần khu vực
+        List<Account> potentialDonors = accountRepository.findNearbyCompatibleDonorsByLatLng(
+                lat, lng, searchRadiusKm, compatibleBloodTypes
+        );
         // Gửi thông báo đến những người hiến máu tiềm năng
         notificationService.sendBloodRequestNotification(request, potentialDonors);
 

@@ -2,10 +2,7 @@ package com.swp391.bloodcare.service;
 
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class BloodCompatibilityService {
