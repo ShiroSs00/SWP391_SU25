@@ -146,7 +146,10 @@ public class BloodRequestService {
         BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
         dto.setIdBloodRequest(request.getIdBloodRequest());
         dto.setRequesterName(request.getAccount().getProfile().getName());
-        dto.setRequesterName(request.getAccount().getUserName());
+        dto.setRequesterPhone(request.getAccount().getProfile().getPhone());
+        dto.setRequesterEmail(request.getAccount().getEmail());
+        dto.setRequesterAddress(request.getAccount().getProfile().getAddress().toString());
+
         dto.setRequestDate(request.getRequestDate());
         dto.setBloodType(request.getBloodCode().getBloodCode());
         dto.setComponent(request.getComponent().getType());
@@ -159,6 +162,8 @@ public class BloodRequestService {
         dto.setRejectionReason(request.getRejectionReason());
         dto.setProcessedBy(request.getProcessedBy());
         dto.setProcessedDate(request.getProcessedDate());
+        if(request.getBloodBag() != null)
+            dto.setBloodBagId(request.getBloodBag().getBagId());
         return dto;
     }
 
@@ -414,18 +419,23 @@ public class BloodRequestService {
         // Lấy danh sách nhóm máu có thể hiến
         List<String> compatibleBloodTypes = getCompatibleDonorBloodTypes(requestedBloodCode);
 
+
         Address address = request.getAccount().getProfile().getAddress();
         Double lat = address.getLatitude();
         Double lng = address.getLongitude();
         if (lat == null || lng == null) {
             throw new IllegalStateException("Không có thông tin tọa độ người nhận máu.");
         }
-        double searchRadiusKm = 20.0;
+        double searchRadiusKm = 100.0;
 
         // Tìm các account có nhóm máu tương thích và gần khu vực
         List<Account> potentialDonors = accountRepository.findNearbyCompatibleDonorsByLatLng(
-                lat, lng, searchRadiusKm, compatibleBloodTypes
+                lat, lng, searchRadiusKm, compatibleBloodTypes, request.getAccount().getAccountId()
         );
+        System.out.println("Số người hiến phù hợp tìm thấy: " + potentialDonors.size());
+        System.out.println("Danh sách blood type tương thích: " + compatibleBloodTypes);
+        System.out.println("Tọa độ: lat=" + lat + ", lng=" + lng);
+
         // Gửi thông báo đến những người hiến máu tiềm năng
         notificationService.sendBloodRequestNotification(request, potentialDonors);
 

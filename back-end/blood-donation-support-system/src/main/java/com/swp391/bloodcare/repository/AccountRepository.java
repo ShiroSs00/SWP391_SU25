@@ -19,8 +19,6 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     Optional<Account> findByUserName(String userName);
     Optional<Account> findByEmail(String email);
 
-    // Tìm những người có thể hiến máu gần vị trí yêu cầu
-    //cần xem lại địa chỉ
     @Query(value = """
     SELECT * FROM account a
     JOIN profile p ON a.id = p.account_id
@@ -35,49 +33,22 @@ public interface AccountRepository extends JpaRepository<Account, String> {
               sin(radians(:lat)) * sin(radians(p.latitude))
           )
       ) <= :radiusKm
+      AND a.id <> :excludedAccountId
+      AND (p.rest_date IS NULL OR p.rest_date < CURDATE())
     """, nativeQuery = true)
     List<Account> findNearbyCompatibleDonorsByLatLng(
             @Param("lat") Double latitude,
             @Param("lng") Double longitude,
             @Param("radiusKm") Double radiusKm,
-            @Param("compatibleBloodTypes") List<String> compatibleBloodTypes
+            @Param("compatibleBloodTypes") List<String> compatibleBloodTypes,
+            @Param("excludedAccountId") String excludedAccountId
     );
-
-
-
-
-    // Tìm người hiến máu theo nhóm máu
-    @Query("SELECT a FROM Account a " +
-            "WHERE a.profile.bloodCode = :bloodType " +
-            "AND a.isActive = true")
-    List<Account> findDonorsByBloodType(@Param("bloodType") String bloodType);
-
-    // Tìm người hiến máu theo vị trí
-    @Query("SELECT a FROM Account a " +
-            "WHERE a.profile.address.city LIKE %:location% " +
-            "AND a.isActive = true")
-    List<Account> findDonorsByLocation(@Param("location") String location);
 
 
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Account a WHERE LOWER(a.userName) = LOWER(:username)")
     boolean existsByUserNameIgnoreCase(@Param("username") String username);
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Account a WHERE LOWER(a.email) = LOWER(:email)")
     boolean existsByEmailIgnoreCase(@Param("email") String email);
-
-// tìm kiếm account theo username
-    List<Account> findByUserNameContainingIgnoreCase(String username);
-
-    //tìm kiếm theo mail
-    List<Account> findByEmailContainingIgnoreCase(String email);
-
-    //tìm kiếm theo role
-    List<Account> findByRole_Role(String roleName);
-
-    //tìm kiếm theo trạng thái hoạt động
-    List<Account> findByIsActive(Boolean isActive);
-
-    //Đếm số lượng account theo trạng thái
-    Long countByIsActive(Boolean isActive);
 
 
     /**

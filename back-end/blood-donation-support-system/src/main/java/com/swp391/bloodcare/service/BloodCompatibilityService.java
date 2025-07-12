@@ -3,6 +3,7 @@ package com.swp391.bloodcare.service;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BloodCompatibilityService {
@@ -66,6 +67,9 @@ public class BloodCompatibilityService {
         ));
     }
 
+
+
+
     public boolean isCompatible(String donorBloodType, String recipientBloodType) {
         BloodCompatibilityInfo info = BLOOD_COMPATIBILITY_MATRIX.get(donorBloodType);
         return info != null && info.getCanDonateTo().contains(recipientBloodType);
@@ -77,6 +81,11 @@ public class BloodCompatibilityService {
                 .map(Map.Entry::getKey)
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
+
+
+
+
+
 
     public List<String> getCompatibleRecipients(String donorBloodType) {
         BloodCompatibilityInfo info = BLOOD_COMPATIBILITY_MATRIX.get(donorBloodType);
