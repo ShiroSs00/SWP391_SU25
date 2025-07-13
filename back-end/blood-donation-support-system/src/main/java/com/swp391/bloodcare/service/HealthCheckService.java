@@ -82,7 +82,7 @@ public class HealthCheckService {
         donationRegistrationRepository.save(reg);
         return toDTO(saved);
     }
-    
+
     public HealthCheckDTO updateHealthCheckById(String healthCheckId, HealthCheckDTO dto) {
         HealthCheck existing = healthCheckRepository.findByHealthCheckId(healthCheckId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck với ID: " + healthCheckId));
