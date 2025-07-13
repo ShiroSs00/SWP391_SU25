@@ -64,13 +64,15 @@ public class HealthCheckService {
             throw new IllegalStateException("HealthCheck đã tồn tại cho DonationRegistration này");
         }
 
-
-
         HealthCheck healthCheck = HealthCheckDTO.toEntity(dto);
         healthCheck.setDonationRegistration(reg);
         healthCheck.setHealthCheckId(generateHealthCheckId());
 
         HealthCheck saved = healthCheckRepository.save(healthCheck);
+
+        //cập nhật lịch sử
+        bloodDonationHistoryService.updateFromHealthCheck(saved);
+
 
         return toDTO(saved);
     }

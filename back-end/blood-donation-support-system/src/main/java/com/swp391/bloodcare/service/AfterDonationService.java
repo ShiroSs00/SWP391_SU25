@@ -73,6 +73,7 @@ public class AfterDonationService {
 
             entity.setBlood(blood);
         }
+        bloodDonationHistoryService.updateFromAfterDonation(entity);
 
         return toDTO(afterRepo.save(entity));
     }
@@ -108,6 +109,7 @@ public class AfterDonationService {
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + id));
             after.setStatus(AfterDonationBlood.Status.SEPARATED);
             afterRepo.save(after);
+            bloodDonationHistoryService.updateFromAfterDonation(after); // cập nhật lịch sử
             result.put(id, "Cập nhật trạng thái: ĐÃ TÁCH");
         }
 
@@ -194,6 +196,7 @@ public class AfterDonationService {
                 bloodBagRepo.save(wholeBag);
                 after.setStatus(AfterDonationBlood.Status.SEPARATED);
                 afterRepo.save(after);
+                bloodDonationHistoryService.updateFromAfterDonation(after);
             }
         }
     }
