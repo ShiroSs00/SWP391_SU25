@@ -41,17 +41,20 @@ public class EmailNotifier implements Notifier {
     }
 
     public void sendHtml(String to, String subject, String htmlContent) {
-        MimeMessage message = javaMailSender.createMimeMessage();
+        if (!isValidEmail(to)) return;
+        MimeMessage message = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(htmlContent, true); // true để gửi HTML
-            javaMailSender.send(message);
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Lỗi khi gửi email HTML", e);
         }
     }
+
 
 
     @Override
