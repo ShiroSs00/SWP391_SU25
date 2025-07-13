@@ -65,7 +65,6 @@ public class HealthCheckService {
         }
 
 
-
         HealthCheck healthCheck = HealthCheckDTO.toEntity(dto);
         healthCheck.setDonationRegistration(reg);
         healthCheck.setHealthCheckId(generateHealthCheckId());

@@ -5,6 +5,7 @@ import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -123,18 +124,27 @@ public class DonationRegistrationService {
     }
 
     @Transactional
-    public int autoCancelExpiredRegistrations() {
+    @Scheduled(cron = "0 00 0 * * ?", zone = "Asia/Ho_Chi_Minh")
+    public int autoUpdateExpiredRegistrations() {
         LocalDate today = LocalDate.now();
 
-        List<DonationRegistration> expiredRegistrations = donationRegistrationRepository.findAll().stream()
+        List<DonationRegistration> allRegistrations = donationRegistrationRepository.findAll();
+
+        List<DonationRegistration> updated = allRegistrations.stream()
                 .filter(reg -> reg.getStatus() == DonationRegistration.Status.PENDING)
                 .filter(reg -> reg.getDonationDate().isBefore(today))
+                .peek(reg -> {
+                    if (reg.getHealthCheck() != null) {
+                        reg.setStatus(DonationRegistration.Status.PASSED);
+                    } else {
+                        reg.setStatus(DonationRegistration.Status.CANCELLED);
+                    }
+                })
                 .collect(Collectors.toList());
 
-        expiredRegistrations.forEach(reg -> reg.setStatus(DonationRegistration.Status.CANCELLED));
-        donationRegistrationRepository.saveAll(expiredRegistrations);
+        donationRegistrationRepository.saveAll(updated);
 
-        return expiredRegistrations.size(); // trả về số lượng đã cập nhật
+        return updated.size();
     }
 
     private String generateUniqueIdWithRetry() {

@@ -134,11 +134,5 @@ public class DonationRegistrationController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Đã xử lý xóa danh sách đăng ký", result));
     }
 
-    @Scheduled(cron = "0 00 0 * * ?", zone = "Asia/Ho_Chi_Minh")
-    @GetMapping("/auto-cancel-expired")
-    public ResponseEntity<ApiResponse<Integer>> autoCancel() {
-        int count = donationRegistrationService.autoCancelExpiredRegistrations();
-        return ResponseEntity.ok(new ApiResponse<>(true, "Đã cập nhật " + count + " đơn quá hạn về trạng thái HỦY", count));
-    }
 
 }
