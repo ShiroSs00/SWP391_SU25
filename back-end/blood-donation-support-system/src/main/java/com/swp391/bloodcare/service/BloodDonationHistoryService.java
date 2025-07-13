@@ -35,7 +35,7 @@ public class BloodDonationHistoryService {
             history.setDonationRegistration(donationRegistration);
         }
 
-        history.setStatus(mapRegistrationStatusToHistoryStatus(donationRegistration.getStatus().name()));
+        history.setStatus(mapRegistrationStatusToHistoryStatus(donationRegistration.getStatus()));
         return repository.save(history);
     }
 
@@ -60,8 +60,13 @@ public class BloodDonationHistoryService {
     //update from after
     public BloodDonationHistory updateFromAfterDonation(AfterDonationBlood afterDonationBlood) {
         HealthCheck healthCheck = afterDonationBlood.getHealthCheck();
+        if (afterDonationBlood == null || healthCheck == null) {
+            throw new IllegalArgumentException("Thông tin AfterDonationBlood hoặc HealthCheck không hợp lệ.");
+        }
         DonationRegistration registration = healthCheck.getDonationRegistration();
-
+        if (registration == null) {
+            throw new IllegalStateException("AfterDonationBlood không liên kết với bất kỳ đơn đăng ký nào.");
+        }
         BloodDonationHistory history = repository
                 .findByDonationRegistration(registration)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đăng kí: " + registration.getRegistrationId()));
@@ -135,39 +140,42 @@ public class BloodDonationHistoryService {
         return bloodDonationHistoryList.stream().map(bloodDonationHistory -> convertToDTO(bloodDonationHistory)).collect(Collectors.toList());
     }
 
-    private String mapRegistrationStatusToHistoryStatus(String registrationStatus) {
+    private String mapRegistrationStatusToHistoryStatus(DonationRegistration.Status registrationStatus) {
         if (registrationStatus == null) return "PENDING";
 
-        switch (registrationStatus.toUpperCase()) {
-            case "CONFIRMED":
-            case "APPROVED":
+        switch (registrationStatus) {
+            case PASSED:
                 return "REGISTERED";
-            case "CANCELLED":
+            case CANCELLED:
                 return "REGISTRATION_CANCELLED";
-            case "REJECTED":
-                return "REGISTRATION_REJECTED";
             default:
                 return "PENDING";
         }
     }
 
     private String mapAfterDonationStatusToHistoryStatus(AfterDonationBlood afterDonation) {
-        String status = afterDonation.getStatus().name();
+        if (afterDonation == null || afterDonation.getStatus() == null) {
+            return "DONATION_UNDER_REVIEW";
+        }
+
+        AfterDonationBlood.Status status = afterDonation.getStatus();
         Boolean isUsable = afterDonation.getIsBloodUsable();
 
-        if (status == null) return "DONATION_UNDER_REVIEW";
-
-        switch (status.toUpperCase()) {
-            case "COMPLETED":
-                return isUsable != null && isUsable ? "DONATION_COMPLETED_USABLE" : "DONATION_COMPLETED_UNUSABLE";
-            case "PROCESSING":
-                return "DONATION_PROCESSING";
-            case "REJECTED":
+        switch (status) {
+            case PASSED:
+                return (isUsable != null && isUsable)
+                        ? "DONATION_COMPLETED_USABLE"
+                        : "DONATION_COMPLETED_UNUSABLE";
+            case FAILED:
                 return "DONATION_REJECTED";
+            case SEPARATED:
+                return "DONATION_PROCESSING";
+            case PENDING:
             default:
                 return "DONATION_UNDER_REVIEW";
         }
     }
+
 
 }
 

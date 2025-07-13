@@ -68,7 +68,6 @@ public class BloodBag {
         EXPIRED,     // HẾT HẠN
         USED,
         ALLOCATED
-
     }
 
     @Getter
