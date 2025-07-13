@@ -52,6 +52,7 @@ public class ComponentService {
         dto.setComponentId(component.getComponentId());
         dto.setType(component.getType());
         dto.setExpirationDays(component.getExpirationDays());
+
         dto.setDescription(component.getDescription());
 
 
@@ -66,6 +67,7 @@ public class ComponentService {
         component.setType(dto.getType());
         component.setExpirationDays(dto.getExpirationDays());
         component.setDescription(dto.getDescription());
+
 
         return component;
     }

@@ -1,9 +1,16 @@
 package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "blood_request")
 public class BloodRequest {
@@ -16,8 +23,6 @@ public class BloodRequest {
     @JoinColumn(name ="name")
     private Account account;
 
-    @Column(name = "patient_name")
-    private String patientName;
 
     @Column(name ="request_date") //ngày mong muốn
     private LocalDate requestDate;
@@ -26,121 +31,47 @@ public class BloodRequest {
     @JoinColumn(name ="blood_code")
     private Blood bloodCode;
 
+    @ManyToOne()
+    @JoinColumn(name = "component_id")
+    private Component component;
+
     @Column(name ="is_emergency")
     private boolean isEmergency;
 
     @Column(name ="status")
-    private String status;
+    private statusBloodRequest status;
 
     @Column(name ="volume")
-    private int volume;
+    private BloodBag.Volume volume;
 
     @Column(name ="request_Creation_date") // ngày tạo đơn
     private LocalDate requestCreationDate;
 
+    @OneToOne
+    @JoinColumn(name = "bagId")
+    private BloodBag bloodBag;
 
-    public BloodRequest() {
+    @Column(name = "processed_by")
+    private String processedBy; // Admin ID who processed the request
+
+    @Column(name = "processed_date")
+    private LocalDate processedDate;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
+    @Column(name = "contact_phone")
+    private String contactPhone;
+
+    @Column(name = "contact_email")
+    private String contactEmail;
+
+    @Column(name = "location")
+    private String location; // Location of the requester
+
+
+    public enum statusBloodRequest{
+        PENDING, APPROVE, REJECT
     }
 
-    public BloodRequest(String idBloodRequest, Account account, String patientName, LocalDate requestDate, Blood bloodCode, boolean isEmergency, String status, int volume, LocalDate requestCreationDate) {
-        this.idBloodRequest = idBloodRequest;
-        this.account = account;
-        this.patientName = patientName;
-        this.requestDate = requestDate;
-        this.bloodCode = bloodCode;
-        this.isEmergency = isEmergency;
-        this.status = status;
-        this.volume = volume;
-        this.requestCreationDate = requestCreationDate;
-    }
-
-    public String getIdBloodRequest() {
-        return idBloodRequest;
-    }
-
-    public void setIdBloodRequest(String idBloodRequest) {
-        this.idBloodRequest = idBloodRequest;
-    }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public void setAccount(Account account) {
-        this.account = account;
-    }
-
-
-    public String getPatientName() {
-        return patientName;
-    }
-
-    public void setPatientName(String patientName) {
-        this.patientName = patientName;
-    }
-
-    public LocalDate getRequestDate() {
-        return requestDate;
-    }
-
-    public void setRequestDate(LocalDate requestDate) {
-        this.requestDate = requestDate;
-    }
-
-    public Blood getBloodCode() {
-        return bloodCode;
-    }
-
-    public void setBloodCode(Blood bloodCode) {
-        this.bloodCode = bloodCode;
-    }
-
-    public boolean isEmergency() {
-        return isEmergency;
-    }
-
-    public void setEmergency(boolean emergency) {
-        isEmergency = emergency;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-
-    public int getVolume() {
-        return volume;
-    }
-
-    public void setVolume(int volume) {
-        this.volume = volume;
-    }
-
-    public LocalDate getRequestCreationDate() {
-        return requestCreationDate;
-    }
-
-    public void setRequestCreationDate(LocalDate requestCreationDate) {
-        this.requestCreationDate = requestCreationDate;
-
-    }
-
-    @Override
-    public String toString() {
-        return "BloodRequest{" +
-                "idBloodRequest=" + idBloodRequest +
-                ", account=" + account +
-                ", patientName='" + patientName + '\'' +
-                ", requestDate=" + requestDate +
-                ", bloodCode=" + bloodCode +
-                ", isEmergency=" + isEmergency +
-                ", status='" + status + '\'' +
-                ", volumn=" + volume +
-                ", requestCreationDate=" + requestCreationDate +
-                '}';
-    }
 }

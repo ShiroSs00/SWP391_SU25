@@ -14,7 +14,7 @@ public class BloodDTO {
     private Blood.BloodType bloodType;
     private Blood.RhFactor rhFactor;
     private Boolean isRareBlood;
-    private Integer quantity;
+    private long quantity;
     private String bloodMatch;
 
     public BloodDTO(Blood blood) {

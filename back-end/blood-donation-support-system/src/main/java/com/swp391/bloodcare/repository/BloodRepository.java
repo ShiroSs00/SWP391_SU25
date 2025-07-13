@@ -4,8 +4,6 @@ import com.swp391.bloodcare.entity.Blood;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -22,4 +20,6 @@ public interface BloodRepository extends JpaRepository<Blood, String> {
     List<Blood> findByCriteria(@Param("bloodCode") String bloodCode,
                                @Param("rh") Blood.RhFactor rh,
                                @Param("isRareBlood") Boolean isRareBlood);
+
+
 }

@@ -2,13 +2,21 @@ package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.NotificationDTO;
 import com.swp391.bloodcare.entity.Account;
+
+import com.swp391.bloodcare.entity.BloodRequest;
+
 import com.swp391.bloodcare.entity.DonationRegistration;
+
 import com.swp391.bloodcare.entity.Notification;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import com.swp391.bloodcare.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.scheduling.annotation.Scheduled;
+
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -23,6 +31,9 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final AccountRepository accountRepository;
     private final DonationRegistrationRepository donationRegistrationRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     public void sendNotification(NotificationDTO dto) {
         Account account = getAccountOrThrow(dto.getAccountId());
@@ -135,5 +146,114 @@ public class NotificationService {
         String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         int randomNum = new Random().nextInt(900) + 100;
         return "NT-" + timestamp + "-" + randomNum;
+    }
+
+    // ==== Hỗ trợ request ====
+
+    public void sendBloodRequestNotification(BloodRequest request, List<Account> potentialDonors) {
+        String requestInfo = buildRequestInfo(request);
+
+        for (Account donor : potentialDonors) {
+            // Gửi email
+            if (donor.getEmail()!= null) {
+                String emailSubject = "Yêu cầu hiến máu khẩn cấp - BloodCare";
+                String emailContent = buildEmailContent(request, donor, requestInfo);
+                emailService.sendEmail(donor.getEmail(), emailSubject, emailContent);
+            }
+        }
+    }
+
+    public void sendApprovalNotification(BloodRequest request) {
+        String recipientEmail = request.getAccount().getEmail();
+        String recipientPhone = request.getAccount().getProfile().getPhone();
+
+        if (recipientEmail != null) {
+            String subject = "Đơn xin máu đã được chấp nhận - " + request.getIdBloodRequest();
+            String content = buildApprovalEmailContent(request);
+            emailService.sendEmail(recipientEmail, subject, content);
+        }
+
+    }
+
+    public void sendRejectionNotification(BloodRequest request) {
+        String recipientEmail = request.getAccount().getEmail();
+        String recipientPhone = request.getAccount().getProfile().getPhone();
+
+        if (recipientEmail != null) {
+            String subject = "Thông báo về đơn xin máu - " + request.getIdBloodRequest();
+            String content = buildRejectionEmailContent(request);
+            emailService.sendEmail(recipientEmail, subject, content);
+        }
+
+    }
+
+    private String buildRequestInfo(BloodRequest request) {
+        return String.format(
+                "Nhóm máu: %s\nThành phần: %s\nThể tích: %s ml\nVị trí: %s\nKhẩn cấp: %s",
+                request.getBloodCode().getBloodCode(),
+                request.getComponent().getType(),
+                request.getVolume().getMl(),
+                request.getAccount().getProfile().getAddress().toString(),
+                request.isEmergency() ? "Có" : "Không"
+        );
+    }
+
+    private String buildEmailContent(BloodRequest request, Account donor, String requestInfo) {
+        return String.format(
+                "Chào %s,\n\n" +
+                        "Chúng tôi có một yêu cầu hiến máu từ %s.\n\n" +
+                        "Chi tiết:\n%s\n\n" +
+                        "Nếu bạn có thể hiến máu, vui lòng liên hệ:\n" +
+                        "Tên: %s\n" +
+                        "Số điện thoại: %s\n" +
+                        "Email: %s\n\n" +
+                        "Hoặc liên hệ với chúng tôi qua hotline: 1900-xxx-xxx\n\n" +
+                        "Cảm ơn sự tử tế của bạn!\n\n" +
+                        "Trân trọng,\nHệ thống quản lý máu BloodCare",
+                donor.getProfile().getName(),
+                request.getAccount().getProfile().getName(),
+                requestInfo,
+                request.getAccount().getProfile().getName(),
+                request.getAccount().getProfile().getPhone() != null ? request.getAccount().getProfile().getPhone() : "Chưa cung cấp",
+                request.getAccount().getEmail() != null ? request.getAccount().getEmail() : "Chưa cung cấp"
+        );
+    }
+
+    private String buildApprovalEmailContent(BloodRequest request) {
+        return String.format(
+                "Chào %s,\n\n" +
+                        "Đơn xin máu của bạn (ID: %s) đã được chấp nhận.\n\n" +
+                        "Chi tiết:\n" +
+                        "Nhóm máu: %s\n" +
+                        "Thành phần: %s\n" +
+                        "Thể tích: %s ml\n" +
+                        "Ngày yêu cầu: %s\n" +
+                        "Mã túi máu: %s\n\n" +
+                        "Vui lòng liên hệ với chúng tôi để sắp xếp việc nhận máu.\n" +
+                        "Hotline: 1900-xxx-xxx\n\n" +
+                        "Trân trọng,\nHệ thống quản lý máu BloodCare",
+                request.getAccount().getProfile().getName(),
+                request.getIdBloodRequest(),
+                request.getBloodCode().getBloodCode(),
+                request.getComponent().getType(),
+                request.getVolume().getMl(),
+                request.getRequestDate(),
+                request.getBloodBag() != null ? request.getBloodBag().getBagId() : "Chưa xác định"
+        );
+    }
+
+    private String buildRejectionEmailContent(BloodRequest request) {
+        return String.format(
+                "Chào %s,\n\n" +
+                        "Rất tiếc, đơn xin máu của bạn (ID: %s) không thể được chấp nhận.\n\n" +
+                        "Lý do: %s\n\n" +
+                        "Chúng tôi đang tìm kiếm những người hiến máu phù hợp trong khu vực của bạn.\n" +
+                        "Chúng tôi sẽ liên hệ với bạn ngay khi có thông tin.\n\n" +
+                        "Để được hỗ trợ, vui lòng liên hệ hotline: 1900-xxx-xxx\n\n" +
+                        "Trân trọng,\nHệ thống quản lý máu BloodCare",
+                request.getAccount().getProfile().getName(),
+                request.getIdBloodRequest(),
+                request.getRejectionReason() != null ? request.getRejectionReason() : "Không có máu phù hợp"
+        );
     }
 }

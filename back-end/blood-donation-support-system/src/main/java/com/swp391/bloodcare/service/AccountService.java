@@ -3,6 +3,7 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.account.AccountRegistrationDTO;
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.account.AccountResponseDTO;
+import com.swp391.bloodcare.dto.account.ChangePassDTO;
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.Address;
 import com.swp391.bloodcare.entity.Profile;
@@ -223,6 +224,41 @@ public class AccountService {
         account.setRole(role);
         accountRepository.save(account);
     }
+
+    @Transactional
+    public ApiResponse<String> changePassword(ChangePassDTO dto) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String currentAccountId = auth.getName();
+
+            Account account = accountRepository.findAccountByAccountId(currentAccountId);
+
+            if (account == null) {
+                return new ApiResponse<>(false, "Tài khoản không tồn tại", null);
+            }
+
+            // Kiểm tra mật khẩu cũ có khớp không
+            if (!passwordEncoder.matches(dto.getOldPassword(), account.getPassword())) {
+                return new ApiResponse<>(false, "Mật khẩu cũ không chính xác", null);
+            }
+
+            // Kiểm tra mật khẩu mới và xác nhận
+            if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+                return new ApiResponse<>(false, "Mật khẩu xác nhận không khớp", null);
+            }
+
+            // Đổi mật khẩu
+            account.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+            accountRepository.save(account);
+
+            return new ApiResponse<>(true, "Đổi mật khẩu thành công", null);
+
+        } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new ApiResponse<>(false, "Lỗi hệ thống: " + e.getMessage(), null);
+        }
+    }
+
 
     private String generateProfileId() {
         String datePart = LocalDate.now().toString().replace("-", ""); // yyyyMMdd
