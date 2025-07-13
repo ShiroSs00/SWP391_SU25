@@ -19,4 +19,6 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, Stri
 
     @Query("SELECT COUNT(br) FROM BloodRequest br WHERE br.requestCreationDate = :date")
     long countByRequestCreationDate(@Param("date") LocalDate date);
+
+    List<BloodRequest> findByStatus(BloodRequest.statusBloodRequest status);
 }

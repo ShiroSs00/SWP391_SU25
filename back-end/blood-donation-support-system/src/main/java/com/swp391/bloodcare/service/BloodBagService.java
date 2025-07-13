@@ -35,7 +35,6 @@ public class BloodBagService {
         Component component = componentRepository.findById(dto.getComponentId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Component với ID: " + dto.getComponentId()));
 
-        // Tìm xem có túi nào cùng loại đã tồn tại chưa
         Optional<BloodBag> existingOpt = bloodBagRepository.findByMatchingAttributes(
                 dto.getBloodCode(),
                 dto.getVolume(),

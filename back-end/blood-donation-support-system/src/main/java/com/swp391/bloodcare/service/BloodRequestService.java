@@ -1,19 +1,24 @@
 package com.swp391.bloodcare.service;
+
 import com.swp391.bloodcare.dto.request.BloodRequestDTO;
 import com.swp391.bloodcare.dto.request.BloodRequestResponseDTO;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
-import com.swp391.bloodcare.repository.AccountRepository;
-import com.swp391.bloodcare.repository.BloodRepository;
-import com.swp391.bloodcare.repository.BloodRequestRepository;
-import com.swp391.bloodcare.repository.ComponentRepository;
+
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,49 +26,48 @@ import java.util.stream.Collectors;
 @Transactional
 public class BloodRequestService {
 
-    @Autowired
-    private BloodRequestRepository bloodRequestRepository;
+    private final BloodRequestRepository bloodRequestRepository;
+    private final AccountRepository accountRepository;
+    private final ProfileRepository profileRepository;
+    private final EmailNotifier emailNotifier;
+    private final ComponentRepository componentRepository;
+    private final BloodRepository bloodRepository;
+    private final BloodBagRepository bloodBagRepository;
+    private final BloodCompatibilityService bloodCompatibilityService;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private AccountRepository accountRepository;
+    private static final String SECRET_KEY = "YourSecretKeyReplaceMe";
 
-    @Autowired
+    private final Map<String, Set<String>> confirmedMap = new HashMap<>();
 
-    private ProfileRepository profileRepository;
+    public BloodRequestService(
+            BloodRequestRepository bloodRequestRepository,
+            AccountRepository accountRepository,
+            ProfileRepository profileRepository,
+            EmailNotifier emailNotifier,
+            ComponentRepository componentRepository,
+            BloodRepository bloodRepository,
+            BloodBagRepository bloodBagRepository,
+            BloodCompatibilityService bloodCompatibilityService,
+            NotificationService notificationService) {
+        this.bloodRequestRepository = bloodRequestRepository;
+        this.accountRepository = accountRepository;
+        this.profileRepository = profileRepository;
+        this.emailNotifier = emailNotifier;
+        this.componentRepository = componentRepository;
+        this.bloodRepository = bloodRepository;
+        this.bloodBagRepository = bloodBagRepository;
+        this.bloodCompatibilityService = bloodCompatibilityService;
+        this.notificationService = notificationService;
+    }
 
-    @Autowired
-    private EmailNotifier emailNotifier;
-
-    @Autowired
-    private ComponentRepository componentRepository;
-
-
-    @Autowired
-    private BloodRepository bloodRepository;
-
-
-    @Autowired
-    private BloodService bloodService;
-
-    @Autowired
-    private BloodBagRepository bloodBagRepository;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private BloodCompatibilityService bloodCompatibilityService;
-
-    @Autowired
-    private NotificationService notificationService;
-
-    public List<Profile> matchTop20Donors(BloodRequest request) {
+    public List<Profile> matchTopDonors(BloodRequest request, int start, int limit) {
         return profileRepository.findAll().stream()
                 .filter(p -> p.getAccount().getIsActive())
                 .filter(this::isEligibleToDonate)
-                .filter(p -> isBloodCompatible(p.getBloodCode(), request.getBloodCode()))
+                .filter(p -> bloodCompatibilityService.isCompatible(p.getBloodCode().getBloodCode(), request.getBloodCode().getBloodCode()))
                 .sorted(Comparator.comparingDouble(p -> distance(request, p)))
-                .limit(20)
+                .skip(start).limit(limit)
                 .toList();
     }
 
@@ -71,46 +75,182 @@ public class BloodRequestService {
         return profile.getRestDate() == null || profile.getRestDate().isBefore(LocalDate.now());
     }
 
-    private boolean isBloodCompatible(Blood donor, Blood needed) {
-        return donor.getBloodMatch().contains(needed.getBloodCode());
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Ho_Chi_Minh")
+    public void retryMatchAndNotifyAll() {
+        List<BloodRequest> pendingRequests = bloodRequestRepository.findByStatus(BloodRequest.statusBloodRequest.PENDING);
+        for (BloodRequest request : pendingRequests) {
+            if (ChronoUnit.DAYS.between(request.getRequestCreationDate(), LocalDate.now()) % 2 != 0) continue;
+            int confirmed = getConfirmedCount(request.getIdBloodRequest());
+            if (confirmed >= 3) continue;
+
+            Optional<BloodBag> available = findSuitableBloodBag(request, 10);
+            if (available.isPresent()) {
+                notifyRequesterToPickup(request);
+                request.setStatus(BloodRequest.statusBloodRequest.APPROVE);
+                bloodRequestRepository.save(request);
+                continue;
+            }
+
+            int batch = confirmedMap.getOrDefault(request.getIdBloodRequest(), new HashSet<>()).size() / 20;
+            sendBatchEmails(request, (batch + 1) * 20, 20);
+        }
     }
 
-    @Transactional
-    public void sendUrgentDonationRequest(BloodRequest request) {
-        List<Profile> topDonors = matchTop20Donors(request);
-        List<String> emails = topDonors.stream()
-                .map(p -> p.getAccount().getEmail())
-                .filter(email -> email != null && !email.isBlank())
-                .toList();
+    private void notifyRequesterToPickup(BloodRequest request) {
+        emailNotifier.sendHtml(
+                request.getAccount().getEmail(),
+                "[CÓ MÁU SẴN] Mời bạn đến nhận máu",
+                """
+                <p>🩸 Hệ thống đã tìm thấy đủ số lượng máu phù hợp (≥10 túi) tại ngân hàng máu.</p>
+                <p>Vui lòng đến nhận máu tại bệnh viện trong thời gian sớm nhất.</p>
+                <p>❤️ Cảm ơn bạn đã sử dụng hệ thống.</p>
+                """
+        );
+    }
 
-        String subject = "[KHẨN CẤP] Yêu cầu hỗ trợ hiến máu gần bạn";
-        String body = String.format("""
-                🩸 Xin chào,
+    private Optional<BloodBag> findSuitableBloodBag(BloodRequest request, int minQuantity) {
+        String bloodCode = request.getBloodCode().getBloodCode();
+        String component = request.getComponent().getType();
+        BloodBag.Volume volume = request.getVolume();
 
-                Một người gần bạn đang cần hỗ trợ hiến máu. Dưới đây là thông tin:
+        List<BloodBag> bags = bloodBagRepository.findByBloodCode_BloodCodeAndComponent_TypeAndVolumeAndStatus(
+                bloodCode, component, volume, BloodBag.Status.VALID
+        );
+        return bags.size() >= minQuantity ? Optional.of(bags.getFirst()) : Optional.empty();
+    }
 
-                • Nhóm máu cần: %s (%s)
-                • Lượng máu: %d ml
-                • Ngày mong muốn: %s
+    private void sendBatchEmails(BloodRequest request, int offset, int limit) {
+        List<Profile> donors = matchTopDonors(request, offset, limit);
+        for (Profile profile : donors) {
+            String email = profile.getAccount().getEmail();
+            if (email == null || email.isBlank()) continue;
 
-                Nếu bạn có thể giúp đỡ, hãy phản hồi trong hệ thống hoặc liên hệ trực tiếp với nhân viên y tế.
+            String token = generateConfirmationToken(request.getIdBloodRequest(), profile.getProfileId());
+            String link = "https://yourdomain.com/api/confirm?token=" + token;
 
-                ❤️ Cảm ơn bạn vì tinh thần nhân ái.
+            emailNotifier.sendHtml(
+                    email,
+                    "[KHẨN CẤP] Yêu cầu hỗ trợ hiến máu",
+                    buildEmailBody(request, link)
+            );
+        }
+    }
+
+    private String buildEmailBody(BloodRequest request, String link) {
+        return String.format("""
+                <p>🩸 Xin chào,</p>
+                <p>Một người gần bạn đang cần hỗ trợ hiến máu:</p>
+                <ul>
+                    <li>Nhóm máu: %s (%s)</li>
+                    <li>Lượng máu: %d ml</li>
+                    <li>Ngày mong muốn: %s</li>
+                </ul>
+                <p><a href='%s'>Xác nhận hiến máu</a></p>
+                <p>❤️ Cảm ơn bạn vì tinh thần nhân ái.</p>
                 """,
                 request.getBloodCode().getBloodType(),
                 request.getBloodCode().getRh(),
-                request.getVolume(),
-                request.getRequestDate()
-        );
-
-        emailNotifier.sendToMany(emails, subject, body);
+                request.getVolume().getMl(),
+                request.getRequestDate(),
+                link);
     }
 
-    public BloodRequest getByIdRaw(String id) {
+    private String generateConfirmationToken(String requestId, String profileId) {
+        Instant now = Instant.now();
+        SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+        return Jwts.builder()
+                .subject("blood-confirmation")
+                .claim("requestId", requestId)
+                .claim("profileId", profileId)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plus(3, ChronoUnit.DAYS)))
+                .signWith(key, Jwts.SIG.HS256)
+                .compact();
+    }
+
+    public void confirmDonation(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+        Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
+        String requestId = claims.get("requestId", String.class);
+        String profileId = claims.get("profileId", String.class);
+
+        BloodRequest request = getByIdRaw(requestId);
+        if (!request.getStatus().equals(BloodRequest.statusBloodRequest.PENDING)) {
+            throw new RuntimeException("Đơn đã đóng hoặc không còn hiệu lực.");
+        }
+
+        confirmedMap.putIfAbsent(requestId, new HashSet<>());
+        Set<String> confirmedSet = confirmedMap.get(requestId);
+        if (confirmedSet.contains(profileId)) {
+            throw new RuntimeException("Bạn đã xác nhận rồi.");
+        }
+
+        confirmedSet.add(profileId);
+        if (confirmedSet.size() >= 3) {
+            request.setStatus(BloodRequest.statusBloodRequest.APPROVE);
+            bloodRequestRepository.save(request);
+            notifyRequesterWithConfirmedDonors(request, confirmedSet);
+        }
+    }
+
+    private void notifyRequesterWithConfirmedDonors(BloodRequest request, Set<String> profileIds) {
+        List<Long> longIds = profileIds.stream().map(Long::parseLong).toList();
+        List<Profile> donors = profileRepository.findAllById(longIds);
+
+        String donorListHtml = donors.stream()
+                .map(d -> String.format("""
+                        <li><b>%s</b> - %s - %s<br/>Nhóm máu: %s (%s)<br/>Địa chỉ: %s</li>
+                        """,
+                        d.getName(),
+                        d.getPhone(),
+                        d.getAccount().getEmail(),
+                        d.getBloodCode().getBloodType(),
+                        d.getBloodCode().getRh(),
+                        d.getAddress().toString()))
+                .collect(Collectors.joining());
+
+        emailNotifier.sendHtml(
+                request.getAccount().getEmail(),
+                "[THÀNH CÔNG] Đã có người xác nhận hiến máu",
+                String.format("""
+                        <p>🩸 Đơn yêu cầu máu của bạn đã có đủ người xác nhận:</p>
+                        <ul>%s</ul>
+                        <p>Vui lòng chủ động liên hệ để sắp xếp việc tiếp nhận máu.</p>
+                        <p>❤️ Cảm ơn bạn đã sử dụng hệ thống.</p>
+                        """, donorListHtml)
+        );
+    }
+
+    private int getConfirmedCount(String requestId) {
+        return confirmedMap.getOrDefault(requestId, new HashSet<>()).size();
+    }
+
+    private BloodRequest getByIdRaw(String id) {
         return bloodRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn với ID: " + id));
     }
 
+    private double distance(BloodRequest request, Profile profile) {
+        try {
+            Address from = request.getAccount().getProfile().getAddress();
+            Address to = profile.getAddress();
+            if (from == null || to == null || from.getLatitude() == null || to.getLatitude() == null) return Double.MAX_VALUE;
+            return haversine(from.getLatitude(), from.getLongitude(), to.getLatitude(), to.getLongitude());
+        } catch (Exception e) {
+            return Double.MAX_VALUE;
+        }
+    }
+
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
 
     // tạo đơn xin máu
     public BloodRequest createBloodRequest(@Valid BloodRequestDTO bloodRequestDTO, String accountId) {
@@ -274,37 +414,6 @@ public class BloodRequestService {
         }
     }
 
-    private double distance(BloodRequest request, Profile profile) {
-        try {
-            Address from = request.getAccount().getProfile().getAddress();
-            Address to = profile.getAddress();
-            if (from == null || to == null || from.getLatitude() == null || to.getLatitude() == null)
-                return Double.MAX_VALUE;
-
-            return haversine(from.getLatitude(), from.getLongitude(), to.getLatitude(), to.getLongitude());
-        } catch (Exception e) {
-            return Double.MAX_VALUE;
-        }
-    }
-
-    private double haversine(double lat1, double lon1, double lat2, double lon2) {
-        final int R = 6371;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = R * c;
-        long todayRequestCount = bloodRequestRepository.countByRequestCreationDate(LocalDate.now());
-        if (todayRequestCount > 100) {
-            throw new RuntimeException("Hệ thống đã đạt giới hạn đơn xin máu trong ngày");
-        }
-
-        return distance;
-    }
-
-
     public BloodRequestResponseDTO updateBloodRequest(String id, @Valid BloodRequestDTO dto) {
         BloodRequest exit = bloodRequestRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + id));
 
@@ -342,27 +451,7 @@ public class BloodRequestService {
     }
 
 
-    // Bảng tương thích máu - ai có thể hiến cho ai
-    private static final Map<String, List<String>> BLOOD_COMPATIBILITY = new HashMap<>();
 
-    static {
-        // Nhóm máu O- có thể hiến cho tất cả
-        BLOOD_COMPATIBILITY.put("O-", Arrays.asList("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-"));
-        // Nhóm máu O+ có thể hiến cho O+, A+, B+, AB+
-        BLOOD_COMPATIBILITY.put("O+", Arrays.asList("O+", "A+", "B+", "AB+"));
-        // Nhóm máu A- có thể hiến cho A+, A-, AB+, AB-
-        BLOOD_COMPATIBILITY.put("A-", Arrays.asList("A+", "A-", "AB+", "AB-"));
-        // Nhóm máu A+ có thể hiến cho A+, AB+
-        BLOOD_COMPATIBILITY.put("A+", Arrays.asList("A+", "AB+"));
-        // Nhóm máu B- có thể hiến cho B+, B-, AB+, AB-
-        BLOOD_COMPATIBILITY.put("B-", Arrays.asList("B+", "B-", "AB+", "AB-"));
-        // Nhóm máu B+ có thể hiến cho B+, AB+
-        BLOOD_COMPATIBILITY.put("B+", Arrays.asList("B+", "AB+"));
-        // Nhóm máu AB- có thể hiến cho AB+, AB-
-        BLOOD_COMPATIBILITY.put("AB-", Arrays.asList("AB+", "AB-"));
-        // Nhóm máu AB+ chỉ có thể hiến cho AB+
-        BLOOD_COMPATIBILITY.put("AB+", Arrays.asList("AB+"));
-    }
 
     /**
      * Kiểm tra xem loại máu nào có thể hiến cho nhau
@@ -442,5 +531,4 @@ public class BloodRequestService {
         // Gửi thông báo từ chối đến người yêu cầu
         notificationService.sendRejectionNotification(request);
     }
-
 }
