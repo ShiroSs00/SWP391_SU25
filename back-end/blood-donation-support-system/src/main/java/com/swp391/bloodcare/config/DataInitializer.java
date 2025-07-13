@@ -5,11 +5,9 @@ import com.swp391.bloodcare.entity.Blood;
 
 import com.swp391.bloodcare.entity.Component;
 import com.swp391.bloodcare.entity.Role;
-import com.swp391.bloodcare.repository.AccountRepository;
-import com.swp391.bloodcare.repository.BloodRepository;
-import com.swp391.bloodcare.repository.ComponentRepository;
-import com.swp391.bloodcare.repository.RoleRepository;
+import com.swp391.bloodcare.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +27,9 @@ public class DataInitializer {
     private final BloodRepository bloodRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private BloodBagRepository bloodBagRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
@@ -140,27 +141,14 @@ public class DataInitializer {
             }
         }
 
-
-
-        // === Khởi tạo các loại máu ===
-        List<String> rareBloodTypes = List.of("AB_NEGATIVE", "B_NEGATIVE", "A_NEGATIVE", "O_NEGATIVE");
-
-        for (Blood.BloodType type : Blood.BloodType.values()) {
-            for (Blood.RhFactor rh : Blood.RhFactor.values()) {
-                String code = type.name() + "_" + rh.name(); // Ví dụ: A_POSITIVE
-                if (!bloodRepository.existsById(code)) {
-                    Blood blood = new Blood();
-                    blood.setBloodCode(code);
-                    blood.setBloodType(type);
-                    blood.setRh(rh);
-                    blood.setIsRareBlood(rareBloodTypes.contains(code));
-                    blood.setQuantity(0);
-                    blood.setBloodMatch("");
-
-                    bloodRepository.save(blood);
-                }
-            }
+        List<Blood> bloodList = bloodRepository.findAll();
+        for (Blood blood : bloodList) {
+            long validQuantity = bloodBagRepository.countValidByBloodCode(blood.getBloodCode());
+            blood.setQuantity(validQuantity);
         }
+        bloodRepository.saveAll(bloodList);
+        System.out.println("✅ Đã cập nhật số lượng túi máu (VALID) cho tất cả Blood.");
+
 
     }
 }

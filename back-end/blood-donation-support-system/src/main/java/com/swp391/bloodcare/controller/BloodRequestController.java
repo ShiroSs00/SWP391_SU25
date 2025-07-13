@@ -47,12 +47,11 @@ public class BloodRequestController {
             ));
         }
     }
-    @GetMapping("/api/confirm")
+    @GetMapping("/confirm")
     public ResponseEntity<String> confirmDonation(@RequestParam String token) {
         bloodRequestService.confirmDonation(token);
         return ResponseEntity.ok("Xác nhận thành công!");
     }
-
 
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<BloodRequestResponseDTO>>> getAllRequests() {
@@ -121,7 +120,6 @@ public class BloodRequestController {
             ));
         }
     }
-
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> updateBloodRequest(

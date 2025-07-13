@@ -150,14 +150,14 @@ public class NotificationService {
 
     // ==== Hỗ trợ request ====
 
-    public void sendBloodRequestNotification(BloodRequest request, List<Account> potentialDonors) {
+    public void sendBloodRequestNotification(BloodRequest request, List<Account> potentialDonors, String confirmLink) {
         String requestInfo = buildRequestInfo(request);
 
         for (Account donor : potentialDonors) {
             // Gửi email
             if (donor.getEmail()!= null) {
                 String emailSubject = "Yêu cầu hiến máu khẩn cấp - BloodCare";
-                String emailContent = buildEmailContent(request, donor, requestInfo);
+                String emailContent = buildEmailContent(request, donor, requestInfo,confirmLink);
                 emailService.sendEmail(donor.getEmail(), emailSubject, emailContent);
             }
         }
@@ -198,12 +198,13 @@ public class NotificationService {
         );
     }
 
-    private String buildEmailContent(BloodRequest request, Account donor, String requestInfo) {
+    private String buildEmailContent(BloodRequest request, Account donor, String requestInfo, String confirmLink) {
         return String.format(
                 "Chào %s,\n\n" +
                         "Chúng tôi có một yêu cầu hiến máu từ %s.\n\n" +
-                        "Chi tiết:\n%s\n\n" +
-                        "Nếu bạn có thể hiến máu, vui lòng liên hệ:\n" +
+                        "Chi tiết yêu cầu:\n%s\n\n" +
+                        "Nếu bạn có thể hiến máu, vui lòng xác nhận tại đường dẫn sau:\n%s\n\n" +
+                        "Hoặc bạn cũng có thể liên hệ trực tiếp với người cần máu:\n" +
                         "Tên: %s\n" +
                         "Số điện thoại: %s\n" +
                         "Email: %s\n\n" +
@@ -213,6 +214,7 @@ public class NotificationService {
                 donor.getProfile().getName(),
                 request.getAccount().getProfile().getName(),
                 requestInfo,
+                confirmLink,  // dòng mới được chèn vào
                 request.getAccount().getProfile().getName(),
                 request.getAccount().getProfile().getPhone() != null ? request.getAccount().getProfile().getPhone() : "Chưa cung cấp",
                 request.getAccount().getEmail() != null ? request.getAccount().getEmail() : "Chưa cung cấp"
