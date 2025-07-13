@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 
@@ -54,15 +55,20 @@ public class HealthCheckService {
         return result;
     }
 
-
     public HealthCheckDTO createHealthCheck(String registrationId, HealthCheckDTO dto) {
         DonationRegistration reg = donationRegistrationRepository.findByRegistrationId(registrationId)
-                .orElseThrow(() -> new EntityNotFoundException("DonationRegistration not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn đăng ký hiến máu"));
 
-        // Kiểm tra nếu đã có HealthCheck cho donation này thì không cho tạo nữa
         if (healthCheckRepository.findByDonationRegistration_RegistrationId(registrationId).isPresent()) {
-            throw new IllegalStateException("HealthCheck đã tồn tại cho DonationRegistration này");
+            throw new IllegalStateException("Đã tồn tại kiểm tra sức khoẻ cho đơn này");
         }
+
+
+        LocalDate today = LocalDate.now();
+        if (today.isBefore(reg.getDonationDate())) {
+            throw new IllegalStateException("Chỉ được tạo HealthCheck vào đúng ngày hiến máu");
+        }
+
 
         HealthCheck healthCheck = HealthCheckDTO.toEntity(dto);
         healthCheck.setDonationRegistration(reg);
@@ -72,15 +78,11 @@ public class HealthCheckService {
 
         //cập nhật lịch sử
         bloodDonationHistoryService.updateFromHealthCheck(saved);
-
-
+        reg.setStatus(DonationRegistration.Status.PASSED);
+        donationRegistrationRepository.save(reg);
         return toDTO(saved);
     }
-
-
-
-
-
+    
     public HealthCheckDTO updateHealthCheckById(String healthCheckId, HealthCheckDTO dto) {
         HealthCheck existing = healthCheckRepository.findByHealthCheckId(healthCheckId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck với ID: " + healthCheckId));
