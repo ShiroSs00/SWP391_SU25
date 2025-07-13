@@ -1,9 +1,12 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.repository.Notifier;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -36,6 +39,23 @@ public class EmailNotifier implements Notifier {
             System.err.println("Gửi email thất bại: " + e.getMessage());
         }
     }
+
+    public void sendHtml(String to, String subject, String htmlContent) {
+        if (!isValidEmail(to)) return;
+        MimeMessage message = mailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Lỗi khi gửi email HTML", e);
+        }
+    }
+
+
 
     @Override
     public void sendToMany(List<String> toList, String subject, String body) {
