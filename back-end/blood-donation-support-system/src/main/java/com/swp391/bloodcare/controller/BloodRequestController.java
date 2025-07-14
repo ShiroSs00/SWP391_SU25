@@ -190,5 +190,26 @@ public class BloodRequestController {
         return ResponseEntity.ok(compatibleDonors);
     }
 
+    @PutMapping("/{requestId}/cancel")
+    public ResponseEntity<ApiResponse<String>> cancelBloodRequest(
+            @PathVariable String requestId,
+            Authentication authentication) {
+        try {
+            String accountId = authentication.getName();
+            bloodRequestService.cancelRequest(requestId, accountId);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Huỷ đơn xin máu thành công", null));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Lỗi hệ thống: " + e.getMessage(), null));
+        }
+    }
+
+
 
 }
