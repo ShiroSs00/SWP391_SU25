@@ -113,7 +113,6 @@ public class NotificationService {
                 .collect(Collectors.toList());
     }
 
-    // ======== Support methods ========
 
     private Account getAccountOrThrow(String accountId) {
         return accountRepository.findById(accountId)
