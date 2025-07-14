@@ -9,6 +9,7 @@ import io.jsonwebtoken.security.Keys;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -261,6 +262,9 @@ public class BloodRequestService {
     public BloodRequest createBloodRequest(@Valid BloodRequestDTO bloodRequestDTO, String accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản: " + accountId));
+        if (account.getProfile().isCanRequestBlood()) {
+            throw new IllegalStateException("Bạn đã hủy đơn nhiều lần và bị tạm khóa quyền đăng ký nhận máu");
+        }
 
         validateBloodRequest(bloodRequestDTO, account);
 
@@ -549,4 +553,50 @@ public class BloodRequestService {
             notificationService.sendRejectionNotification(request);
         }
     }
+
+    // CANCEL đơn
+
+    @Transactional
+    public void cancelRequest(String requestId, String accountId) {
+        BloodRequest request = bloodRequestRepository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn nhận máu"));
+
+        if (request.getStatus() != BloodRequest.statusBloodRequest.PENDING) {
+            throw new IllegalStateException("Chỉ được hủy đơn ở trạng thái đang chờ");
+        }
+
+        if (!request.getAccount().getAccountId().equals(accountId)) {
+            throw new SecurityException("Bạn không có quyền hủy đơn này");
+        }
+
+        // Cập nhật trạng thái đơn
+        request.setStatus(BloodRequest.statusBloodRequest.CANCELLED);
+        bloodRequestRepository.save(request);
+
+        // Cập nhật profile
+        Profile profile = request.getAccount().getProfile();
+        profile.setCancelCount(profile.getCancelCount() + 1);
+
+        if (profile.getCancelCount() >= 3) {
+            profile.setCanRequestBlood(false); // Khóa quyền tạo đơn
+        }
+
+        profileRepository.save(profile);
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Ho_Chi_Minh")
+    @Transactional
+    public void resetCancelRestrictions() {
+        List<Profile> profiles = profileRepository.findAll();
+
+        for (Profile profile : profiles) {
+            if (!profile.isCanRequestBlood()) {
+                profile.setCancelCount(0);
+                profile.setCanRequestBlood(true);
+            }
+        }
+        profileRepository.saveAll(profiles);
+    }
+
+
 }

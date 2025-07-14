@@ -71,7 +71,7 @@ public class BloodRequest {
 
 
     public enum statusBloodRequest{
-        PENDING, APPROVE, REJECT
+        PENDING, APPROVE, REJECT, CANCELLED
     }
 
 }

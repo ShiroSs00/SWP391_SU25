@@ -60,11 +60,18 @@ public class Profile {
     @Column(name ="rest_date")
     private LocalDate restDate;
 
+    @Column(name = "cancel_count")
+    private int cancelCount;
+
+    @Column(name = "can_request_blood")
+    private boolean canRequestBlood = true;
+
+
     public Profile() {
     }
 
 
-    public Profile(String profileId, Account accountId, String name, String phone, Date dob, boolean gender, Address address, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate) {
+    public Profile(String profileId, Account accountId, String name, String phone, Date dob, boolean gender, Address address, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate, int cancelCount, boolean canRequestBlood) {
         this.profileId = profileId;
         this.name = name;
         this.phone = phone;
@@ -75,6 +82,8 @@ public class Profile {
         this.bloodCode = bloodCode;
         this.achievement = achievement;
         this.restDate = restDate;
+        this.cancelCount = cancelCount;
+        this.canRequestBlood = canRequestBlood;
     }
 
     public String getProfileId() {
@@ -163,6 +172,22 @@ public class Profile {
 
     public void setRestDate(LocalDate restDate) {
         this.restDate = restDate;
+    }
+
+    public int getCancelCount() {
+        return cancelCount;
+    }
+
+    public void setCancelCount(int cancelCount) {
+        this.cancelCount = cancelCount;
+    }
+
+    public boolean isCanRequestBlood() {
+        return canRequestBlood;
+    }
+
+    public void setCanRequestBlood(boolean canRequestBlood) {
+        this.canRequestBlood = canRequestBlood;
     }
 
     @Override
