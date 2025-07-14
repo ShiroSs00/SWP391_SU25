@@ -9,6 +9,7 @@
 package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,20 +24,31 @@ import java.util.Date;
 public class Profile {
     @Id
     @Column(name = "profile_id")
+    @NotBlank(message = "ID hồ sơ không được để trống")
     private String profileId;
 
     @OneToOne
     @JoinColumn(name = "account_id")
+    @NotNull(message = "Tài khoản không được null")
     private Account account;
 
 
     @Column(name ="name")
+    @Pattern(
+            regexp = "^(\\p{Lu}\\p{Ll}+)(\\s\\p{Lu}\\p{Ll}+)*$",
+            message = "Mỗi từ phải bắt đầu hoa, chỉ chứa chữ (Unicode), không số/ký tự đặc biệt, không khoảng trắng thừa"
+    )
+    @NotBlank(message = "Họ tên không được để trống")
+    @Size(max = 50, message = "Tên không được vượt quá 50 ký tự")
     private String name;
 
     @Column(name ="phone")
+    @Pattern(regexp = "^\\d{9,11}$", message = "Số điện thoại phải từ 9 đến 11 chữ số")
     private String phone;
 
     @Column(name ="date_of_birth")
+    @Past(message = "Ngày sinh phải ở quá khứ")
+    @NotNull(message = "Ngày sinh không được để trống")
     private Date dob; //xem lại
 
     @Column(name ="gender")
@@ -44,13 +56,16 @@ public class Profile {
 
     @Column(name ="address")
     @Embedded
+    @NotNull(message = "Địa chỉ không được để trống")
     private Address address;
 
     @Column(name ="number_of_blood_donation")
+    @Min(value = 0, message = "Số lần hiến máu không được âm")
     private long numberOfBloodDonation;
 
     @JoinColumn(name ="blood_code")
     @ManyToOne
+    @NotNull(message = "Nhóm máu không được để trống")
     private Blood bloodCode;
 
     @ManyToOne
@@ -61,6 +76,7 @@ public class Profile {
     private LocalDate restDate;
 
     @Column(name = "cancel_count")
+    @Min(value = 0, message = "Số lần hủy không được âm")
     private int cancelCount;
 
     @Column(name = "can_request_blood")
