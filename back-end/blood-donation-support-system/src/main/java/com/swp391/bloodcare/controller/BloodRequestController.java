@@ -47,12 +47,11 @@ public class BloodRequestController {
             ));
         }
     }
-    @GetMapping("/api/confirm")
+    @GetMapping("/confirm")
     public ResponseEntity<String> confirmDonation(@RequestParam String token) {
         bloodRequestService.confirmDonation(token);
         return ResponseEntity.ok("Xác nhận thành công!");
     }
-
 
     @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<BloodRequestResponseDTO>>> getAllRequests() {
@@ -122,7 +121,6 @@ public class BloodRequestController {
         }
     }
 
-
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<BloodRequestResponseDTO>> updateBloodRequest(
             @PathVariable String id,
@@ -191,4 +189,27 @@ public class BloodRequestController {
         List<String> compatibleDonors = bloodRequestService.getCompatibleDonorBloodTypes(recipientBloodCode);
         return ResponseEntity.ok(compatibleDonors);
     }
+
+    @PutMapping("/{requestId}/cancel")
+    public ResponseEntity<ApiResponse<String>> cancelBloodRequest(
+            @PathVariable String requestId,
+            Authentication authentication) {
+        try {
+            String accountId = authentication.getName();
+            bloodRequestService.cancelRequest(requestId, accountId);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Huỷ đơn xin máu thành công", null));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Lỗi hệ thống: " + e.getMessage(), null));
+        }
+    }
+
+
+
 }

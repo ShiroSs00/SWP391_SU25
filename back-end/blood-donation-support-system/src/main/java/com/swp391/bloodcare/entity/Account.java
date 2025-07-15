@@ -1,6 +1,7 @@
 package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -19,22 +20,39 @@ public class Account {
     private String accountId;
 
     @Column(name = "username", unique = true, nullable = false)
+    @NotBlank(message = "Tên người dùng không được để trống")
+    @Size(min = 4, max = 50, message = "Tên người dùng phải từ 4 đến 50 ký tự")
+    @Pattern(
+            regexp = "^(\\p{Lu}\\p{Ll}+)(\\s\\p{Lu}\\p{Ll}+)*$",
+            message = "Mỗi từ phải bắt đầu hoa, chỉ chứa chữ (Unicode), không số/ký tự đặc biệt, không khoảng trắng thừa"
+    )
     private String userName;
 
     @Column(name = "email", unique = true, nullable = false)
+    @Email(message = "Email không đúng định dạng")
+    @Pattern(
+            regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$",
+            message = "Email không hợp lệ. Ví dụ: example@gmail.com"
+    )
+    @NotBlank(message = "Email không được để trống")
     private String email;
 
     @Column(name = "password")
+    @NotBlank(message = "Mật khẩu không được để trống")
+    @Size(min = 8, message = "Mật khẩu phải có ít nhất 8 ký tự")
     private String password;
 
     @Column(name = "is_active")
+    @NotNull(message = "Trạng thái hoạt động không được để trống")
     private Boolean isActive;
 
     @Column(name = "creation_date")
+    @NotNull(message = "Ngày tạo không được để trống")
     private LocalDate creationDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_name")
+    @NotNull(message = "Quyền tài khoản không được để trống")
     private Role role;
 
     @OneToMany(mappedBy = "account")

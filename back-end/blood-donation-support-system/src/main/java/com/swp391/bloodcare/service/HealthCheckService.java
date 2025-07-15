@@ -63,10 +63,12 @@ public class HealthCheckService {
             throw new IllegalStateException("Đã tồn tại kiểm tra sức khoẻ cho đơn này");
         }
 
+
         LocalDate today = LocalDate.now();
         if (today.isBefore(reg.getDonationDate())) {
             throw new IllegalStateException("Chỉ được tạo HealthCheck vào đúng ngày hiến máu");
         }
+
 
         HealthCheck healthCheck = HealthCheckDTO.toEntity(dto);
         healthCheck.setDonationRegistration(reg);
@@ -74,14 +76,12 @@ public class HealthCheckService {
 
         HealthCheck saved = healthCheckRepository.save(healthCheck);
 
+        //cập nhật lịch sử
+        bloodDonationHistoryService.updateFromHealthCheck(saved);
         reg.setStatus(DonationRegistration.Status.PASSED);
         donationRegistrationRepository.save(reg);
-
         return toDTO(saved);
     }
-
-
-
 
     public HealthCheckDTO updateHealthCheckById(String healthCheckId, HealthCheckDTO dto) {
         HealthCheck existing = healthCheckRepository.findByHealthCheckId(healthCheckId)

@@ -1,15 +1,10 @@
 package com.swp391.bloodcare.config;
 
-import com.swp391.bloodcare.entity.Account;
-import com.swp391.bloodcare.entity.Blood;
+import com.swp391.bloodcare.entity.*;
 
-import com.swp391.bloodcare.entity.Component;
-import com.swp391.bloodcare.entity.Role;
-import com.swp391.bloodcare.repository.AccountRepository;
-import com.swp391.bloodcare.repository.BloodRepository;
-import com.swp391.bloodcare.repository.ComponentRepository;
-import com.swp391.bloodcare.repository.RoleRepository;
+import com.swp391.bloodcare.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +24,12 @@ public class DataInitializer {
     private final BloodRepository bloodRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private BloodBagRepository bloodBagRepository;
+
+    private final AchievementRepository achievementRepository;
+
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
@@ -140,27 +141,59 @@ public class DataInitializer {
             }
         }
 
-
-
-        // === Khởi tạo các loại máu ===
-        List<String> rareBloodTypes = List.of("AB_NEGATIVE", "B_NEGATIVE", "A_NEGATIVE", "O_NEGATIVE");
-
-        for (Blood.BloodType type : Blood.BloodType.values()) {
-            for (Blood.RhFactor rh : Blood.RhFactor.values()) {
-                String code = type.name() + "_" + rh.name(); // Ví dụ: A_POSITIVE
-                if (!bloodRepository.existsById(code)) {
-                    Blood blood = new Blood();
-                    blood.setBloodCode(code);
-                    blood.setBloodType(type);
-                    blood.setRh(rh);
-                    blood.setIsRareBlood(rareBloodTypes.contains(code));
-                    blood.setQuantity(0);
-                    blood.setBloodMatch("");
-
-                    bloodRepository.save(blood);
-                }
-            }
+        List<Blood> bloodList = bloodRepository.findAll();
+        for (Blood blood : bloodList) {
+            long validQuantity = bloodBagRepository.countValidByBloodCode(blood.getBloodCode());
+            blood.setQuantity(validQuantity);
         }
+        bloodRepository.saveAll(bloodList);
+        System.out.println("✅ Đã cập nhật số lượng túi máu (VALID) cho tất cả Blood.");
+
+
+        List<Achievement> defaultAchievements = List.of(
+                Achievement.builder()
+                        .achievementName("Giọt Máu Đầu Tiên")
+                        .description("Đánh dấu lần hiến đầu tiên")
+                        .minValue(1L).maxValue(2L).build(),
+
+                Achievement.builder()
+                        .achievementName("Người Chia Sẻ Yêu Thương")
+                        .description("Bắt đầu hình thành thói quen")
+                        .minValue(3L).maxValue(4L).build(),
+
+                Achievement.builder()
+                        .achievementName("Anh Hùng Máu Ẩn Danh")
+                        .description("Thường xuyên giúp đỡ người khác")
+                        .minValue(5L).maxValue(9L).build(),
+
+                Achievement.builder()
+                        .achievementName("Người Cứu Mạng")
+                        .description("Đã gián tiếp cứu sống nhiều người")
+                        .minValue(10L).maxValue(14L).build(),
+
+                Achievement.builder()
+                        .achievementName("Huy hiệu Vàng")
+                        .description("Cam kết bền vững với cộng đồng")
+                        .minValue(15L).maxValue(19L).build(),
+
+                Achievement.builder()
+                        .achievementName("Người Hùng Hiến Máu")
+                        .description("Có thể nhận giấy khen từ địa phương")
+                        .minValue(20L).maxValue(29L).build(),
+
+                Achievement.builder()
+                        .achievementName("Huyền Thoại Hiến Máu")
+                        .description("Tôn vinh người hiến nhiều nhất")
+                        .minValue(30L).maxValue(49L).build(),
+
+                Achievement.builder()
+                        .achievementName("Người Cống Hiến Trọn Đời")
+                        .description("Biểu tượng cống hiến lâu dài")
+                        .minValue(50L).maxValue(9999L).build()
+        );
+        achievementRepository.saveAll(defaultAchievements);
+        System.out.println("✅ Đã thêm thành tựu mặc định vào bảng achievement");
+
 
     }
 }

@@ -26,6 +26,7 @@ public class AfterDonationService {
     private final ProfileRepository profileRepo;
     private final BloodBagRepository bloodBagRepo;
     private final ComponentRepository componentRepository;
+   private final ProfileService profileService;
 
     public AfterDonationService(
             AfterDonationRepository afterRepo,
@@ -34,7 +35,8 @@ public class AfterDonationService {
             BloodDonationHistoryService bloodDonationHistoryService,
             ProfileRepository profileRepo,
             BloodBagRepository bloodBagRepo,
-            ComponentRepository componentRepository) {
+            ComponentRepository componentRepository,
+            ProfileService profileService   ) {
         this.afterRepo = afterRepo;
         this.healthCheckRepo = healthCheckRepo;
         this.bloodRepo = bloodRepo;
@@ -42,6 +44,7 @@ public class AfterDonationService {
         this.profileRepo = profileRepo;
         this.bloodBagRepo = bloodBagRepo;
         this.componentRepository = componentRepository;
+        this.profileService = profileService;
     }
     public List<AfterDonationBloodDTO> getAll() {
         return afterRepo.findAll().stream().map(this::toDTO).toList();
@@ -73,6 +76,7 @@ public class AfterDonationService {
 
             entity.setBlood(blood);
         }
+        bloodDonationHistoryService.updateFromAfterDonation(entity);
 
         return toDTO(afterRepo.save(entity));
     }
@@ -108,6 +112,7 @@ public class AfterDonationService {
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + id));
             after.setStatus(AfterDonationBlood.Status.SEPARATED);
             afterRepo.save(after);
+            bloodDonationHistoryService.updateFromAfterDonation(after); // cập nhật lịch sử
             result.put(id, "Cập nhật trạng thái: ĐÃ TÁCH");
         }
 
@@ -194,6 +199,7 @@ public class AfterDonationService {
                 bloodBagRepo.save(wholeBag);
                 after.setStatus(AfterDonationBlood.Status.SEPARATED);
                 afterRepo.save(after);
+                bloodDonationHistoryService.updateFromAfterDonation(after);
             }
         }
     }
@@ -217,7 +223,8 @@ public class AfterDonationService {
         Profile profile = existing.getHealthCheck().getDonationRegistration().getAccount().getProfile();
 
         if("PASS".equalsIgnoreCase(dto.getStatus().name())){
-            profile.setNumberOfBloodDonation(profile.getNumberOfBloodDonation() + 1);
+            String accountId = profile.getAccount().getAccountId();
+            profileService.increaseBloodDonationCount(accountId);
             if(existing.getBlood() != null){
                 profile.setRestDate(LocalDate.now().plusDays(84));
             }

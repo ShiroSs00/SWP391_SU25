@@ -57,5 +57,10 @@ public interface BloodBagRepository extends JpaRepository<BloodBag, Integer> {
             @Param("component") Component component
     );
 
+    @Query("SELECT COUNT(b) FROM BloodBag b WHERE b.blood.bloodCode = :bloodCode AND b.status = 'VALID'")
+    long countValidByBloodCode(@Param("bloodCode") String bloodCode);
+
+
+
 
 }

@@ -9,6 +9,7 @@
 package com.swp391.bloodcare.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,20 +24,31 @@ import java.util.Date;
 public class Profile {
     @Id
     @Column(name = "profile_id")
+    @NotBlank(message = "ID hồ sơ không được để trống")
     private String profileId;
 
     @OneToOne
     @JoinColumn(name = "account_id")
+    @NotNull(message = "Tài khoản không được null")
     private Account account;
 
 
     @Column(name ="name")
+    @Pattern(
+            regexp = "^(\\p{Lu}\\p{Ll}+)(\\s\\p{Lu}\\p{Ll}+)*$",
+            message = "Mỗi từ phải bắt đầu hoa, chỉ chứa chữ (Unicode), không số/ký tự đặc biệt, không khoảng trắng thừa"
+    )
+    @NotBlank(message = "Họ tên không được để trống")
+    @Size(max = 50, message = "Tên không được vượt quá 50 ký tự")
     private String name;
 
     @Column(name ="phone")
+    @Pattern(regexp = "^\\d{9,11}$", message = "Số điện thoại phải từ 9 đến 11 chữ số")
     private String phone;
 
     @Column(name ="date_of_birth")
+    @Past(message = "Ngày sinh phải ở quá khứ")
+    @NotNull(message = "Ngày sinh không được để trống")
     private Date dob; //xem lại
 
     @Column(name ="gender")
@@ -44,13 +56,16 @@ public class Profile {
 
     @Column(name ="address")
     @Embedded
+    @NotNull(message = "Địa chỉ không được để trống")
     private Address address;
 
     @Column(name ="number_of_blood_donation")
+    @Min(value = 0, message = "Số lần hiến máu không được âm")
     private long numberOfBloodDonation;
 
     @JoinColumn(name ="blood_code")
     @ManyToOne
+    @NotNull(message = "Nhóm máu không được để trống")
     private Blood bloodCode;
 
     @ManyToOne
@@ -60,11 +75,19 @@ public class Profile {
     @Column(name ="rest_date")
     private LocalDate restDate;
 
+    @Column(name = "cancel_count")
+    @Min(value = 0, message = "Số lần hủy không được âm")
+    private int cancelCount;
+
+    @Column(name = "can_request_blood")
+    private boolean canRequestBlood = true;
+
+
     public Profile() {
     }
 
 
-    public Profile(String profileId, Account accountId, String name, String phone, Date dob, boolean gender, Address address, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate) {
+    public Profile(String profileId, Account accountId, String name, String phone, Date dob, boolean gender, Address address, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate, int cancelCount, boolean canRequestBlood) {
         this.profileId = profileId;
         this.name = name;
         this.phone = phone;
@@ -75,6 +98,8 @@ public class Profile {
         this.bloodCode = bloodCode;
         this.achievement = achievement;
         this.restDate = restDate;
+        this.cancelCount = cancelCount;
+        this.canRequestBlood = canRequestBlood;
     }
 
     public String getProfileId() {
@@ -163,6 +188,22 @@ public class Profile {
 
     public void setRestDate(LocalDate restDate) {
         this.restDate = restDate;
+    }
+
+    public int getCancelCount() {
+        return cancelCount;
+    }
+
+    public void setCancelCount(int cancelCount) {
+        this.cancelCount = cancelCount;
+    }
+
+    public boolean isCanRequestBlood() {
+        return canRequestBlood;
+    }
+
+    public void setCanRequestBlood(boolean canRequestBlood) {
+        this.canRequestBlood = canRequestBlood;
     }
 
     @Override

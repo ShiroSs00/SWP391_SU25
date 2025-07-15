@@ -5,7 +5,11 @@ import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.scheduling.annotation.Scheduled;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +27,9 @@ public class DonationRegistrationService {
     private final AccountRepository accountRepository;
     private final EventRepository eventRepository;
     public final FeedbackRepository feedbackRepository;
+
+    @Autowired
+    private BloodDonationHistoryService bloodDonationHistoryService;
 
     public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
         this.donationRegistrationRepository = donationRegistrationRepository;
@@ -54,7 +61,10 @@ public class DonationRegistrationService {
         reg.setRegistrationId(generateUniqueIdWithRetry());
 
         try {
-            return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
+            DonationRegistration saved = donationRegistrationRepository.save(reg);
+            //tạo lịch sử
+            bloodDonationHistoryService.create(saved);
+            return DonationRegistrationDTO.toDTO(saved);
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi lưu đơn đăng ký: " + e.getMessage(), e);
         }
@@ -142,8 +152,12 @@ public class DonationRegistrationService {
                 })
                 .collect(Collectors.toList());
 
-        donationRegistrationRepository.saveAll(updated);
 
+        for (DonationRegistration reg : updated) {
+            reg.setStatus(DonationRegistration.Status.CANCELLED);
+            bloodDonationHistoryService.create(reg); // cập nhật lại lịch sử tương ứng
+        }
+        donationRegistrationRepository.saveAll(updated);
         return updated.size();
     }
 
@@ -165,7 +179,9 @@ public class DonationRegistrationService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn đăng ký với ID: " + id));
 
         reg.setStatus(newStatus);
-        return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
+        DonationRegistration saved = donationRegistrationRepository.save(reg);
+        bloodDonationHistoryService.create(reg); // cập nhật lịch sử
+        return DonationRegistrationDTO.toDTO(saved);
     }
 
     public DonationRegistrationDTO updateDonationDate(String id, LocalDate newDonationDate) {

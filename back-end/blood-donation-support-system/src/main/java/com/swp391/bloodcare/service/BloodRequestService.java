@@ -9,7 +9,9 @@ import io.jsonwebtoken.security.Keys;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +38,10 @@ public class BloodRequestService {
     private final BloodCompatibilityService bloodCompatibilityService;
     private final NotificationService notificationService;
 
-    private static final String SECRET_KEY = "YourSecretKeyReplaceMe";
+    @Value("${app.confirmation.base-url}")
+    private String confirmationBaseUrl;
+
+    private static final String SECRET_KEY = "ThisIsASecretKeyWithMoreThan32Characters!";
 
     private final Map<String, Set<String>> confirmedMap = new HashMap<>();
 
@@ -101,10 +106,10 @@ public class BloodRequestService {
                 request.getAccount().getEmail(),
                 "[CÓ MÁU SẴN] Mời bạn đến nhận máu",
                 """
-                <p>🩸 Hệ thống đã tìm thấy đủ số lượng máu phù hợp (≥10 túi) tại ngân hàng máu.</p>
-                <p>Vui lòng đến nhận máu tại bệnh viện trong thời gian sớm nhất.</p>
-                <p>❤️ Cảm ơn bạn đã sử dụng hệ thống.</p>
-                """
+                        <p>🩸 Hệ thống đã tìm thấy đủ số lượng máu phù hợp (≥10 túi) tại ngân hàng máu.</p>
+                        <p>Vui lòng đến nhận máu tại bệnh viện trong thời gian sớm nhất.</p>
+                        <p>❤️ Cảm ơn bạn đã sử dụng hệ thống.</p>
+                        """
         );
     }
 
@@ -126,7 +131,7 @@ public class BloodRequestService {
             if (email == null || email.isBlank()) continue;
 
             String token = generateConfirmationToken(request.getIdBloodRequest(), profile.getProfileId());
-            String link = "https://yourdomain.com/api/confirm?token=" + token;
+            String link = confirmationBaseUrl + "?token=" + token;
 
             emailNotifier.sendHtml(
                     email,
@@ -138,16 +143,16 @@ public class BloodRequestService {
 
     private String buildEmailBody(BloodRequest request, String link) {
         return String.format("""
-                <p>🩸 Xin chào,</p>
-                <p>Một người gần bạn đang cần hỗ trợ hiến máu:</p>
-                <ul>
-                    <li>Nhóm máu: %s (%s)</li>
-                    <li>Lượng máu: %d ml</li>
-                    <li>Ngày mong muốn: %s</li>
-                </ul>
-                <p><a href='%s'>Xác nhận hiến máu</a></p>
-                <p>❤️ Cảm ơn bạn vì tinh thần nhân ái.</p>
-                """,
+                        <p>🩸 Xin chào,</p>
+                        <p>Một người gần bạn đang cần hỗ trợ hiến máu:</p>
+                        <ul>
+                            <li>Nhóm máu: %s (%s)</li>
+                            <li>Lượng máu: %d ml</li>
+                            <li>Ngày mong muốn: %s</li>
+                        </ul>
+                        <p><a href='%s'>Xác nhận hiến máu</a></p>
+                        <p>❤️ Cảm ơn bạn vì tinh thần nhân ái.</p>
+                        """,
                 request.getBloodCode().getBloodType(),
                 request.getBloodCode().getRh(),
                 request.getVolume().getMl(),
@@ -176,8 +181,8 @@ public class BloodRequestService {
         String profileId = claims.get("profileId", String.class);
 
         BloodRequest request = getByIdRaw(requestId);
-        if (!request.getStatus().equals(BloodRequest.statusBloodRequest.PENDING)) {
-            throw new RuntimeException("Đơn đã đóng hoặc không còn hiệu lực.");
+        if (request.getStatus().equals(BloodRequest.statusBloodRequest.APPROVE)) {
+            throw new RuntimeException("Đơn đã thông qua hoặc không còn hiệu lực.");
         }
 
         confirmedMap.putIfAbsent(requestId, new HashSet<>());
@@ -200,8 +205,8 @@ public class BloodRequestService {
 
         String donorListHtml = donors.stream()
                 .map(d -> String.format("""
-                        <li><b>%s</b> - %s - %s<br/>Nhóm máu: %s (%s)<br/>Địa chỉ: %s</li>
-                        """,
+                                <li><b>%s</b> - %s - %s<br/>Nhóm máu: %s (%s)<br/>Địa chỉ: %s</li>
+                                """,
                         d.getName(),
                         d.getPhone(),
                         d.getAccount().getEmail(),
@@ -235,7 +240,8 @@ public class BloodRequestService {
         try {
             Address from = request.getAccount().getProfile().getAddress();
             Address to = profile.getAddress();
-            if (from == null || to == null || from.getLatitude() == null || to.getLatitude() == null) return Double.MAX_VALUE;
+            if (from == null || to == null || from.getLatitude() == null || to.getLatitude() == null)
+                return Double.MAX_VALUE;
             return haversine(from.getLatitude(), from.getLongitude(), to.getLatitude(), to.getLongitude());
         } catch (Exception e) {
             return Double.MAX_VALUE;
@@ -256,6 +262,9 @@ public class BloodRequestService {
     public BloodRequest createBloodRequest(@Valid BloodRequestDTO bloodRequestDTO, String accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản: " + accountId));
+        if (account.getProfile().isCanRequestBlood()) {
+            throw new IllegalStateException("Bạn đã hủy đơn nhiều lần và bị tạm khóa quyền đăng ký nhận máu");
+        }
 
         validateBloodRequest(bloodRequestDTO, account);
 
@@ -282,6 +291,7 @@ public class BloodRequestService {
 
         return bloodRequestRepository.save(br);
     }
+
     public BloodRequestResponseDTO convertToResponseDTO(BloodRequest request) {
         BloodRequestResponseDTO dto = new BloodRequestResponseDTO();
         dto.setIdBloodRequest(request.getIdBloodRequest());
@@ -302,7 +312,7 @@ public class BloodRequestService {
         dto.setRejectionReason(request.getRejectionReason());
         dto.setProcessedBy(request.getProcessedBy());
         dto.setProcessedDate(request.getProcessedDate());
-        if(request.getBloodBag() != null)
+        if (request.getBloodBag() != null)
             dto.setBloodBagId(request.getBloodBag().getBagId());
         return dto;
     }
@@ -331,12 +341,12 @@ public class BloodRequestService {
         BloodRequest request = bloodRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + requestId));
 
-        if(!request.getStatus().equals(BloodRequest.statusBloodRequest.PENDING)) {
+        if (!request.getStatus().equals(BloodRequest.statusBloodRequest.PENDING)) {
             throw new IllegalStateException("Chỉ có thể xử lý đơn khi trạng thái là PENDING.");
         }
         //tìm túi máu phù hợp
         Optional<BloodBag> suitableBloodBag = findSuitableBloodBag(request);
-        if(suitableBloodBag.isPresent()) {
+        if (suitableBloodBag.isPresent()) {
             BloodBag bag = suitableBloodBag.get();
             request.setBloodBag(bag);
             request.setStatus(BloodRequest.statusBloodRequest.APPROVE);
@@ -357,8 +367,9 @@ public class BloodRequestService {
 
     /**
      * Admin reject đơn xin máu
-     * @param requestId ID đơn xin máu
-     * @param adminId ID admin xử lý
+     *
+     * @param requestId       ID đơn xin máu
+     * @param adminId         ID admin xử lý
      * @param rejectionReason Lý do từ chối
      * @return BloodRequestResponseDTO
      */
@@ -383,7 +394,6 @@ public class BloodRequestService {
         BloodRequest savedRequest = bloodRequestRepository.save(request);
         return convertToResponseDTO(savedRequest);
     }
-
 
 
     //Lấy danh sách đơn cấp cứu
@@ -417,7 +427,7 @@ public class BloodRequestService {
     public BloodRequestResponseDTO updateBloodRequest(String id, @Valid BloodRequestDTO dto) {
         BloodRequest exit = bloodRequestRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + id));
 
-        if(!exit.getStatus().equals(BloodRequest.statusBloodRequest.PENDING.name())){
+        if (!exit.getStatus().equals(BloodRequest.statusBloodRequest.PENDING.name())) {
             throw new IllegalStateException("Chỉ có thể chỉnh sửa đơn khi trạng thái là PENDING.");
         }
 
@@ -451,11 +461,10 @@ public class BloodRequestService {
     }
 
 
-
-
     /**
      * Kiểm tra xem loại máu nào có thể hiến cho nhau
-     * @param donorBloodCode Nhóm máu của người hiến
+     *
+     * @param donorBloodCode     Nhóm máu của người hiến
      * @param recipientBloodCode Nhóm máu của người nhận
      * @return true nếu tương thích
      */
@@ -465,6 +474,7 @@ public class BloodRequestService {
 
     /**
      * Lấy danh sách nhóm máu có thể hiến cho nhóm máu cụ thể
+     *
      * @param recipientBloodCode Nhóm máu người nhận
      * @return Danh sách nhóm máu có thể hiến
      */
@@ -474,6 +484,7 @@ public class BloodRequestService {
 
     /**
      * Tìm túi máu phù hợp
+     *
      * @param request Đơn xin máu
      * @return Optional<BloodBag>
      */
@@ -493,6 +504,7 @@ public class BloodRequestService {
 
     /**
      * Gửi thông báo khi đơn được approve
+     *
      * @param request Đơn xin máu
      */
     private void sendApprovalNotification(BloodRequest request) {
@@ -501,6 +513,7 @@ public class BloodRequestService {
 
     /**
      * Tìm và thông báo đến những người hiến máu tiềm năng
+     *
      * @param request Đơn xin máu bị reject
      */
     private void findAndNotifyPotentialDonors(BloodRequest request) {
@@ -526,9 +539,64 @@ public class BloodRequestService {
         System.out.println("Tọa độ: lat=" + lat + ", lng=" + lng);
 
         // Gửi thông báo đến những người hiến máu tiềm năng
-        notificationService.sendBloodRequestNotification(request, potentialDonors);
+        for (Account donor : potentialDonors) {
+            String email = donor.getEmail();
+            if (email == null || email.isBlank()) continue;
 
-        // Gửi thông báo từ chối đến người yêu cầu
-        notificationService.sendRejectionNotification(request);
+            String profileId = donor.getProfile().getProfileId();
+            String token = generateConfirmationToken(request.getIdBloodRequest(), profileId);
+            String link = confirmationBaseUrl + "?token=" + token;
+
+            notificationService.sendBloodRequestNotification(request, potentialDonors, link);
+
+            // Gửi thông báo từ chối đến người yêu cầu
+            notificationService.sendRejectionNotification(request);
+        }
     }
+
+    // CANCEL đơn
+
+    @Transactional
+    public void cancelRequest(String requestId, String accountId) {
+        BloodRequest request = bloodRequestRepository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn nhận máu"));
+
+        if (request.getStatus() != BloodRequest.statusBloodRequest.PENDING) {
+            throw new IllegalStateException("Chỉ được hủy đơn ở trạng thái đang chờ");
+        }
+
+        if (!request.getAccount().getAccountId().equals(accountId)) {
+            throw new SecurityException("Bạn không có quyền hủy đơn này");
+        }
+
+        // Cập nhật trạng thái đơn
+        request.setStatus(BloodRequest.statusBloodRequest.CANCELLED);
+        bloodRequestRepository.save(request);
+
+        // Cập nhật profile
+        Profile profile = request.getAccount().getProfile();
+        profile.setCancelCount(profile.getCancelCount() + 1);
+
+        if (profile.getCancelCount() >= 3) {
+            profile.setCanRequestBlood(false); // Khóa quyền tạo đơn
+        }
+
+        profileRepository.save(profile);
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Ho_Chi_Minh")
+    @Transactional
+    public void resetCancelRestrictions() {
+        List<Profile> profiles = profileRepository.findAll();
+
+        for (Profile profile : profiles) {
+            if (!profile.isCanRequestBlood()) {
+                profile.setCancelCount(0);
+                profile.setCanRequestBlood(true);
+            }
+        }
+        profileRepository.saveAll(profiles);
+    }
+
+
 }
