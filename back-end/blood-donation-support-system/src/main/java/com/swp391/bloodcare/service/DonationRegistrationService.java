@@ -5,14 +5,9 @@ import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.scheduling.annotation.Scheduled;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -27,15 +22,14 @@ public class DonationRegistrationService {
     private final AccountRepository accountRepository;
     private final EventRepository eventRepository;
     public final FeedbackRepository feedbackRepository;
+    private final BloodDonationHistoryService bloodDonationHistoryService;
 
-    @Autowired
-    private BloodDonationHistoryService bloodDonationHistoryService;
-
-    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository) {
+    public DonationRegistrationService(DonationRegistrationRepository donationRegistrationRepository, AccountRepository accountRepository, EventRepository eventRepository, FeedbackRepository feedbackRepository, BloodDonationHistoryService bloodDonationHistoryService) {
         this.donationRegistrationRepository = donationRegistrationRepository;
         this.accountRepository = accountRepository;
         this.eventRepository = eventRepository;
         this.feedbackRepository = feedbackRepository;
+        this.bloodDonationHistoryService = bloodDonationHistoryService;
     }
 
     public DonationRegistrationDTO createDonation(@Valid DonationRegistrationDTO dto, String accountId) {
@@ -88,8 +82,8 @@ public class DonationRegistrationService {
             }
         } else {
             LocalDate max = today.plusDays(20);
-            if (!donationDate.isAfter(today) || donationDate.isAfter(max)) {
-                throw new IllegalArgumentException("Ngày hiến máu phải lớn hơn hôm nay và không quá 20 ngày tới");
+            if (donationDate.isBefore(today) || donationDate.isAfter(max)) {
+                throw new IllegalArgumentException("Ngày hiến máu phải từ hôm nay đến không quá 20 ngày tới");
             }
         }
 
