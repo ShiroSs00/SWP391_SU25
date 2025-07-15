@@ -7,7 +7,10 @@ import com.swp391.bloodcare.repository.BlogRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -72,6 +75,32 @@ public class BlogService {
         Blog blog = BlogDTO.toEntity(dto);
         blog.setBlogId(generateUniqueBlogId());
         blog.setPostDate(new Date());
+        MultipartFile thumbnail = dto.getThumbnail();
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            String originalName = thumbnail.getOriginalFilename();
+            String ext = originalName != null && originalName.contains(".")
+                    ? originalName.substring(originalName.lastIndexOf("."))
+                    : ".jpg";
+            String fileName = UUID.randomUUID() + ext;
+            String uploadDir = "uploads/blog-thumbnails/";
+
+            try {
+                File uploadPath = new File(uploadDir);
+                if (!uploadPath.exists()) {
+                    boolean created = uploadPath.mkdirs();
+                    if (!created) {
+                        throw new IllegalStateException("Không thể tạo thư mục upload tại " + uploadPath.getAbsolutePath());
+                    }
+                }
+
+                File dest = new File(uploadDir + fileName);
+                thumbnail.transferTo(dest);
+
+                blog.setImg("/uploads/blog-thumbnails/" + fileName);
+            } catch (IOException e) {
+                throw new RuntimeException("Lỗi khi lưu ảnh blog", e);
+            }
+        }
 
         blog.setAccount(accountRepository.findAccountByAccountId(accountId));
 
