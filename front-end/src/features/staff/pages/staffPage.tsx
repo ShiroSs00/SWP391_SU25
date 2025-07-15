@@ -4,7 +4,7 @@ import StaffSidebar from '../components/StaffSidebar';
 import DonationManage from '../../donation-register/components/donation-manage';
 import RequestManage from '../../request-blood/components/request-manage';
 import RequestBloodPage from '../../request-blood/pages/request-blood.page';
-
+import HealthCheckPage from '../../health-checks/pages/healthcheckPages';
 const StaffPage: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activePage, setActivePage] = useState('donation');
@@ -26,6 +26,9 @@ const StaffPage: React.FC = () => {
           {activePage === 'donation' && <DonationManage />}
           {activePage === 'receive' && <RequestManage />}
           {activePage === 'request' && <RequestBloodPage/>}
+          {activePage === 'health' && <HealthCheckPage />}
+          
+          {/* Hiển thị thông báo nếu không có trang nào được chọn */}
           {/* Có thể mở rộng các trang khác cho staff ở đây */}
           {!['donation', 'health', 'request'].includes(activePage) && (
             <div className="bg-white rounded-xl shadow p-8 text-center text-gray-600 text-lg animate-fade-in">

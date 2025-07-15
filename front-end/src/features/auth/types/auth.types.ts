@@ -16,14 +16,14 @@ export interface AuthResponse {
 
 export interface LoginFormProps {
   onLogin: (data: LoginFormData) => Promise<AuthResponse>;
-  showToast: (message: string, type: 'success' | 'error') => void;
+  showToast: (message: string, type: "success" | "error") => void;
   isLoading: boolean;
 }
 
 export interface Toast {
   id: number;
   message: string;
-  type: 'success' | 'error';
+  type: "success" | "error";
 }
 
 export interface ToastContainerProps {
@@ -44,5 +44,7 @@ export type RegisterFormData = {
     district: string;
     ward: string;
     street: string;
+    latitude?: number;
+    longitude?: number;
   };
 };

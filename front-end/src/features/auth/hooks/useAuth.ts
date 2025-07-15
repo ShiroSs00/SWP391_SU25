@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import api from '../../../services/axios/api';
 import { type LoginFormData, type AuthResponse, type RegisterFormData } from '../types/auth.types';
 import { triggerUserStateChange } from '../../../lib/userUtils';
+import { geocodeAddress } from '../../../services/geocoding.service';
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,7 +15,44 @@ export const useAuth = () => {
     try {
       const res = await api.post<AuthResponse>('/auth/login', data);
       const result = res.data;
+      
+      // Lưu token
       localStorage.setItem('authToken', result.token || '');
+      
+      // Lưu thông tin người dùng
+      if (result.success) {
+        // Lưu thông tin cơ bản từ response login
+        const basicUserInfo = {
+          email: result.email || '',
+          role: result.role || '',
+          username: data.username
+        };
+        localStorage.setItem('user', JSON.stringify(basicUserInfo));
+        localStorage.setItem('username', data.username);
+        localStorage.setItem('role', result.role || '');
+
+        // Gọi API để lấy thông tin profile đầy đủ
+        try {
+          const profileRes = await api.get('/profile');
+          const profileData = profileRes.data;
+          
+          // Cập nhật với thông tin profile đầy đủ
+          const fullUserInfo = {
+            ...basicUserInfo,
+            name: profileData.name || profileData.fullName || '',
+            profileId: profileData.profileId || '',
+            phone: profileData.phone || '',
+            bloodType: profileData.bloodType || '',
+            address: profileData.address || null
+          };
+          
+          localStorage.setItem('user', JSON.stringify(fullUserInfo));
+          localStorage.setItem('name', profileData.name || profileData.fullName || '');
+        } catch (profileError) {
+          console.error('Lỗi khi lấy thông tin profile:', profileError);
+          // Vẫn tiếp tục với thông tin cơ bản nếu không lấy được profile
+        }
+      }
       
       // Trigger user state change event after successful login
       triggerUserStateChange();
@@ -43,6 +81,17 @@ export const useAuth = () => {
     setIsLoading(true);
     setError('');
     try {
+      // Geocode address to get latitude and longitude
+      const geocodingResults = await geocodeAddress(
+        `${data.address.street}, ${data.address.ward}, ${data.address.district}, ${data.address.city}`
+      );
+
+      if (geocodingResults.length > 0) {
+        const { lat, lon } = geocodingResults[0];
+        data.address.latitude = parseFloat(lat);
+        data.address.longitude = parseFloat(lon);
+      }
+
       const res = await api.post<AuthResponse>('/auth/register', data);
       return res.data;
     } catch (err: unknown) {
@@ -85,7 +134,9 @@ export const useAuth = () => {
     } finally {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
-      localStorage.removeItem('role'); // nếu có lưu role
+      localStorage.removeItem('username');
+      localStorage.removeItem('name');
+      localStorage.removeItem('role');
       
       // Trigger user state change event after logout
       triggerUserStateChange();
@@ -112,4 +163,66 @@ export const useProfile = () => {
   }, []);
 
   return { profile };
+};
+
+interface CurrentUser {
+  username: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  profileId?: string;
+  phone?: string;
+  bloodType?: string;
+  address?: {
+    street?: string;
+    city?: string;
+    district?: string;
+    ward?: string;
+  } | null;
+}
+
+export const useCurrentUser = () => {
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const updateUserState = () => {
+      const token = localStorage.getItem('authToken');
+      const userStr = localStorage.getItem('user');
+      
+      if (token && userStr) {
+        try {
+          const userData = JSON.parse(userStr);
+          setCurrentUser(userData);
+          setIsLoggedIn(true);
+        } catch (error) {
+          console.error('Lỗi khi parse user data:', error);
+          setCurrentUser(null);
+          setIsLoggedIn(false);
+        }
+      } else {
+        setCurrentUser(null);
+        setIsLoggedIn(false);
+      }
+    };
+
+    // Cập nhật state ban đầu
+    updateUserState();
+
+    // Lắng nghe sự kiện thay đổi user state
+    window.addEventListener('userStateChange', updateUserState);
+
+    return () => {
+      window.removeEventListener('userStateChange', updateUserState);
+    };
+  }, []);
+
+  return {
+    currentUser,
+    isLoggedIn,
+    username: currentUser?.username || null,
+    name: currentUser?.name || null,
+    role: currentUser?.role || null,
+    email: currentUser?.email || null
+  };
 };

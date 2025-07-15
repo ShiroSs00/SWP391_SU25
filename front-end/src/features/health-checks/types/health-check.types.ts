@@ -1,13 +1,26 @@
 // Health Check Types
 export interface HealthCheckData {
+  healthCheckId?: string;
   donationRegistrationId: string;
-  bloodPressure?: string;
-  heartRate?: number;
   weight?: number;
-  height?: number;
   temperature?: number;
+  bloodPressure?: number;
+  pulse?: number;
   hemoglobin?: number;
-  notes?: string;
-  status?: string;
-  checkDate?: string;
+  volumeToTake?: number;
+  isFitToDonate?: boolean;
+  note?: string;
+}
+
+export interface HealthCheckPayload {
+  healthCheckId: string;
+  donationRegistrationId: string;
+  weight: number;
+  temperature: number;
+  bloodPressure: number;
+  pulse: number;
+  hemoglobin: number;
+  volumeToTake: number;
+  isFitToDonate: boolean;
+  note: string;
 }

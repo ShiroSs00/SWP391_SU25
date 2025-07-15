@@ -37,3 +37,44 @@ export function removeUserFromLocalStorage() {
   localStorage.removeItem('user');
   triggerUserStateChange();
 }
+
+/**
+ * Get username from localStorage
+ */
+export function getUsernameFromLocalStorage(): string | null {
+  return localStorage.getItem('username');
+}
+
+/**
+ * Get user name from localStorage
+ */
+export function getUserNameFromLocalStorage(): string | null {
+  return localStorage.getItem('name');
+}
+
+/**
+ * Get user role from localStorage
+ */
+export function getUserRoleFromLocalStorage(): string | null {
+  return localStorage.getItem('role');
+}
+
+/**
+ * Check if user is logged in
+ */
+export function isUserLoggedIn(): boolean {
+  return !!localStorage.getItem('authToken');
+}
+
+/**
+ * Get complete user info from localStorage
+ */
+export function getUserInfo() {
+  return {
+    username: getUsernameFromLocalStorage(),
+    name: getUserNameFromLocalStorage(),
+    role: getUserRoleFromLocalStorage(),
+    isLoggedIn: isUserLoggedIn(),
+    user: getUserFromLocalStorage()
+  };
+}

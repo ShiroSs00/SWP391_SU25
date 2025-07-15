@@ -33,12 +33,12 @@ const badgeVariants = cva(
             size: "default",
         },
     },
-)
+);
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {
-    icon?: React.ReactNode
-    removable?: boolean
-    onRemove?: () => void
+    icon?: React.ReactNode;
+    removable?: boolean;
+    onRemove?: () => void;
 }
 
 function Badge({ className, variant, size, icon, removable, onRemove, children, ...props }: BadgeProps) {
@@ -58,13 +58,13 @@ function Badge({ className, variant, size, icon, removable, onRemove, children, 
                 </button>
             )}
         </div>
-    )
+    );
 }
 
 // Blood Type Badge Component
 interface BloodTypeBadgeProps {
-    bloodType: string
-    className?: string
+    bloodType: string;
+    className?: string;
 }
 
 function BloodTypeBadge({ bloodType, className }: BloodTypeBadgeProps) {
@@ -72,13 +72,13 @@ function BloodTypeBadge({ bloodType, className }: BloodTypeBadgeProps) {
         <Badge variant="blood" className={cn("font-bold", className)}>
             {bloodType}
         </Badge>
-    )
+    );
 }
 
 // Status Badge Component
 interface StatusBadgeProps {
-    status: string
-    className?: string
+    status: string;
+    className?: string;
 }
 
 function StatusBadge({ status, className }: StatusBadgeProps) {
@@ -88,30 +88,30 @@ function StatusBadge({ status, className }: StatusBadgeProps) {
             case "active":
             case "completed":
             case "approved":
-                return "success"
+                return "success";
             case "pending":
             case "scheduled":
-                return "warning"
+                return "warning";
             case "expired":
             case "cancelled":
             case "rejected":
-                return "destructive"
+                return "destructive";
             case "urgent":
             case "critical":
-                return "urgent"
+                return "urgent";
             case "reserved":
-                return "reserved"
+                return "reserved";
             default:
-                return "secondary"
+                return "secondary";
         }
-    }
+    };
 
     return (
         <Badge variant={getVariant(status)} className={className}>
             {status}
         </Badge>
-    )
+    );
 }
 
-export { Badge as default, badgeVariants }
-export { BloodTypeBadge, StatusBadge }
+export { Badge as default, badgeVariants };
+export { BloodTypeBadge, StatusBadge };

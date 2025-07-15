@@ -1,188 +1,101 @@
 import { useState, useEffect } from 'react';
 import {
-  updateHealthCheck,
-  createHealthCheck,
   getAllHealthChecks,
-  getHealthCheckByRegistration,
+  createHealthCheck,
+  updateHealthCheck,
   deleteHealthCheck,
-  deleteMultipleHealthChecks
 } from '../services/health-check.services';
 import type { HealthCheckData } from '../types/health-check.types';
-import type { DonationRegistrationDTO } from '../../donation-register/types/donations-register.types';
 
-export const useHealthCheck = (donationRegistrationId?: string) => {
-  const [healthCheck, setHealthCheck] = useState<HealthCheckData | null>(null);
-  const [healthChecks, setHealthChecks] = useState<HealthCheckData[]>([]);
-  const [donationRegistrations, setDonationRegistrations] = useState<DonationRegistrationDTO[]>([]);
-  const [loading, setLoading] = useState(false);
+/**
+ * Custom hook to interact with the Health Check service.
+ */
+export const useHealthCheck = () => {
+  const [healthCheckData, setHealthCheckData] = useState<HealthCheckData[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [previousRegistrationId, setPreviousRegistrationId] = useState<string | null>(null);
 
-  // Lấy tất cả health checks
-  const fetchAllHealthChecks = async () => {
+  /**
+   * Fetch health check data from the server.
+   */
+  const fetchHealthCheckData = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
       const data = await getAllHealthChecks();
-      setHealthChecks(data);
+      setHealthCheckData(data);
     } catch (err) {
-      setError('Không thể tải danh sách health check');
-      console.error('Error fetching health checks:', err);
+      setError((err as Error).message || 'An error occurred while fetching health check data.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Lấy health check cho donation registration cụ thể
-  // Lấy health check theo registration ID
-  const fetchHealthCheckByRegistration = async (registrationId: string) => {
+  /**
+   * Add a new health check record.
+   * @param data HealthCheckData object
+   */
+  const addHealthCheck = async (donationRegistrationId: string, data: HealthCheckData) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      const data = await getHealthCheckByRegistration(registrationId);
-      return data;
+      const newData = await createHealthCheck(donationRegistrationId, data);
+      setHealthCheckData((prev) => [...prev, newData]);
     } catch (err) {
-      setError('Không thể tải health check');
-      console.error('Error fetching health check:', err);
-      return null;
+      setError((err as Error).message || 'An error occurred while adding health check data.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Tạo health check mới
-  const createNewHealthCheck = async (donationRegistrationId: string, data: HealthCheckData) => {
+  /**
+   * Update an existing health check record.
+   * @param id ID of the health check record
+   * @param data Updated HealthCheckData object
+   */
+  const updateHealthCheckData = async (donationRegistrationId: string, data: HealthCheckData) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      const result = await createHealthCheck(donationRegistrationId, data);
-      await fetchAllHealthChecks(); // Refresh danh sách
-      return result;
+      const updatedData = await updateHealthCheck(donationRegistrationId, data);
+      setHealthCheckData((prev) =>
+        prev.map((item) => (item.donationRegistrationId === donationRegistrationId ? updatedData : item))
+      );
     } catch (err) {
-      setError('Không thể tạo health check');
-      console.error('Error creating health check:', err);
-      return null;
+      setError((err as Error).message || 'An error occurred while updating health check data.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Cập nhật health check
-  const updateExistingHealthCheck = async (donationRegistrationId: string, data: HealthCheckData) => {
+  /**
+   * Delete a health check record.
+   * @param id ID of the health check record
+   */
+  const deleteHealthCheckData = async (id: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      const result = await updateHealthCheck(donationRegistrationId, data);
-      await fetchAllHealthChecks(); // Refresh danh sách
-      return result;
-    } catch (err) {
-      setError('Không thể cập nhật health check');
-      console.error('Error updating health check:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Xóa health check
-  const removeHealthCheck = async (id: string) => {
-    try {
-      setLoading(true);
-      setError(null);
       await deleteHealthCheck(id);
-      await fetchAllHealthChecks(); // Refresh danh sách
-      return true;
+      setHealthCheckData((prev) => prev.filter((item) => item.donationRegistrationId !== id));
     } catch (err) {
-      setError('Không thể xóa health check');
-      console.error('Error deleting health check:', err);
-      return false;
+      setError((err as Error).message || 'An error occurred while deleting health check data.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Xóa nhiều health checks
-  const removeMultipleHealthChecks = async (ids: string[]) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await deleteMultipleHealthChecks(ids);
-      await fetchAllHealthChecks(); // Refresh danh sách
-      return true;
-    } catch (err) {
-      setError('Không thể xóa health checks');
-      console.error('Error deleting multiple health checks:', err);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Lấy tất cả donation registrations (để chọn trong health check)
-  const fetchDonationRegistrations = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      // Import hàm getAllDonations từ donation-register
-      const { getAllDonations } = await import('../../donation-register/hooks/useBloodDonation');
-      const data = await getAllDonations();
-      setDonationRegistrations(data);
-    } catch (err) {
-      setError('Không thể tải danh sách đơn đăng ký');
-      console.error('Error fetching donation registrations:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load dữ liệu khi component mount
   useEffect(() => {
-    if (donationRegistrationId && donationRegistrationId !== previousRegistrationId && !loading) {
-      setPreviousRegistrationId(donationRegistrationId);
-    } else if (!loading) {
-      fetchAllHealthChecks();
-      fetchDonationRegistrations();
-    }
-  }, [donationRegistrationId, loading, previousRegistrationId]);
-
-  // Hàm thêm health check mới
-  const handleAddHealthCheck = async (donationRegistrationId: string, healthCheckData: HealthCheckData) => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log('Adding new health check for registrationId:', donationRegistrationId);
-
-      const result = await createNewHealthCheck(donationRegistrationId, healthCheckData);
-
-      if (!result) {
-        throw new Error('Failed to create health check');
-      }
-
-      await fetchAllHealthChecks(); // Refresh the list after adding
-      return result;
-    } catch (err) {
-      setError('Không thể thêm health check mới');
-      console.error('Error adding health check:', err);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchHealthCheckData();
+  }, []);
 
   return {
-    healthCheck, // Health check cho donation registration cụ thể
-    healthChecks,
-    donationRegistrations,
+    healthCheckData,
     loading,
     error,
-    fetchAllHealthChecks,
-    fetchDonationRegistrations,
-    fetchHealthCheckByRegistration,
-    createNewHealthCheck,
-    updateExistingHealthCheck,
-    removeHealthCheck,
-    removeMultipleHealthChecks,
-    setError,
-    handleAddHealthCheck // Xuất khẩu hàm thêm health check mới
+    fetchHealthCheckData,
+    addHealthCheck,
+    updateHealthCheckData,
+    deleteHealthCheckData,
   };
 };

@@ -231,7 +231,7 @@ const DonationManage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {donations.map(d => (
+              {Array.isArray(donations) && donations.map(d => (
                 <tr key={d.registrationId} className="hover:bg-[#fff3f3] transition-all animate-fade-in-up">
                   <td className="px-4 py-2 border-b text-center">
                     <input

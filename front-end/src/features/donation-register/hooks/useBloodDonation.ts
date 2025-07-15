@@ -9,48 +9,48 @@ import type {
 
 // Lấy tất cả đăng ký hiến máu
 export const getAllDonations = async (): Promise<DonationRegistrationDTO[]> => {
-  const res = await api.get<DonationRegistrationDTO[]>('/donation/getall');
-  return res.data;
+  const res = await api.get<{data: DonationRegistrationDTO[]}>('/donation/getall');
+  return res.data.data;
 };
 
 // Lấy đăng ký theo username
 export const getDonationsByUsername = async (username: string): Promise<DonationRegistrationDTO[]> => {
-  const res = await api.get<DonationRegistrationDTO[]>(`/donation/get-by-username/${username}`);
-  return res.data;
+  const res = await api.get<{data: DonationRegistrationDTO[]}>(`/donation/get-by-username/${username}`);
+  return res.data.data;
 };
 
 // Lấy đăng ký theo id
 export const getDonationById = async (id: string): Promise<DonationRegistration> => {
-  const res = await api.get<DonationRegistration>(`/donation/get-by-id/${id}`);
-  return res.data;
+  const res = await api.get<{data: DonationRegistration}>(`/donation/get-by-id/${id}`);
+  return res.data.data;
 };
 
 // Lấy đăng ký theo event
 export const getDonationsByEvent = async (eventId: string): Promise<DonationRegistrationDTO[]> => {
-  const res = await api.get<DonationRegistrationDTO[]>(`/donation/get-by-event/${eventId}`);
-  return res.data;
+  const res = await api.get<{data: DonationRegistrationDTO[]}>(`/donation/get-by-event/${eventId}`);
+  return res.data.data;
 };
 
 // Lọc đăng ký hiến máu
 export const filterDonations = async (params: DonationFilterParams): Promise<DonationRegistrationDTO[]> => {
-  const res = await api.get<DonationRegistrationDTO[]>('/donation/filter', { params });
-  return res.data;
+  const res = await api.get<{data: DonationRegistrationDTO[]}>('/donation/filter', { params });
+  return res.data.data;
 };
 
 // Tạo mới đăng ký hiến máu
-export const createDonation = async (eventId: string | null, payload: DonationCreatePayload): Promise<void> => {
+export const createDonation = async (eventId: string | null, payload: DonationCreatePayload): Promise<DonationRegistrationDTO> => {
   const endpoint = eventId ? `/donation/create/${eventId}` : '/donation/create';
-  const res = await api.post(endpoint, {
+  const res = await api.post<{data: DonationRegistrationDTO}>(endpoint, {
     ...payload,
     eventId: eventId || '', // Use default event ID if none is provided
   });
-  return res.data;
+  return res.data.data;
 };
 
 // Cập nhật đăng ký hiến máu
 export const updateDonation = async (id: string, data: DonationUpdatePayload): Promise<DonationRegistrationDTO> => {
-  const res = await api.put<DonationRegistrationDTO>(`/donation/update/${id}`, data);
-  return res.data;
+  const res = await api.put<{data: DonationRegistrationDTO}>(`/donation/update/${id}`, data);
+  return res.data.data;
 };
 
 // Xóa đăng ký hiến máu

@@ -3,11 +3,9 @@ import api from "../../../services/axios/api";
 import type { DonationItem } from "../types/accounts.types";
 
 // Ensured token is prefixed with 'Bearer ' in the Authorization header
-export const getProfile = async (token: string) => {
+export const getProfile = async () => {
     const response = await api.get("/profile", {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+        
     });
     console.log("API Response:", response.data);
     return response.data.data; 

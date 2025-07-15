@@ -15,7 +15,7 @@ export const useProfile = () => {
         if (!token) {
           throw new Error("No token found in localStorage.");
         }
-        const data = await getProfile(token); // Pass token to the API function
+        const data = await getProfile(); // Pass token to the API function
         setProfile(data);
       } catch {
         setError("Failed to fetch profile data.");
