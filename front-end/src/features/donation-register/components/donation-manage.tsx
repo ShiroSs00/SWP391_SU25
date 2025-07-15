@@ -63,7 +63,7 @@ const DonationManage: React.FC = () => {
         getAllEvents()
       ]);
       setDonations(donationData);
-      setEvents(eventData);
+      setEvents(Array.isArray(eventData) ? eventData : []);
 
       // Lấy thông tin người dùng cho tất cả các donation
       const uniqueAccountIds = [...new Set(donationData.map(d => d.accountId))];
@@ -91,6 +91,7 @@ const DonationManage: React.FC = () => {
 
   // Lấy tên sự kiện từ ID
   const getEventName = (eventId: string) => {
+    if (!Array.isArray(events)) return eventId;
     const event = events.find(e => e.eventId === eventId);
     return event ? event.nameOfEvent : eventId;
   };
@@ -329,7 +330,7 @@ const DonationManage: React.FC = () => {
           onChange={e => setFilter(f => ({ ...f, eventId: e.target.value }))}
         >
           <option value="">Tất cả sự kiện</option>
-          {events.map(event => (
+          {Array.isArray(events) && events.map(event => (
             <option key={event.eventId} value={event.eventId}>
               {event.nameOfEvent}
             </option>

@@ -4,7 +4,7 @@ import type { AdminEvent } from '../types/admin.types';
 // Lấy tất cả event
 export const getAllEvents = async (): Promise<AdminEvent[]> => {
   const res = await api.get<AdminEvent[]>('/event/getall');
-  return res.data.data;
+  return res.data;
 };
 
 // Tạo mới event
