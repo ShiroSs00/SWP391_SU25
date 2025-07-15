@@ -6,7 +6,6 @@ import com.swp391.bloodcare.service.AchievementService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,11 +42,6 @@ public class AchievementController {
     public ResponseEntity<ApiResponse<String>> manualCheckAchievements() {
         achievementService.checkAndAssignAchievements();
         return ResponseEntity.ok(new ApiResponse<>(true, "Đã kiểm tra & gán thành tựu cho tất cả user", null));
-    }
-
-    @Scheduled(cron = "0 */5 * * * ?")
-    public void autoCheckAchievements() {
-        achievementService.checkAndAssignAchievements();
     }
 
 

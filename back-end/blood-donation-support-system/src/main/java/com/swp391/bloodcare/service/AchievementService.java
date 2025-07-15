@@ -8,6 +8,7 @@ import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.AchievementRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +40,7 @@ public class AchievementService {
         return achievement != null ? toDTO(achievement) : null;
     }
 
+    @Scheduled(cron = "0 */5 * * * ?")
     @Transactional
     public void checkAndAssignAchievements() {
         List<Account> accounts = accountRepository.findAll();

@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -38,11 +37,6 @@ public class EventController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Tạo sự kiện thành công", created));
     }
 
-    @Scheduled(cron = "0 00 0 * * ?", zone = "Asia/Ho_Chi_Minh")
-    public void runEventStatusUpdate() {
-        int count = eventService.autoUpdateEventStatuses();
-        System.out.println("🔁 Cập nhật trạng thái " + count + " sự kiện máu theo ngày hiện tại.");
-    }
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<BloodDonationEventDTO>> update(@PathVariable String id,

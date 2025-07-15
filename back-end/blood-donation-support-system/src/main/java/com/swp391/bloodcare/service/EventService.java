@@ -8,6 +8,7 @@ import com.swp391.bloodcare.repository.EventRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -36,7 +37,6 @@ public class EventService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu phải trước ngày kết thúc");
         }
 
-        // Tạo ID duy nhất
         String eventId;
         do {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
@@ -44,7 +44,6 @@ public class EventService {
             eventId = "EV-" + timestamp + "-" + String.format("%03d", randomCode);
         } while (eventRepository.existsByEventId(eventId));
 
-        // Tạo sự kiện mới
         BloodDonationEvent event = BloodDonationEvent.builder()
                 .eventId(eventId)
                 .creationDate(new Date())
@@ -53,7 +52,7 @@ public class EventService {
                 .endDate(dto.getEndDate())
                 .exectedCost(dto.getExpectedCost())
                 .expectedBloodVolume(dto.getExpectedBloodVolume())
-                .actualVolume(0L) // Gán mặc định, không lấy từ DTO
+                .actualVolume(0L)
                 .location(dto.getLocation())
                 .account(account)
                 .build();
@@ -87,6 +86,7 @@ public class EventService {
         eventRepository.delete(event);
     }
 
+    @Scheduled(cron = "0 00 0 * * ?", zone = "Asia/Ho_Chi_Minh")
     @Transactional
     public int autoUpdateEventStatuses() {
         Date now = new Date();
