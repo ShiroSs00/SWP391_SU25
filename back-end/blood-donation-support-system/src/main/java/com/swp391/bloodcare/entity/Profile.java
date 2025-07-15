@@ -38,7 +38,6 @@ public class Profile {
             regexp = "^(\\p{Lu}\\p{Ll}+)(\\s\\p{Lu}\\p{Ll}+)*$",
             message = "Mỗi từ phải bắt đầu hoa, chỉ chứa chữ (Unicode), không số/ký tự đặc biệt, không khoảng trắng thừa"
     )
-
     @NotBlank(message = "Họ tên không được để trống")
     @Size(max = 50, message = "Tên không được vượt quá 50 ký tự")
     private String name;
@@ -66,7 +65,6 @@ public class Profile {
 
     @JoinColumn(name ="blood_code")
     @ManyToOne
-    @NotNull(message = "Nhóm máu không được để trống")
     private Blood bloodCode;
 
     @ManyToOne
@@ -81,14 +79,14 @@ public class Profile {
     private Integer cancelCount;
 
     @Column(name = "can_request_blood")
-    private Boolean canRequestBlood = true;
+    private Boolean canRequestBlood;
 
 
     public Profile() {
     }
 
 
-    public Profile(String profileId, Account accountId, String name, String phone, Date dob, boolean gender, Address address, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate, int cancelCount, boolean canRequestBlood) {
+    public Profile(String profileId, Account accountId, String name, String phone, Date dob, boolean gender, Address address, int numberOfBloodDonation, Blood bloodCode, Achievement achievement, LocalDate restDate, Integer cancelCount, Boolean canRequestBlood) {
         this.profileId = profileId;
         this.name = name;
         this.phone = phone;
@@ -191,19 +189,19 @@ public class Profile {
         this.restDate = restDate;
     }
 
-    public int getCancelCount() {
+    public Integer getCancelCount() {
         return cancelCount;
     }
 
-    public void setCancelCount(int cancelCount) {
+    public void setCancelCount(Integer cancelCount) {
         this.cancelCount = cancelCount;
     }
 
-    public boolean isCanRequestBlood() {
+    public Boolean isCanRequestBlood() {
         return canRequestBlood;
     }
 
-    public void setCanRequestBlood(boolean canRequestBlood) {
+    public void setCanRequestBlood(Boolean canRequestBlood) {
         this.canRequestBlood = canRequestBlood;
     }
 

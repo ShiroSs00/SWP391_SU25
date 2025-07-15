@@ -22,10 +22,6 @@ public class Account {
     @Column(name = "username", unique = true, nullable = false)
     @NotBlank(message = "Tên người dùng không được để trống")
     @Size(min = 4, max = 50, message = "Tên người dùng phải từ 4 đến 50 ký tự")
-    @Pattern(
-            regexp = "^(\\p{Lu}\\p{Ll}+)(\\s\\p{Lu}\\p{Ll}+)*$",
-            message = "Mỗi từ phải bắt đầu hoa, chỉ chứa chữ (Unicode), không số/ký tự đặc biệt, không khoảng trắng thừa"
-    )
     private String userName;
 
     @Column(name = "email", unique = true, nullable = false)

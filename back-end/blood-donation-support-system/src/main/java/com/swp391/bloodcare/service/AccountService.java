@@ -12,6 +12,7 @@ import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
 import com.swp391.bloodcare.repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,7 +46,7 @@ public class AccountService {
 
     //tạo account
     @Transactional
-    public ApiResponse<String> registerAccount(AccountRegistrationDTO accountRegistration) {
+    public ApiResponse<String> registerAccount(@Valid AccountRegistrationDTO accountRegistration) {
         try{
 
             if(accountRepository.existsByUserNameIgnoreCase(accountRegistration.getUsername())){
@@ -100,6 +101,8 @@ public class AccountService {
             //chưa hoàn thiện -- này là ngày nghỉ ngơi
             profile.setRestDate(LocalDate.now());
 
+            profile.setCancelCount(0);
+            profile.setCanRequestBlood(true);
 
             profileRepository.save(profile);
 
