@@ -18,6 +18,7 @@ import { MainLayout } from "./layouts/MainLayout/MainLayouts.tsx";
 import BloodTypesPage from "./pages/Blood-TypesPage.tsx";
 import EmergencyPage from "./pages/EmergencyPage.tsx";
 //health-check
+import HealthCheckPage from "./features/health-checks/pages/healthcheckPages";
 //donation
 import DonationPages from "./features/donation-register/pages/donationpages";
 //blood-requests
@@ -90,6 +91,7 @@ function App() {
         </Route>
         <Route element={<ProtectedRoute allowedRoles={["STAFF","ADMIN"]} />}>
           <Route path="/staff" element={<StaffPage />} />
+          <Route path="/health-checks/*" element={<HealthCheckPage />} />
         </Route>
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>

@@ -47,9 +47,9 @@ export const createDonation = async (eventId: string | null, payload: DonationCr
   return res.data.data;
 };
 
-// Cập nhật đăng ký hiến máu
+// Cập nhật trạng thái đăng ký hiến máu
 export const updateDonation = async (id: string, data: DonationUpdatePayload): Promise<DonationRegistrationDTO> => {
-  const res = await api.put<{data: DonationRegistrationDTO}>(`/donation/update/${id}`, data);
+  const res = await api.patch<{data: DonationRegistrationDTO}>(`/donation/update-status/${id}`, data);
   return res.data.data;
 };
 

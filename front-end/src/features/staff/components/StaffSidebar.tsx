@@ -12,7 +12,6 @@ const staffFeatures = [
   { key: 'bloodtest', title: 'Quản lý kiểm tra máu', icon: '🧪' },
   { key: 'receive', title: 'Quản lý nhận máu', icon: '💉' },
   { key: 'health', title: 'Quản lý sức khỏe', icon: '❤️' },
-  { key: 'request', title: 'Đăng ký xin máu', icon: '🆘' },
 ];
 
 const StaffSidebar: React.FC<StaffSidebarProps> = ({ collapsed = false, onMenuClick }) => (

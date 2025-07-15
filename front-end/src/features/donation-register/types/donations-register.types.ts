@@ -44,7 +44,5 @@ export interface DonationUpdatePayload {
 }
 
 export interface DonationFilterParams {
-  username?: string;
   eventId?: string;
-  donationDate?: string; // thêm donationDate để lọc
 }
