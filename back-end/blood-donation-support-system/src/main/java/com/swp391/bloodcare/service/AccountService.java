@@ -100,6 +100,7 @@ public class AccountService {
             //chưa hoàn thiện -- này là ngày nghỉ ngơi
             profile.setRestDate(LocalDate.now());
 
+
             profileRepository.save(profile);
 
             return new ApiResponse<>(true,"Đăng ký tài khoản thành công!", savedAccount.getAccountId());

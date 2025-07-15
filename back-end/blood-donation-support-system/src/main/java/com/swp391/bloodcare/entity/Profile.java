@@ -38,6 +38,7 @@ public class Profile {
             regexp = "^(\\p{Lu}\\p{Ll}+)(\\s\\p{Lu}\\p{Ll}+)*$",
             message = "Mỗi từ phải bắt đầu hoa, chỉ chứa chữ (Unicode), không số/ký tự đặc biệt, không khoảng trắng thừa"
     )
+
     @NotBlank(message = "Họ tên không được để trống")
     @Size(max = 50, message = "Tên không được vượt quá 50 ký tự")
     private String name;
@@ -77,10 +78,10 @@ public class Profile {
 
     @Column(name = "cancel_count")
     @Min(value = 0, message = "Số lần hủy không được âm")
-    private int cancelCount;
+    private Integer cancelCount;
 
     @Column(name = "can_request_blood")
-    private boolean canRequestBlood = true;
+    private Boolean canRequestBlood = true;
 
 
     public Profile() {
