@@ -94,9 +94,5 @@ public class BloodBag {
                             "Thể tích không hợp lệ. Chỉ chấp nhận: " + Arrays.toString(Arrays.stream(values()).mapToInt(v -> v.ml).toArray())));
         }
 
-
-        public static boolean isValid(int ml) {
-            return Arrays.stream(values()).anyMatch(v -> v.ml == ml);
-        }
     }
 }
