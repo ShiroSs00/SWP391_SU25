@@ -262,7 +262,7 @@ public class BloodRequestService {
     public BloodRequest createBloodRequest(@Valid BloodRequestDTO bloodRequestDTO, String accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản: " + accountId));
-        if (account.getProfile().isCanRequestBlood()) {
+        if (!account.getProfile().isCanRequestBlood()) {
             throw new IllegalStateException("Bạn đã hủy đơn nhiều lần và bị tạm khóa quyền đăng ký nhận máu");
         }
 
