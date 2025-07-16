@@ -39,17 +39,6 @@ public class BloodBagController {
         }
     }
 
-    @GetMapping("/auto-update-expired")
-    public String manuallyUpdateExpiredBags() {
-        int updatedCount = bloodBagService.autoUpdateExpiredStatus();
-        return "Đã cập nhật " + updatedCount + " túi máu hết hạn.";
-    }
-
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void scheduledUpdateExpiredBags() {
-        int updatedCount = bloodBagService.autoUpdateExpiredStatus();
-        System.out.println("[AUTO EXPIRE] Đã cập nhật " + updatedCount + " túi máu hết hạn.");
-    }
 
     @PutMapping("/update/{bagId}")
     public ResponseEntity<ApiResponse<BloodBagDTO>> updateBloodBag(

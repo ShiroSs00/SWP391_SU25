@@ -71,4 +71,12 @@ public class Account {
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<BloodDonationEvent> events;
+
+    @PrePersist
+    public void prePersist() {
+        if (creationDate == null) {
+            creationDate = LocalDate.now();
+        }
+    }
+
 }

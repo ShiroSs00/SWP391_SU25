@@ -8,6 +8,7 @@ import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.ComponentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,7 +64,7 @@ public class BloodBagService {
         }
     }
 
-
+    @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
     public int autoUpdateExpiredStatus() {
         List<BloodBag> expiredBags = bloodBagRepository.findByExpirationDateBeforeAndStatus(
