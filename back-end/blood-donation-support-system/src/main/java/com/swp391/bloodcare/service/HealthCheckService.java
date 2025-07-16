@@ -63,6 +63,9 @@ public class HealthCheckService {
             throw new IllegalStateException("Đã tồn tại kiểm tra sức khoẻ cho đơn này");
         }
 
+        if (!dto.getIsFitToDonate() && dto.getVolumeToTake() != null) {
+            throw new IllegalArgumentException("Người không đủ điều kiện thì không được có volumeToTake");
+        }
 
         LocalDate today = LocalDate.now();
         if (today.isBefore(reg.getDonationDate())) {
@@ -87,12 +90,18 @@ public class HealthCheckService {
         HealthCheck existing = healthCheckRepository.findByHealthCheckId(healthCheckId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck với ID: " + healthCheckId));
 
+        if (!dto.getIsFitToDonate() && dto.getVolumeToTake() != null) {
+            throw new IllegalArgumentException("Người không đủ điều kiện thì không được có volumeToTake");
+        }
+
         if (dto.getWeight() != null) existing.setWeight(dto.getWeight());
         if (dto.getTemperature() != null) existing.setTemperature(dto.getTemperature());
         if (dto.getBloodPressure() != null) existing.setBloodPressure(dto.getBloodPressure());
         if (dto.getPulse() != null) existing.setPulse(dto.getPulse());
         if (dto.getHemoglobin() != null) existing.setHemoglobin(dto.getHemoglobin());
-        if (dto.getVolumeToTake() != null) existing.setVolumeToTake(dto.getVolumeToTake());
+        if (dto.getVolumeToTake() != null) {
+            existing.setVolumeToTake(HealthCheck.Volume.fromInt(dto.getVolumeToTake()));
+        }
         if (dto.getIsFitToDonate() != null) existing.setIsFitToDonate(dto.getIsFitToDonate());
         if (dto.getNote() != null && !dto.getNote().isBlank()) existing.setNote(dto.getNote());
 

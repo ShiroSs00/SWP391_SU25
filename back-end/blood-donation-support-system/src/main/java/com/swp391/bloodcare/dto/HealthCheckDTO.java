@@ -1,9 +1,10 @@
 package com.swp391.bloodcare.dto;
 
-import com.swp391.bloodcare.entity.DonationRegistration;
 import com.swp391.bloodcare.entity.HealthCheck;
 import jakarta.validation.constraints.*;
 import lombok.*;
+
+import java.util.Arrays;
 
 @Getter
 @Setter
@@ -37,18 +38,40 @@ public class HealthCheckDTO {
     @DecimalMin(value = "7.0", message = "Hemoglobin quá thấp, không hợp lệ")
     private Double hemoglobin;
 
-    @NotNull(message = "Lượng máu cần lấy không được để trống")
-    @Min(value = 100, message = "Phải lấy ít nhất 100ml")
-    private Long volumeToTake;
+    private Integer volumeToTake;
 
     @NotNull(message = "Chưa xác định được tình trạng đủ điều kiện hiến máu")
     private Boolean isFitToDonate;
 
     private String note;
 
-    private String donationRegistrationId;
 
-    // Convert Entity → DTO
+    // Custom validation logic
+    @AssertTrue(message = "volumeToTake chỉ chấp nhận 250, 350 hoặc 450 nếu đủ điều kiện hiến máu")
+    public boolean isVolumeValid() {
+        return !Boolean.TRUE.equals(isFitToDonate) || // Nếu không đủ điều kiện hiến thì không kiểm tra
+                volumeToTake == null ||                // Không bắt buộc truyền nếu không cần
+                Arrays.asList(250, 350, 450).contains(volumeToTake);
+    }
+
+    // Convert DTO -> Entity
+    public static HealthCheck toEntity(HealthCheckDTO dto) {
+        return HealthCheck.builder()
+                .healthCheckId(dto.getHealthCheckId())
+                .weight(dto.getWeight())
+                .temperature(dto.getTemperature())
+                .bloodPressure(dto.getBloodPressure())
+                .pulse(dto.getPulse())
+                .hemoglobin(dto.getHemoglobin())
+                .volumeToTake(Boolean.TRUE.equals(dto.getIsFitToDonate()) && dto.getVolumeToTake() != null
+                        ? HealthCheck.Volume.fromInt(dto.getVolumeToTake())
+                        : null)
+                .isFitToDonate(dto.getIsFitToDonate())
+                .note(dto.getNote())
+                .build();
+    }
+
+    // Convert Entity -> DTO
     public static HealthCheckDTO toDTO(HealthCheck entity) {
         return HealthCheckDTO.builder()
                 .healthCheckId(entity.getHealthCheckId())
@@ -57,34 +80,9 @@ public class HealthCheckDTO {
                 .bloodPressure(entity.getBloodPressure())
                 .pulse(entity.getPulse())
                 .hemoglobin(entity.getHemoglobin())
-                .volumeToTake(entity.getVolumeToTake())
+                .volumeToTake(entity.getVolumeToTake() != null ? entity.getVolumeToTake().getMl() : null)
                 .isFitToDonate(entity.getIsFitToDonate())
                 .note(entity.getNote())
-                .donationRegistrationId(entity.getDonationRegistration() != null
-                        ? entity.getDonationRegistration().getRegistrationId()
-                        : null)
                 .build();
-    }
-
-    // Convert DTO → Entity
-    public static HealthCheck toEntity(HealthCheckDTO dto) {
-        HealthCheck entity = new HealthCheck();
-        entity.setHealthCheckId(dto.getHealthCheckId());
-        entity.setWeight(dto.getWeight());
-        entity.setTemperature(dto.getTemperature());
-        entity.setBloodPressure(dto.getBloodPressure());
-        entity.setPulse(dto.getPulse());
-        entity.setHemoglobin(dto.getHemoglobin());
-        entity.setVolumeToTake(dto.getVolumeToTake());
-        entity.setIsFitToDonate(dto.getIsFitToDonate());
-        entity.setNote(dto.getNote());
-
-        if (dto.getDonationRegistrationId() != null) {
-            DonationRegistration dr = new DonationRegistration();
-            dr.setRegistrationId(dto.getDonationRegistrationId());
-            entity.setDonationRegistration(dr);
-        }
-
-        return entity;
     }
 }

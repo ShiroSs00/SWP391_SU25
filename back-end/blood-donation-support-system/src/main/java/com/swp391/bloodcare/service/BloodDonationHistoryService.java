@@ -112,7 +112,7 @@ public class BloodDonationHistoryService {
 
         if (healthCheck != null) {
             // Gán volume
-            dto.setVolumeToTake(healthCheck.getVolumeToTake());
+            dto.setVolumeToTake(healthCheck.getVolumeToTake().getMl());
 
             // Gán ID của HealthCheck
             dto.setHealCheck(healthCheck.getHealthCheckId());

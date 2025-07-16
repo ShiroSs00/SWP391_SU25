@@ -72,6 +72,7 @@ public class BloodBag {
 
     @Getter
     public enum Volume {
+        ML_0(0),
         ML_60(60),     // Tiểu cầu từ máu toàn phần
         ML_125(125),   // Hồng cầu từ 250ml máu
         ML_200(200),   // Hồng cầu từ 350ml
