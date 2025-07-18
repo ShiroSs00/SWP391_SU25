@@ -108,8 +108,7 @@ public class BloodDonationHistoryService {
             dto.setEvent(null);
         }
 
-
-        HealthCheck healCheck = null;
+        
         HealthCheck healthCheck = null;
         if (bloodDonationHistory.getDonationRegistration() != null) {
             healthCheck = bloodDonationHistory.getDonationRegistration().getHealthCheck();
