@@ -151,112 +151,322 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
   };
 
   return (
-    <div className="bg-gray-100 rounded-lg shadow-md p-6 mt-6">
-      <h2 className="text-3xl font-bold mb-4 text-red-600">Quản lý sự kiện</h2>
-      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-6">
-        <button className="flex items-center gap-2 px-6 py-3 bg-red-500 text-white rounded-lg font-medium" onClick={handleAdd}>
-          <FaPlus className="w-5 h-5" /> Thêm sự kiện
-        </button>
-        <div className="flex gap-2 items-center bg-white px-4 py-3 rounded-lg border border-gray-300">
-          <span className="text-gray-500"><FaCalendarAlt className="w-5 h-5" /></span>
-          <input type="date" name="start" value={dateFilter.start} onChange={handleDateFilterChange} className="border-none outline-none bg-transparent p-1 text-sm" />
-          <span className="mx-2 text-gray-400">-</span>
-          <input type="date" name="end" value={dateFilter.end} onChange={handleDateFilterChange} className="border-none outline-none bg-transparent p-1 text-sm" />
-          <button type="button" className="ml-3 px-5 py-2 bg-blue-500 text-white rounded-lg font-medium" onClick={handleDateSearch}>Tìm kiếm</button>
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Quản lý sự kiện</h2>
+            <p className="text-gray-600 mt-1">Quản lý các sự kiện hiến máu của tổ chức</p>
+          </div>
+          <div className="flex items-center gap-3 mt-4 md:mt-0">
+            <button 
+              className="flex items-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+              onClick={handleAdd}
+            >
+              <FaPlus className="w-4 h-4" /> Thêm sự kiện
+            </button>
+          </div>
+        </div>
+        
+        {/* Filter Section */}
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex items-center gap-2 bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-200">
+            <FaCalendarAlt className="w-4 h-4 text-gray-500" />
+            <input 
+              type="date" 
+              name="start" 
+              value={dateFilter.start} 
+              onChange={handleDateFilterChange} 
+              className="border-none outline-none bg-transparent text-sm text-gray-700"
+              placeholder="mm/dd/yyyy"
+            />
+            <span className="mx-2 text-gray-400">đến</span>
+            <input 
+              type="date" 
+              name="end" 
+              value={dateFilter.end} 
+              onChange={handleDateFilterChange} 
+              className="border-none outline-none bg-transparent text-sm text-gray-700"
+              placeholder="mm/dd/yyyy"
+            />
+            <button 
+              type="button" 
+              className="ml-3 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors text-sm"
+              onClick={handleDateSearch}
+            >
+              Tìm kiếm
+            </button>
+          </div>
+          
+          {/* Delete Selected Button */}
+          {selectedEvents.length > 0 && (
+            <button
+              className="flex items-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+              onClick={handleDeleteSelected}
+            >
+              <FaTrashAlt className="w-4 h-4" />
+              Xóa các sự kiện đã chọn ({selectedEvents.length})
+            </button>
+          )}
         </div>
       </div>
+      {/* Form Section */}
       {showForm && (
-        <form className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-lg shadow" onSubmit={handleSubmit}>
-          <input name="nameOfEvent" value={form.nameOfEvent} onChange={handleInputChange} placeholder="Tên sự kiện" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" required />
-          <input name="location" value={form.location} onChange={handleInputChange} placeholder="Địa điểm" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" required />
-          <input name="startDate" value={form.startDate} onChange={handleInputChange} type="date" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" />
-          <input name="endDate" value={form.endDate} onChange={handleInputChange} type="date" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" />
-          <input name="expectedBloodVolume" value={form.expectedBloodVolume} onChange={handleInputChange} type="number" min={0} placeholder="Dự kiến (đv máu)" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" />
-          {editId && (
-            <input name="actualVolume" value={form.actualVolume} onChange={handleInputChange} type="number" min={0} placeholder="Máu đã nhận (đv máu)" className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" />
-          )}
-          <select name="status" value={form.status} onChange={handleInputChange} className="border p-3 rounded-lg focus:ring-2 focus:ring-red-500" required>
-            {EVENT_STATUSES.map(status => (
-              <option key={status} value={status}>{status}</option>
-            ))}
-          </select>
-          <div className="col-span-full flex gap-4 mt-4 justify-end">
-            <button type="submit" className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium">{editId ? 'Cập nhật' : 'Tạo mới'}</button>
-            <button type="button" className="px-6 py-3 bg-gray-400 text-white rounded-lg font-medium" onClick={() => setShowForm(false)}>Hủy</button>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-800">
+              {editId ? 'Chỉnh sửa sự kiện' : 'Thêm sự kiện mới'}
+            </h3>
+            <button
+              onClick={() => setShowForm(false)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-        </form>
+          
+          <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Tên sự kiện</label>
+              <input 
+                name="nameOfEvent" 
+                value={form.nameOfEvent} 
+                onChange={handleInputChange} 
+                placeholder="Nhập tên sự kiện" 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
+                required 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Địa điểm</label>
+              <input 
+                name="location" 
+                value={form.location} 
+                onChange={handleInputChange} 
+                placeholder="Nhập địa điểm tổ chức" 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
+                required 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Ngày bắt đầu</label>
+              <input 
+                name="startDate" 
+                value={form.startDate} 
+                onChange={handleInputChange} 
+                type="date" 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Ngày kết thúc</label>
+              <input 
+                name="endDate" 
+                value={form.endDate} 
+                onChange={handleInputChange} 
+                type="date" 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Dự kiến (đơn vị máu)</label>
+              <input 
+                name="expectedBloodVolume" 
+                value={form.expectedBloodVolume} 
+                onChange={handleInputChange} 
+                type="number" 
+                min={0} 
+                placeholder="Nhập số đơn vị máu dự kiến" 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
+              />
+            </div>
+            
+            {editId && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Máu đã nhận (đơn vị)</label>
+                <input 
+                  name="actualVolume" 
+                  value={form.actualVolume} 
+                  onChange={handleInputChange} 
+                  type="number" 
+                  min={0} 
+                  placeholder="Nhập số đơn vị máu thực tế" 
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
+                />
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Trạng thái</label>
+              <select 
+                name="status" 
+                value={form.status} 
+                onChange={handleInputChange} 
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
+                required
+              >
+                {EVENT_STATUSES.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="col-span-full flex gap-3 mt-6 justify-end">
+              <button 
+                type="button" 
+                className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors" 
+                onClick={() => setShowForm(false)}
+              >
+                Hủy
+              </button>
+              <button 
+                type="submit" 
+                className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
+              >
+                {editId ? 'Cập nhật' : 'Tạo mới'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
-      <div className="flex justify-end mb-4">
-        <button
-          className="px-6 py-3 bg-red-500 text-white rounded-lg font-medium"
-          onClick={handleDeleteSelected}
-        >
-          Xóa các sự kiện đã chọn
-        </button>
-      </div>
-      {loading ? (
-        <div className="text-center text-gray-500">Đang tải...</div>
-      ) : error ? (
-        <div className="text-center text-red-500">{error}</div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-separate border-spacing-y-3">
-            <thead>
-              <tr className="bg-gray-200 text-lg text-red-600">
-                <th className="px-6 py-3 border-b font-bold">Chọn</th>
-                <th className="px-6 py-3 border-b font-bold">Tên sự kiện</th>
-                <th className="px-6 py-3 border-b font-bold">Thời gian</th>
-                <th className="px-6 py-3 border-b font-bold">Địa điểm</th>
-                <th className="px-6 py-3 border-b font-bold">Dự kiến (đv máu)</th>
-                <th className="px-6 py-3 border-b font-bold">Máu đã nhận</th>
-                <th className="px-6 py-3 border-b font-bold">Trạng thái</th>
-                <th className="px-6 py-3 border-b font-bold">Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {events.map(event => (
-                <tr key={event.eventId}>
-                  <td className="px-6 py-3 border-b text-center">
+      {/* Table Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex items-center gap-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+              <span className="text-gray-600 font-medium">Đang tải dữ liệu...</span>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="text-red-500 bg-red-50 rounded-lg p-6 mx-6">
+              <svg className="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-lg font-medium text-red-800">{error}</p>
+            </div>
+          </div>
+        ) : events.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-lg font-medium text-gray-600">Chưa có sự kiện nào</p>
+              <p className="text-gray-500 mt-2">Hãy thêm sự kiện đầu tiên của bạn</p>
+            </div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <input
                       type="checkbox"
-                      checked={selectedEvents.includes(event.eventId)}
-                      onChange={() => toggleEventSelection(event.eventId)}
+                      checked={selectedEvents.length === events.length}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedEvents(events.map(event => event.eventId));
+                        } else {
+                          setSelectedEvents([]);
+                        }
+                      }}
+                      className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                     />
-                  </td>
-                  <td className="px-6 py-3 border-b font-medium text-gray-700">{event.nameOfEvent}</td>
-                  <td className="px-6 py-3 border-b text-gray-700">{
-                    event.startDate ? new Date(event.startDate).toLocaleDateString() : 'Chưa xác định'
-                  } - {
-                    event.endDate ? new Date(event.endDate).toLocaleDateString() : 'Chưa xác định'
-                  }</td>
-                  <td className="px-6 py-3 border-b text-gray-700">{event.location}</td>
-                  <td className="px-6 py-3 border-b text-center text-gray-700">{event.expectedBloodVolume}</td>
-                  <td className="px-6 py-3 border-b text-center text-gray-700">{event.actualVolume}</td>
-                  <td className="px-6 py-3 border-b">
-                    {event.status === 'Sắp diễn ra' && (
-                      <span className="px-4 py-2 rounded-lg bg-blue-100 text-blue-700 text-sm font-medium">{event.status}</span>
-                    )}
-                    {event.status === 'Đang diễn ra' && (
-                      <span className="px-4 py-2 rounded-lg bg-green-100 text-green-700 text-sm font-medium">{event.status}</span>
-                    )}
-                    {event.status === 'Đã kết thúc' && (
-                      <span className="px-4 py-2 rounded-lg bg-gray-300 text-gray-700 text-sm font-medium">{event.status}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-3 border-b text-center flex gap-3 justify-center">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-white rounded-lg" onClick={() => handleEdit(event)}>
-                      <FaRegEdit className="w-5 h-5" /> Sửa
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg" onClick={() => handleDelete(event.eventId)}>
-                      <FaTrashAlt className="w-5 h-5" /> Xóa
-                    </button>
-                  </td>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tên sự kiện
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Thời gian
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Địa điểm
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Dự kiến (đv máu)
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Máu đã nhận
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trạng thái
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hành động
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {events.map((event, index) => (
+                  <tr key={event.eventId} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedEvents.includes(event.eventId)}
+                        onChange={() => toggleEventSelection(event.eventId)}
+                        className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{event.nameOfEvent}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        <div>{event.startDate ? new Date(event.startDate).toLocaleDateString('vi-VN') : 'Chưa xác định'}</div>
+                        <div className="text-xs text-gray-500">đến {event.endDate ? new Date(event.endDate).toLocaleDateString('vi-VN') : 'Chưa xác định'}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{event.location}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="text-sm font-medium text-gray-900">{event.expectedBloodVolume}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="text-sm font-medium text-gray-900">{event.actualVolume}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
+                        event.status === 'Sắp diễn ra' ? 'bg-blue-100 text-blue-800' :
+                        event.status === 'Đang diễn ra' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {event.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="flex items-center justify-center space-x-2">
+                        <button 
+                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-100 border border-yellow-300 rounded-lg hover:bg-yellow-200 focus:ring-2 focus:ring-yellow-500 transition-colors"
+                          onClick={() => handleEdit(event)}
+                        >
+                          <FaRegEdit className="w-3 h-3 mr-1" /> Sửa
+                        </button>
+                        <button 
+                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 border border-red-300 rounded-lg hover:bg-red-200 focus:ring-2 focus:ring-red-500 transition-colors"
+                          onClick={() => handleDelete(event.eventId)}
+                        >
+                          <FaTrashAlt className="w-3 h-3 mr-1" /> Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

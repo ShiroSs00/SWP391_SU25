@@ -5,7 +5,22 @@ import type { HealthCheckData } from "../types/health-check.types";
 export const updateHealthCheck = async (healthCheckId: string, data: HealthCheckData) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { healthCheckId: _, donationRegistrationId: __, ...requestData } = data;
-  const response = await api.put(`/healthcheck/update/${healthCheckId}`, requestData);
+  
+  // Handle volumeToTake - remove field entirely when null
+  const finalData = { ...requestData };
+  
+  if (data.volumeToTake === null) {
+    // Explicitly set to null for database update
+    finalData.volumeToTake = null;
+  } else if (data.volumeToTake !== undefined) {
+    finalData.volumeToTake = data.volumeToTake;
+  }
+  
+  console.log('Sending update data:', finalData);
+  console.log('Original volumeToTake:', data.volumeToTake);
+  console.log('Final volumeToTake:', finalData.volumeToTake);
+  
+  const response = await api.put(`/healthcheck/update/${healthCheckId}`, finalData);
   return response.data.data;
 };
 

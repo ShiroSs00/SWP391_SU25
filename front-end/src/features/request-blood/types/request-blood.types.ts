@@ -17,14 +17,22 @@ export interface BloodCode {
 }
 
 export interface BloodRequest {
-  id: string;
-  patientName: string;
+  idBloodRequest: string; // Mapped from API
+  requesterName: string; // API field name
   requestDate: string;
-  bloodCode: string;
+  bloodType: string; // API field name
   volume: number;
-  isEmergency: boolean;
-  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  emergency: boolean; // API field name
+  status: 'PENDING' | 'APPROVE' | 'REJECT' | 'CANCELLED'; // Exact enum values from backend
   requestCreationDate?: string;
-  accountName?: string;
-  bloodType?: string;
+  requesterPhone?: string;
+  requesterEmail?: string;
+  requesterAddress?: string;
+  component?: string;
+  processedBy?: string;
+  processedDate?: string;
+  rejectionReason?: string;
+  bloodBagId?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
 }

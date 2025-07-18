@@ -6,7 +6,6 @@ interface StaffSidebarProps {
 }
 
 const staffFeatures = [
-  { key: 'advice', title: 'Lời khuyên sức khỏe', icon: '💡' },
   { key: 'blog', title: 'Viết blog hiến máu', icon: '✍️' },
   { key: 'donation', title: 'Quản lý đơn hiến máu', icon: '🩸' },
   { key: 'bloodtest', title: 'Quản lý kiểm tra máu', icon: '🧪' },

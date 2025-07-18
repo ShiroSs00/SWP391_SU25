@@ -87,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
     const getUserInitials = (name: string = "") => {
         return name
             .split(" ")
-            .map((n) => n[0])
+            .map((n) => n?.charAt(0) || "")
             .join("")
             .toUpperCase()
             .slice(0, 2);
@@ -166,7 +166,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, cl
                                                 <div className="flex items-center space-x-1 mt-2">
                                                     <Shield className="h-4 w-4" />
                                                     <span className={cn("text-sm font-medium px-2 py-1 rounded-full bg-gray-100", getRoleColor(user.role))} style={{ fontFamily: 'Inter, sans-serif' }}>
-                                                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                                        {user.role?.charAt(0)?.toUpperCase() + (user.role?.slice(1) || "")}
                                                     </span>
                                                 </div>
                                             </div>

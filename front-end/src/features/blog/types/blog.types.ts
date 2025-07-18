@@ -1,31 +1,34 @@
 export interface BlogPost {
-    id: string;
-    title: string;
+    blogId: string;
     content: string;
+    postDate: string;
+    tagName: string;
+    img: string;
+    accountId: string;
+    thumbnail: string;
+    title?: string;
     summary?: string;
-    coverImage?: string;
-    tags: string[];
-    author: {
+    author?: {
         id: string;
         name: string;
         avatar?: string;
         role: UserRole;
     };
-    createdAt: string;
-    updatedAt: string;
-    isPublished: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+    isPublished?: boolean;
     viewCount?: number;
     like?: number;
     comment?: number;
 }
 
 export interface CreateBlogRequest {
-    title: string;
     content: string;
-    summary: string;
-    coverImage?: string;
-    tags: string[];
-    isPublished?: boolean;
+    postDate: string;
+    tagName: string;
+    img: string;
+    accountId: string;
+    thumbnail: string;
 }
 
 export type UpdateBlogRequest = Partial<CreateBlogRequest>

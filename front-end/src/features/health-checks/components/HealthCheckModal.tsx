@@ -69,14 +69,23 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
-    setFormData((prev) => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' 
-        ? checked 
-        : (name === 'weight' || name === 'temperature' || name === 'bloodPressure' || name === 'pulse' || name === 'hemoglobin' || name === 'volumeToTake') 
-          ? Number(value) 
-          : value 
-    }));
+    setFormData((prev) => {
+      const newData = { 
+        ...prev, 
+        [name]: type === 'checkbox' 
+          ? checked 
+          : (name === 'weight' || name === 'temperature' || name === 'bloodPressure' || name === 'pulse' || name === 'hemoglobin' || name === 'volumeToTake') 
+            ? Number(value) 
+            : value 
+      };
+      
+      // Set volumeToTake to null when isFitToDonate is unchecked
+      if (name === 'isFitToDonate' && !checked) {
+        newData.volumeToTake = null;
+      }
+      
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -219,22 +228,25 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    Lượng Máu Lấy (ml)
-                  </label>
-                  <select
-                    name="volumeToTake"
-                    value={formData.volumeToTake || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  >
-                    <option value="">Chọn lượng máu lấy</option>
-                    <option value="250">250 ml</option>
-                    <option value="350">350 ml</option>
-                    <option value="450">450 ml</option>
-                  </select>
-                </div>
+                {/* Volume to Take - Only show if fit to donate */}
+                {formData.isFitToDonate && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">
+                      Lượng Máu Lấy (ml)
+                    </label>
+                    <select
+                      name="volumeToTake"
+                      value={formData.volumeToTake || ''}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    >
+                      <option value="">Chọn lượng máu lấy</option>
+                      <option value="250">250 ml</option>
+                      <option value="350">350 ml</option>
+                      <option value="450">450 ml</option>
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -281,7 +293,14 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
                         name="isFitToDonate"
                         value="false"
                         checked={formData.isFitToDonate === false}
-                        onChange={(e) => setFormData(prev => ({ ...prev, isFitToDonate: e.target.value === 'true' }))}
+                        onChange={(e) => setFormData(prev => {
+                          const newData = { ...prev, isFitToDonate: e.target.value === 'true' };
+                          // Set volumeToTake to null when not fit to donate
+                          if (e.target.value === 'false') {
+                            newData.volumeToTake = null;
+                          }
+                          return newData;
+                        })}
                         className="mr-2"
                       />
                       <span className="font-medium text-red-700">Không đạt</span>

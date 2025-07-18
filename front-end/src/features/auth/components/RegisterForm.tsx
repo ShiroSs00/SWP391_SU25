@@ -56,6 +56,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, showToast, isLo
       return;
     }
     setError('');
+    
     const dataToSend = {
       username: formData.username,
       email: formData.email,
@@ -269,7 +270,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, showToast, isLo
             style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}
           >
             <option value="">Chọn Tỉnh/Thành phố</option>
-            <option value="Hồ Chí Minh">Hồ Chí Minh</option>
+            <option value="TP.Hồ Chí Minh">Hồ Chí Minh</option>
           </select>
           <select
             id="district"

@@ -3,9 +3,10 @@ import EventTable from '../components/EventTable';
 
 const EventPage: React.FC = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-[#b71c1c] mb-6">Quản lý sự kiện</h1>
-      <EventTable />
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <EventTable />
+      </div>
     </div>
   );
 };

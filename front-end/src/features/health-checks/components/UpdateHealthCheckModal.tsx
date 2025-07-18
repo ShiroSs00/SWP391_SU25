@@ -43,10 +43,27 @@ const UpdateHealthCheckModal: React.FC<UpdateHealthCheckModalProps> = ({
   }, [isOpen, healthCheck]);
 
   const handleInputChange = (field: keyof HealthCheckData, value: string | number | boolean | undefined) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Handle volumeToTake based on isFitToDonate status
+      if (field === 'isFitToDonate') {
+        if (!value) {
+          // Set volumeToTake to null when isFitToDonate is unchecked
+          newData.volumeToTake = null;
+          console.log('Setting volumeToTake to null because not fit to donate');
+        } else {
+          // Reset volumeToTake to undefined when isFitToDonate is checked (force user to select)
+          newData.volumeToTake = undefined;
+          console.log('Resetting volumeToTake to undefined - user must select');
+        }
+      }
+      
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,8 +74,18 @@ const UpdateHealthCheckModal: React.FC<UpdateHealthCheckModalProps> = ({
       return;
     }
 
+    // Validate that if fit to donate, volume must be selected
+    if (formData.isFitToDonate && !formData.volumeToTake) {
+      setError('Vui lòng chọn lượng máu lấy khi đủ điều kiện hiến máu');
+      return;
+    }
+
     setLoading(true);
     setError(null);
+
+    console.log('Form data before update:', formData);
+    console.log('volumeToTake value:', formData.volumeToTake);
+    console.log('isFitToDonate value:', formData.isFitToDonate);
 
     try {
       await updateHealthCheck(healthCheck.healthCheckId, formData);
@@ -194,25 +221,27 @@ const UpdateHealthCheckModal: React.FC<UpdateHealthCheckModalProps> = ({
               />
             </div>
 
-            {/* Volume to Take */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Lượng máu lấy (ml) <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.volumeToTake || ''}
-                onChange={(e) => handleInputChange('volumeToTake', parseInt(e.target.value) || undefined)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              >
-                <option value="">Chọn lượng máu</option>
-                {bloodVolumeOptions.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Volume to Take - Only show if fit to donate */}
+            {formData.isFitToDonate && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Lượng máu lấy (ml) <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.volumeToTake || ''}
+                  onChange={(e) => handleInputChange('volumeToTake', parseInt(e.target.value) || undefined)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Chọn lượng máu</option>
+                  {bloodVolumeOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Fit to Donate */}

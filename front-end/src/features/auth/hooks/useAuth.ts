@@ -82,17 +82,24 @@ export const useAuth = () => {
     setError('');
     try {
       // Geocode address to get latitude and longitude
-      const geocodingResults = await geocodeAddress(
-        `${data.address.street}, ${data.address.ward}, ${data.address.district}, ${data.address.city}`
-      );
+      const fullAddress = `${data.address.street}, ${data.address.ward}, ${data.address.district}, ${data.address.city}, Vietnam`;
+      console.log('🗺️ Geocoding address:', fullAddress);
+      
+      const geocodingResults = await geocodeAddress(fullAddress);
+      console.log('🎯 Geocoding results:', geocodingResults);
 
       if (geocodingResults.length > 0) {
         const { lat, lon } = geocodingResults[0];
         data.address.latitude = parseFloat(lat);
         data.address.longitude = parseFloat(lon);
+        console.log('📍 Coordinates set:', { latitude: data.address.latitude, longitude: data.address.longitude });
+      } else {
+        console.warn('⚠️ No geocoding results found for address:', fullAddress);
       }
 
+      console.log('📤 Sending registration data:', data);
       const res = await api.post<AuthResponse>('/auth/register', data);
+      console.log('📥 Registration response:', res.data);
       return res.data;
     } catch (err: unknown) {
       let message = 'Lỗi không xác định';

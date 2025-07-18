@@ -5,9 +5,11 @@ import {
 } from '../services/health-check.services';
 import { getAllDonations } from '../../donation-register/hooks/useBloodDonation';
 import { getAdminProfileByAccountId } from '../../accounts/services/accounts.services';
+import { getAfterDonation as getAllAfterDonationData } from '../../after-donation/services/after-donation.services';
 import type { HealthCheckData } from '../types/health-check.types';
 import type { ProfileData } from '../../accounts/types/accounts.types';
 import type { DonationRegistrationDTO } from '../../donation-register/types/donations-register.types';
+import type { AfterDonationData } from '../../after-donation/types/after-donation.types';
 import UpdateHealthCheckModal from './UpdateHealthCheckModal';
 import AfterDonationModal from '../../after-donation/components/after-donation.modal';
 
@@ -22,22 +24,36 @@ const HealthCheckManage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'fit' | 'unfit'>('all');
   const [isAfterDonationModalOpen, setIsAfterDonationModalOpen] = useState(false);
   const [selectedHealthCheckForAnalysis, setSelectedHealthCheckForAnalysis] = useState<HealthCheckData | null>(null);
+  const [afterDonationData, setAfterDonationData] = useState<AfterDonationData[]>([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // 10 items per page
+
+  // Check if health check already has after donation record
+  const hasAfterDonationRecord = (healthCheckId: string) => {
+    return afterDonationData.some((ad) => ad.healthCheckId === healthCheckId);
+  };
 
   const fetchHealthChecks = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [healthCheckData, donationData] = await Promise.all([
+      const [healthCheckData, donationData, afterDonationList] = await Promise.all([
         getAllHealthChecks(),
-        getAllDonations()
+        getAllDonations(),
+        getAllAfterDonationData()
       ]);
       
       setHealthChecks(healthCheckData);
+      setAfterDonationData(afterDonationList);
 
-      // Create a map of registrationId to donation for quick lookup
+      // Create a map of healthCheckId to donation for quick lookup
       const donationMap = new Map<string, DonationRegistrationDTO>();
       donationData.forEach((donation: DonationRegistrationDTO) => {
-        donationMap.set(donation.registrationId, donation);
+        if (donation.healthCheckId) {
+          donationMap.set(donation.healthCheckId, donation);
+        }
       });
 
       // Fetch user profiles for each health check
@@ -46,22 +62,71 @@ const HealthCheckManage: React.FC = () => {
       await Promise.all(
         healthCheckData.map(async (healthCheck: HealthCheckData) => {
           try {
-            // Find donation by registrationId
-            const donation = donationMap.get(healthCheck.donationRegistrationId);
+            // Check if healthCheckId exists
+            if (!healthCheck.healthCheckId) {
+              console.log(`Health check has no healthCheckId`);
+              return;
+            }
+
+            // Find donation by healthCheckId
+            const donation = donationMap.get(healthCheck.healthCheckId);
             
             if (donation?.accountId) {
-              // Fetch user profile
+              // Fetch user profile from donation
               const userData = await getAdminProfileByAccountId(donation.accountId);
               
               // Handle both nested and direct response structures
               const profile = userData.data || userData;
               
               if (profile) {
-                profileMap.set(healthCheck.donationRegistrationId, profile);
+                // Store profile with multiple keys for easier lookup
+                // 1. Store by registrationId (primary key)
+                profileMap.set(donation.registrationId, profile);
+                // 2. Store by healthCheckId for direct lookup
+                profileMap.set(healthCheck.healthCheckId, profile);
+                // 3. Store by donationRegistrationId if it exists for backward compatibility
+                if (healthCheck.donationRegistrationId) {
+                  profileMap.set(healthCheck.donationRegistrationId, profile);
+                }
+                
+                console.log(`Loaded profile for health check ${healthCheck.healthCheckId}: ${profile.name || profile.username}`);
               }
+            } else {
+              // If no donation found, create a fallback profile based on health check ID
+              console.log(`No donation found for health check ID: ${healthCheck.healthCheckId}`);
+              
+              // Create a minimal profile from the health check ID for display purposes
+              const fallbackProfile: ProfileData = {
+                profileId: `fallback-profile-${healthCheck.healthCheckId}`,
+                accountId: `fallback-${healthCheck.healthCheckId}`,
+                name: `Người dùng HC-${healthCheck.healthCheckId.slice(-3)}`,
+                email: '',
+                username: `user-${healthCheck.healthCheckId?.slice(-6) || 'unknown'}`,
+                gender: true, // default value
+                isActive: true, // default value
+              };
+              
+              // Use a fallback key for profiles without donation
+              profileMap.set(`fallback-${healthCheck.healthCheckId}`, fallbackProfile);
             }
           } catch (error) {
-            console.error(`Failed to fetch user data for registration ${healthCheck.donationRegistrationId}:`, error);
+            console.error(`Failed to fetch user data for health check ${healthCheck.healthCheckId}:`, error);
+            
+            // Create fallback profile even on error
+            if (healthCheck.healthCheckId) {
+              const fallbackProfile: ProfileData = {
+                profileId: `error-profile-${healthCheck.healthCheckId}`,
+                accountId: `error-${healthCheck.healthCheckId}`,
+                name: `Người dùng HC-${healthCheck.healthCheckId.slice(-3)}`,
+                email: '',
+                username: `user-${healthCheck.healthCheckId?.slice(-6) || 'unknown'}`,
+                gender: true, // default value
+                isActive: true, // default value
+              };
+              
+              // Use error fallback key
+              profileMap.set(`error-${healthCheck.healthCheckId}`, fallbackProfile);
+            }
           }
         })
       );
@@ -116,17 +181,48 @@ const HealthCheckManage: React.FC = () => {
     fetchHealthChecks(); // Refresh the list
   };
 
-  // Get user name from registration ID with priority for full name
-  const getUserName = (registrationId: string) => {
-    const user = userProfiles.get(registrationId);
-    if (!user) {
-      return registrationId; // Return registration ID as fallback
+  // Get user name from health check with priority for full name
+  const getUserName = (healthCheck: HealthCheckData) => {
+    // Handle undefined or null healthCheck
+    if (!healthCheck?.healthCheckId) {
+      return 'Người dùng chưa xác định';
+    }
+
+    // Try to find user profile by different strategies (in order of preference)
+    let user = null;
+    
+    // Strategy 1: Try to find by healthCheckId (direct lookup)
+    user = userProfiles.get(healthCheck.healthCheckId);
+    
+    // Strategy 2: Try to find by donationRegistrationId if available
+    if (!user && healthCheck.donationRegistrationId) {
+      user = userProfiles.get(healthCheck.donationRegistrationId);
     }
     
-    // Priority: name (which contains full name) > username > email > fallback
-    const displayName = user.name || user.username || user.email || `User-${registrationId.slice(-4)}`;
+    // Strategy 3: Try to find by fallback keys
+    if (!user) {
+      user = userProfiles.get(`fallback-${healthCheck.healthCheckId}`) || 
+             userProfiles.get(`error-${healthCheck.healthCheckId}`);
+    }
+
+    if (!user) {
+      // If no user profile found, create display name from health check ID
+      if (healthCheck.healthCheckId) {
+        return `Người dùng HC-${healthCheck.healthCheckId.slice(-3)}`;
+      }
+      return 'Người dùng chưa xác định';
+    }
     
-    return displayName;
+    // Check if this is a fallback profile (created when donation not found)
+    if (user.accountId.startsWith('fallback-') || user.accountId.startsWith('error-')) {
+      // For fallback profiles, return the name as is (it already contains meaningful info)
+      return user.name || `Người dùng HC-${healthCheck.healthCheckId.slice(-3)}`;
+    }
+    
+    // For real profiles: Priority: name (which contains full name) > username > email > fallback
+    const displayName = user.name || user.username || user.email || `Người dùng ${healthCheck.healthCheckId?.slice(-4) || 'Unknown'}`;
+    
+    return displayName || 'Người dùng chưa xác định';
   };
 
   const handleDelete = async (id: string) => {
@@ -151,6 +247,17 @@ const HealthCheckManage: React.FC = () => {
     if (statusFilter === 'unfit') return !check.isFitToDonate;
     return true; // 'all'
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredHealthChecks.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentHealthChecks = filteredHealthChecks.slice(startIndex, endIndex);
+
+  // Reset to first page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -193,7 +300,7 @@ const HealthCheckManage: React.FC = () => {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
           <div className="flex items-center">
             <div className="bg-green-100 rounded-lg p-3 mr-4">
@@ -232,6 +339,21 @@ const HealthCheckManage: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Chưa Đạt</p>
               <p className="text-2xl font-bold text-gray-900">{healthChecks.filter(h => !h.isFitToDonate).length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-6 border border-purple-200">
+          <div className="flex items-center">
+            <div className="bg-purple-100 rounded-lg p-3 mr-4">
+              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Hiển thị</p>
+              <p className="text-2xl font-bold text-gray-900">{currentHealthChecks.length}</p>
+              <p className="text-xs text-gray-500">Trang {currentPage}/{totalPages}</p>
             </div>
           </div>
         </div>
@@ -288,7 +410,7 @@ const HealthCheckManage: React.FC = () => {
           </div>
           
           <div className="divide-y divide-gray-100">
-            {filteredHealthChecks.map((check, index) => (
+            {currentHealthChecks.map((check, index) => (
               <div key={check.healthCheckId} className={`p-6 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                   
@@ -297,13 +419,13 @@ const HealthCheckManage: React.FC = () => {
                     <div className="flex-shrink-0">
                       <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                         <span className="text-white font-bold text-lg">
-                          {getUserName(check.donationRegistrationId).charAt(0).toUpperCase()}
+                          {getUserName(check)?.charAt(0)?.toUpperCase() || 'U'}
                         </span>
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        <h4 className="text-sm font-bold text-gray-900 truncate">{getUserName(check.donationRegistrationId)}</h4>
+                        <h4 className="text-sm font-bold text-gray-900 truncate">{getUserName(check) || 'Unknown User'}</h4>
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                           check.isFitToDonate 
                             ? 'bg-green-100 text-green-800' 
@@ -316,9 +438,6 @@ const HealthCheckManage: React.FC = () => {
                         <span className="inline-flex items-center px-2 py-1 rounded bg-blue-100 text-blue-800">
                           ID: {check.healthCheckId}
                         </span>
-                        <span className="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-700">
-                          RD-{check.donationRegistrationId}
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -328,23 +447,23 @@ const HealthCheckManage: React.FC = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       <div className="bg-green-50 rounded-lg p-3 border border-green-200">
                         <div className="text-xs font-medium text-green-700 mb-1">Cân nặng</div>
-                        <div className="text-sm font-bold text-green-800">{check.weight}kg</div>
+                        <div className="text-sm font-bold text-green-800">{check.weight || '--'}kg</div>
                       </div>
                       <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
                         <div className="text-xs font-medium text-orange-700 mb-1">Nhiệt độ</div>
-                        <div className="text-sm font-bold text-orange-800">{check.temperature}°C</div>
+                        <div className="text-sm font-bold text-orange-800">{check.temperature || '--'}°C</div>
                       </div>
                       <div className="bg-red-50 rounded-lg p-3 border border-red-200">
                         <div className="text-xs font-medium text-red-700 mb-1">Huyết áp</div>
-                        <div className="text-sm font-bold text-red-800">{check.bloodPressure}</div>
+                        <div className="text-sm font-bold text-red-800">{check.bloodPressure || '--'}</div>
                       </div>
                       <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
                         <div className="text-xs font-medium text-purple-700 mb-1">Mạch</div>
-                        <div className="text-sm font-bold text-purple-800">{check.pulse} bpm</div>
+                        <div className="text-sm font-bold text-purple-800">{check.pulse || '--'} bpm</div>
                       </div>
                       <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
                         <div className="text-xs font-medium text-blue-700 mb-1">Hemoglobin</div>
-                        <div className="text-sm font-bold text-blue-800">{check.hemoglobin} g/dL</div>
+                        <div className="text-sm font-bold text-blue-800">{check.hemoglobin || '--'} g/dL</div>
                       </div>
                       <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-3 text-center">
                         <div className="text-xs font-medium text-white mb-1">Lượng máu</div>
@@ -378,8 +497,8 @@ const HealthCheckManage: React.FC = () => {
                       <span className="hidden lg:inline">Chỉnh Sửa</span>
                     </button>
                     
-                    {/* Nút Phân tích máu - chỉ hiển thị cho những đạt điều kiện */}
-                    {check.isFitToDonate && (
+                    {/* Nút Phân tích máu - chỉ hiển thị cho những đạt điều kiện và chưa có after-donation */}
+                    {check.isFitToDonate && !hasAfterDonationRecord(check.healthCheckId!) && (
                       <button
                         onClick={() => handleBloodAnalysis(check)}
                         className="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -405,6 +524,52 @@ const HealthCheckManage: React.FC = () => {
               </div>
             ))}
           </div>
+          
+          {/* Pagination */}
+          {filteredHealthChecks.length > 0 && (
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Hiển thị {startIndex + 1} - {Math.min(endIndex, filteredHealthChecks.length)} 
+                  trong tổng số {filteredHealthChecks.length} kết quả
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Trước
+                  </button>
+                  
+                  {/* Page numbers */}
+                  <div className="flex space-x-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-3 py-1 text-sm rounded-md ${
+                          currentPage === pageNum
+                            ? 'bg-blue-600 text-white'
+                            : 'border border-gray-300 hover:bg-gray-100'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Sau
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Empty State */}
           {filteredHealthChecks.length === 0 && healthChecks.length > 0 && (
@@ -444,7 +609,12 @@ const HealthCheckManage: React.FC = () => {
           onClose={handleCloseUpdateModal}
           healthCheck={selectedHealthCheck}
           onSuccess={handleUpdateSuccess}
-          userProfile={userProfiles.get(selectedHealthCheck.donationRegistrationId)}
+          userProfile={
+            (selectedHealthCheck.healthCheckId ? userProfiles.get(selectedHealthCheck.healthCheckId) : undefined) ||
+            userProfiles.get(selectedHealthCheck.donationRegistrationId || '') || 
+            (selectedHealthCheck.healthCheckId ? userProfiles.get(`fallback-${selectedHealthCheck.healthCheckId}`) : undefined) ||
+            (selectedHealthCheck.healthCheckId ? userProfiles.get(`error-${selectedHealthCheck.healthCheckId}`) : undefined)
+          }
         />
       )}
 

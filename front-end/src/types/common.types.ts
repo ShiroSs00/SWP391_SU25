@@ -1,5 +1,6 @@
 import{
     UserRole,
+    BloodType,
     BloodTypeABO,
     BloodTypeRh,
     BloodComponentType,
@@ -11,7 +12,9 @@ import{
     BloodUnitStatus,
     HealthCheckStatus,
     FeedbackType,
-} from "../utils/enum.ts";
+    RequestStatus,
+    DonationType,
+} from "../utils/enums";
 
 // Base types
 export interface BaseEntity {

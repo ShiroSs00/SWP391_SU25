@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAfterDonation } from '../hooks/after-donation.hooks';
+import { getAllBlood } from '../services/blood.services';
+import type { BloodData } from '../services/blood.services';
 import type { AfterDonationData } from '../types/after-donation.types';
 
 interface AfterDonationCreateFormProps {
@@ -25,6 +27,8 @@ const AfterDonationCreateForm: React.FC<AfterDonationCreateFormProps> = ({
   });
 
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const [bloodList, setBloodList] = useState<BloodData[]>([]);
+  const [loadingBlood, setLoadingBlood] = useState(false);
 
   // Toast auto-hide
   React.useEffect(() => {
@@ -33,6 +37,24 @@ const AfterDonationCreateForm: React.FC<AfterDonationCreateFormProps> = ({
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  // Fetch blood list
+  useEffect(() => {
+    const fetchBloodList = async () => {
+      setLoadingBlood(true);
+      try {
+        const data = await getAllBlood();
+        setBloodList(data);
+      } catch (error) {
+        console.error('Failed to fetch blood list:', error);
+        setToast({ msg: 'Không thể tải danh sách máu', type: 'error' });
+      } finally {
+        setLoadingBlood(false);
+      }
+    };
+
+    fetchBloodList();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -46,7 +68,7 @@ const AfterDonationCreateForm: React.FC<AfterDonationCreateFormProps> = ({
     e.preventDefault();
     
     if (!formData.bloodId?.trim()) {
-      setToast({ msg: 'Blood ID là bắt buộc', type: 'error' });
+      setToast({ msg: 'Vui lòng chọn mã máu', type: 'error' });
       return;
     }
 
@@ -110,21 +132,33 @@ const AfterDonationCreateForm: React.FC<AfterDonationCreateFormProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Blood ID */}
+        {/* Blood Selection */}
         <div>
           <label htmlFor="bloodId" className="block text-sm font-medium text-gray-700 mb-2">
-            Blood ID <span className="text-red-500">*</span>
+            Chọn Mã Máu <span className="text-red-500">*</span>
           </label>
-          <input
-            type="text"
-            id="bloodId"
-            name="bloodId"
-            value={formData.bloodId || ''}
-            onChange={handleInputChange}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Nhập Blood ID"
-          />
+          {loadingBlood ? (
+            <div className="flex items-center px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+              <span className="text-gray-500 text-sm">Đang tải danh sách máu...</span>
+            </div>
+          ) : (
+            <select
+              id="bloodId"
+              name="bloodId"
+              value={formData.bloodId || ''}
+              onChange={handleInputChange}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Chọn mã máu</option>
+              {bloodList.map(blood => (
+                <option key={blood.bloodCode} value={blood.bloodCode}>
+                  {blood.bloodCode}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Status */}

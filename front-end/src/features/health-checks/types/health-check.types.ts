@@ -7,7 +7,7 @@ export interface HealthCheckData {
   bloodPressure?: number;
   pulse?: number;
   hemoglobin?: number;
-  volumeToTake?: number;
+  volumeToTake?: number | null; // Allow null for volumeToTake
   isFitToDonate?: boolean;
   note?: string;
 }

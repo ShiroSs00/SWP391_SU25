@@ -26,6 +26,8 @@ const DonationManage: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [role, setRole] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   // Health Check Modal states
   const [isHealthCheckModalOpen, setIsHealthCheckModalOpen] = useState(false);
@@ -53,6 +55,11 @@ const DonationManage: React.FC = () => {
     }
   }, [toast]);
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, filter.eventId]);
+
   // Lấy tất cả đơn hiến máu
   const fetchAll = async () => {
     setLoading(true);
@@ -66,7 +73,7 @@ const DonationManage: React.FC = () => {
       setEvents(Array.isArray(eventData) ? eventData : []);
 
       // Lấy thông tin người dùng cho tất cả các donation
-      const uniqueAccountIds = [...new Set(donationData.map(d => d.accountId))];
+      const uniqueAccountIds = [...new Set(donationData.map(d => d.accountId).filter(id => id && id.trim() !== ''))];
       const userMap = new Map<string, ProfileData>();
       
       await Promise.all(
@@ -74,9 +81,19 @@ const DonationManage: React.FC = () => {
           try {
             const userData = await getAdminProfileByAccountId(accountId);
             // Xử lý cả trường hợp response có hoặc không có nested data
-            userMap.set(accountId, userData.data || userData);
+            const profile = userData.data || userData;
+            if (profile) {
+              userMap.set(accountId, profile);
+            }
           } catch (error) {
             console.error(`Failed to fetch user data for ${accountId}:`, error);
+            // Tạo một profile fallback cho trường hợp không thể fetch được
+            userMap.set(accountId, {
+              accountId,
+              name: `User-${accountId.slice(-4)}`,
+              username: '',
+              email: '',
+            } as ProfileData);
           }
         })
       );
@@ -98,8 +115,14 @@ const DonationManage: React.FC = () => {
 
   // Lấy tên người dùng từ ID
   const getUserName = (accountId: string) => {
+    if (!accountId) {
+      return 'Unknown User';
+    }
     const user = users.get(accountId);
-    return user ? user.name || user.username || accountId : accountId;
+    if (!user) {
+      return accountId || 'Unknown User';
+    }
+    return user.name || user.username || user.email || accountId || 'Unknown User';
   };
 
   // Lọc đơn hiến máu theo sự kiện
@@ -120,7 +143,7 @@ const DonationManage: React.FC = () => {
       setDonations(data);
 
       // Lấy thông tin người dùng cho các donation đã lọc
-      const uniqueAccountIds = [...new Set(data.map(d => d.accountId))];
+      const uniqueAccountIds = [...new Set(data.map(d => d.accountId).filter(id => id && id.trim() !== ''))];
       const userMap = new Map(users); // Giữ lại dữ liệu cũ
       
       await Promise.all(
@@ -129,9 +152,19 @@ const DonationManage: React.FC = () => {
             try {
               const userData = await getAdminProfileByAccountId(accountId);
               // Xử lý cả trường hợp response có hoặc không có nested data
-              userMap.set(accountId, userData.data || userData);
+              const profile = userData.data || userData;
+              if (profile) {
+                userMap.set(accountId, profile);
+              }
             } catch (error) {
               console.error(`Failed to fetch user data for ${accountId}:`, error);
+              // Tạo một profile fallback cho trường hợp không thể fetch được
+              userMap.set(accountId, {
+                accountId,
+                name: `User-${accountId.slice(-4)}`,
+                username: '',
+                email: '',
+              } as ProfileData);
             }
           }
         })
@@ -175,23 +208,24 @@ const DonationManage: React.FC = () => {
     }
   };
 
-  // Tính toán số liệu thống kê
-  const getStatistics = () => {
-    const total = donations.length;
-    const pending = donations.filter(d => d.status === 'PENDING').length;
-    const passed = donations.filter(d => d.status === 'PASSED').length;
-    const cancelled = donations.filter(d => d.status === 'CANCELLED').length;
-    
-    return { total, pending, passed, cancelled };
-  };
-
   // Lọc donations hiển thị theo statusFilter
   const getDisplayedDonations = () => {
     return statusFilter ? donations.filter(d => d.status === statusFilter) : donations;
   };
 
-  const stats = getStatistics();
-  const displayedDonations = getDisplayedDonations();
+  const filteredDonations = getDisplayedDonations();
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredDonations.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const displayedDonations = filteredDonations.slice(startIndex, endIndex);
+
+  // Additional statistics
+  const totalDonations = donations.length;
+  const pendingDonations = donations.filter(d => d.status === 'PENDING').length;
+  const passedDonations = donations.filter(d => d.status === 'PASSED').length;
+  const cancelledDonations = donations.filter(d => d.status === 'CANCELLED').length;
 
   // Hàm xử lý click vào card để filter theo status
   const handleStatusCardClick = (status: string) => {
@@ -243,7 +277,7 @@ const DonationManage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Tổng Đơn</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-2xl font-bold text-gray-900">{totalDonations}</p>
             </div>
           </div>
         </div>
@@ -264,7 +298,7 @@ const DonationManage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+              <p className="text-2xl font-bold text-gray-900">{pendingDonations}</p>
             </div>
           </div>
         </div>
@@ -285,7 +319,7 @@ const DonationManage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Passed</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.passed}</p>
+              <p className="text-2xl font-bold text-gray-900">{passedDonations}</p>
             </div>
           </div>
         </div>
@@ -306,7 +340,7 @@ const DonationManage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Cancelled</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.cancelled}</p>
+              <p className="text-2xl font-bold text-gray-900">{cancelledDonations}</p>
             </div>
           </div>
         </div>
@@ -314,7 +348,7 @@ const DonationManage: React.FC = () => {
 
       {/* Toast */}
       {toast && (
-        <div className={`mb-4 px-4 py-2 rounded shadow text-white font-semibold animate-fade-in-up ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-500'}`}>{toast.msg}</div>
+        <div className={`mb-4 px-4 py-2 rounded shadow text-white font-semibold animate-fade-in ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-500'}`}>{toast.msg}</div>
       )}
       {/* Filter */}
       <form
@@ -419,7 +453,9 @@ const DonationManage: React.FC = () => {
                 <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                 </svg>
-                <h3 className="text-lg font-semibold text-gray-800">Danh Sách Đơn Hiến Máu ({displayedDonations.length})</h3>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Danh Sách Đơn Hiến Máu ({filteredDonations.length} đơn - Trang {currentPage}/{totalPages})
+                </h3>
               </div>
               <div className="flex items-center space-x-2">
                 <input
@@ -457,13 +493,13 @@ const DonationManage: React.FC = () => {
                     <div className="flex-shrink-0">
                       <div className="h-12 w-12 rounded-full bg-gradient-to-br from-red-400 via-red-500 to-red-600 flex items-center justify-center shadow-lg">
                         <span className="text-white font-bold text-lg">
-                          {getUserName(d.accountId).charAt(0).toUpperCase()}
+                          {getUserName(d.accountId)?.charAt(0)?.toUpperCase() || 'U'}
                         </span>
                       </div>
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        <h4 className="text-sm font-bold text-gray-900 truncate">{getUserName(d.accountId)}</h4>
+                        <h4 className="text-sm font-bold text-gray-900 truncate">{getUserName(d.accountId) || 'Unknown User'}</h4>
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(d.status)}`}>
                           {d.status === 'PENDING' ? '⏳ Pending' : 
                            d.status === 'PASSED' ? '✓ Passed' : 
@@ -529,6 +565,85 @@ const DonationManage: React.FC = () => {
               </div>
             ))}
           </div>
+          
+          {/* Pagination - Always show if there are donations */}
+          {filteredDonations.length > 0 && (
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Hiển thị <span className="font-medium">{startIndex + 1}</span> đến{' '}
+                    <span className="font-medium">{Math.min(endIndex, filteredDonations.length)}</span> trong{' '}
+                    <span className="font-medium">{filteredDonations.length}</span> kết quả
+                    {filteredDonations.length > itemsPerPage && (
+                      <span className="text-gray-500"> (Trang {currentPage}/{totalPages})</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Previous</span>
+                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                    {totalPages > 1 && Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          page === currentPage
+                            ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    {totalPages === 1 && (
+                      <button
+                        className="relative inline-flex items-center px-4 py-2 border border-blue-500 text-sm font-medium z-10 bg-blue-50 text-blue-600"
+                        disabled
+                      >
+                        1
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="sr-only">Next</span>
+                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Empty State */}
           {displayedDonations.length === 0 && (

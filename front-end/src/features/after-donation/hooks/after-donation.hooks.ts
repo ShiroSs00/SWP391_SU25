@@ -1,12 +1,13 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {
     createAfterDonation,
     getAfterDonation,
     updateAfterDonation,
     deleteAfterDonation,
     deleteMultipleAfterDonations,
+    manualseparateAfterDonation,
 } from '../services/after-donation.services';
-import type { AfterDonationData } from '../types/after-donation.types';
+import type { AfterDonationData, ManualSeparateData } from '../types/after-donation.types';
 
 /**
  * Custom hook to handle after donation operations.
@@ -97,5 +98,46 @@ export const useAfterDonation = () => {
         deleteAfterDonationData,
         deleteMultipleAfterDonationsData,
     };
+};
 
-}
+/**
+ * Custom hook to handle manual blood separation.
+ */
+export const useManualSeparate = () => {
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    /**
+     * Separate blood manually.
+     * @param data ManualSeparateData object
+     */
+    const separateBlood = useCallback(async (data: ManualSeparateData) => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const result = await manualseparateAfterDonation(data);
+            return result;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Có lỗi xảy ra khi tách máu';
+            setError(errorMessage);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    /**
+     * Clear error state.
+     */
+    const clearError = useCallback(() => {
+        setError(null);
+    }, []);
+
+    return {
+        loading,
+        error,
+        separateBlood,
+        clearError
+    };
+};
