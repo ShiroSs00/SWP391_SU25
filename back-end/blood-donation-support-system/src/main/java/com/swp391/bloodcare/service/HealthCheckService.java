@@ -67,7 +67,7 @@ public class HealthCheckService {
             throw new IllegalStateException("Đã tồn tại kiểm tra sức khoẻ cho đơn này");
         }
 
-        if (!dto.getIsFitToDonate() && dto.getVolumeToTake() != null) {
+        if (!dto.getIsFitToDonate() && dto.getVolumeToTake() != 0) {
             throw new IllegalArgumentException("Người không đủ điều kiện thì không được có volumeToTake");
         }
 
@@ -128,7 +128,6 @@ public class HealthCheckService {
         HealthCheck existing = healthCheckRepository.findByHealthCheckId(healthCheckId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck để xóa"));
 
-        // Cắt liên kết với DonationRegistration nếu có
         if (existing.getDonationRegistration() != null) {
             existing.getDonationRegistration().setHealthCheck(null);
             existing.setDonationRegistration(null); // rất quan trọng

@@ -49,6 +49,7 @@ public class HealthCheck {
     private Double hemoglobin;
 
     @Column(name = "volume_to_take")
+    @NotNull(message = "Volume không được để trống")
     private Volume volumeToTake;
 
     @Column(name = "is_fit_to_donate", nullable = false)
@@ -68,6 +69,7 @@ public class HealthCheck {
 
     @Getter
     public enum Volume {
+        ML_0(0),
         ML_250(250),
         ML_350(350),
         ML_450(450);
