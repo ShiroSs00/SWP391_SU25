@@ -78,8 +78,13 @@ public class BlogService {
                 String ext = originalName != null && originalName.contains(".")
                         ? originalName.substring(originalName.lastIndexOf("."))
                         : ".jpg";
+
                 String fileName = UUID.randomUUID() + ext;
-                String uploadDir = "src/main/resources/static/uploads/blog-thumbnails/";
+
+
+                String projectRoot = System.getProperty("user.dir");
+                String uploadDir = projectRoot + "/uploads/blog-thumbnails/";
+
                 File uploadPath = new File(uploadDir);
                 if (!uploadPath.exists()) {
                     boolean created = uploadPath.mkdirs();
@@ -88,13 +93,18 @@ public class BlogService {
                     }
                 }
 
-                thumbnail.transferTo(new File(uploadDir + fileName));
+                File savedFile = new File(uploadPath, fileName);
+                thumbnail.transferTo(savedFile);
 
-                blog.setImg("/uploads/blog-thumbnails/" + fileName);
+                blog.setImg("/uploads/blog-thumbnails/" + fileName); // Đường dẫn public để show ảnh từ FE
             } catch (IOException e) {
+                e.printStackTrace();
                 throw new RuntimeException("Lỗi khi lưu ảnh blog", e);
             }
         }
+
+
+
 
         blog.setAccount(accountRepository.findAccountByAccountId(accountId));
         return BlogDTO.toDTO(blogRepository.save(blog));
