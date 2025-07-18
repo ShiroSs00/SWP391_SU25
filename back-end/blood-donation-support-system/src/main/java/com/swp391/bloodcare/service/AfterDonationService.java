@@ -111,6 +111,7 @@ public class AfterDonationService {
             after.setStatus(AfterDonationBlood.Status.SEPARATED);
             afterRepo.save(after);
             bloodDonationHistoryService.updateFromAfterDonation(after); // cập nhật lịch sử
+
             result.put(id, "Cập nhật trạng thái: ĐÃ TÁCH");
         }
 
