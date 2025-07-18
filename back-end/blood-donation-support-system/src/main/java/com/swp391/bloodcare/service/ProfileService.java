@@ -159,7 +159,7 @@ public class ProfileService {
         Long current = profile.getNumberOfBloodDonation();
         if(current == null)
             current = 0L;
-        profile.setNumberOfBloodDonation(current + 1);
+        profile.setNumberOfBloodDonation(current - 1);
         achievementService.updateAchievementForProfile(profile);
         profileRepository.save(profile);
     }
@@ -170,7 +170,7 @@ public class ProfileService {
         Long current = profile.getNumberOfBloodDonation();
         if(current == null)
             current = 0L;
-        profile.setNumberOfBloodDonation(current - 1);
+        profile.setNumberOfBloodDonation(current + 1);
         achievementService.updateAchievementForProfile(profile);
         profileRepository.save(profile);
     }

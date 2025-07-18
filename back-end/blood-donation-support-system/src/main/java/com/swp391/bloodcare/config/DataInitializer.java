@@ -125,7 +125,7 @@ public class DataInitializer {
         List<Blood> bloodList = bloodRepository.findAll();
         for (Blood blood : bloodList) {
             if (blood.getBloodMatch() == null || blood.getBloodMatch().isBlank()) {
-                blood.setBloodMatch("UNKNOWN"); // hoặc tự tính toán lại nếu cần
+                blood.setBloodMatch("UNKNOWN");
             }
         }
         bloodRepository.saveAll(bloodList);
