@@ -90,7 +90,7 @@ public class AfterDonationService {
             AfterDonationBlood after = afterRepo.findAfterDonationBloodByIdAfterDonation(id)
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + id));
 
-            if (after.getStatus() != AfterDonationBlood.Status.PASSED) {
+            if (after.getStatus() != AfterDonationBlood.Status.PENDING) {
                 throw new IllegalStateException("Đơn máu " + id + " không hợp lệ hoặc đã được tách trước đó ");
             }
         }
