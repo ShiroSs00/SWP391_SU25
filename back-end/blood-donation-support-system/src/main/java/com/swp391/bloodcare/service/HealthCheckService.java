@@ -3,6 +3,7 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.HealthCheckDTO;
 import com.swp391.bloodcare.entity.DonationRegistration;
 import com.swp391.bloodcare.entity.HealthCheck;
+import com.swp391.bloodcare.entity.Profile;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import com.swp391.bloodcare.repository.HealthCheckRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,10 +26,13 @@ public class HealthCheckService {
 
     private final BloodDonationHistoryService bloodDonationHistoryService;
 
-    public HealthCheckService(HealthCheckRepository healthCheckRepository, DonationRegistrationRepository donationRegistrationRepository, BloodDonationHistoryService bloodDonationHistoryService) {
+    private final ProfileService profileService;
+
+    public HealthCheckService(HealthCheckRepository healthCheckRepository, DonationRegistrationRepository donationRegistrationRepository, BloodDonationHistoryService bloodDonationHistoryService, ProfileService profileService) {
         this.healthCheckRepository = healthCheckRepository;
         this.donationRegistrationRepository = donationRegistrationRepository;
         this.bloodDonationHistoryService = bloodDonationHistoryService;
+        this.profileService = profileService;
     }
 
     @Transactional
@@ -79,9 +83,12 @@ public class HealthCheckService {
 
         HealthCheck saved = healthCheckRepository.save(healthCheck);
 
-        //cập nhật lịch sử
         bloodDonationHistoryService.updateFromHealthCheck(saved);
         reg.setStatus(DonationRegistration.Status.PASSED);
+        Profile profile = healthCheck.getDonationRegistration().getAccount().getProfile();
+        String accountId = profile.getAccount().getAccountId();
+        profileService.increaseBloodDonationCount(accountId);
+        profile.setRestDate(LocalDate.now().plusDays(84));
         donationRegistrationRepository.save(reg);
         return toDTO(saved);
     }
@@ -106,7 +113,11 @@ public class HealthCheckService {
         if (dto.getNote() != null && !dto.getNote().isBlank()) existing.setNote(dto.getNote());
 
         bloodDonationHistoryService.updateFromHealthCheck(existing);
-
+        existing.getDonationRegistration().setStatus(DonationRegistration.Status.CANCELLED);
+        Profile profile = existing.getDonationRegistration().getAccount().getProfile();
+        String accountId = profile.getAccount().getAccountId();
+        profileService.increaseBloodDonationCount(accountId);
+        profile.setRestDate(LocalDate.now().plusDays(0));
         return HealthCheckDTO.toDTO(healthCheckRepository.save(existing));
     }
 

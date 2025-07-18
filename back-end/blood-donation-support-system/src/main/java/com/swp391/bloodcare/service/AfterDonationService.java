@@ -26,7 +26,6 @@ public class AfterDonationService {
     private final ProfileRepository profileRepo;
     private final BloodBagRepository bloodBagRepo;
     private final ComponentRepository componentRepository;
-   private final ProfileService profileService;
 
     public AfterDonationService(
             AfterDonationRepository afterRepo,
@@ -35,8 +34,7 @@ public class AfterDonationService {
             BloodDonationHistoryService bloodDonationHistoryService,
             ProfileRepository profileRepo,
             BloodBagRepository bloodBagRepo,
-            ComponentRepository componentRepository,
-            ProfileService profileService   ) {
+            ComponentRepository componentRepository ) {
         this.afterRepo = afterRepo;
         this.healthCheckRepo = healthCheckRepo;
         this.bloodRepo = bloodRepo;
@@ -44,7 +42,6 @@ public class AfterDonationService {
         this.profileRepo = profileRepo;
         this.bloodBagRepo = bloodBagRepo;
         this.componentRepository = componentRepository;
-        this.profileService = profileService;
     }
     public List<AfterDonationBloodDTO> getAll() {
         return afterRepo.findAll().stream().map(this::toDTO).toList();
@@ -218,17 +215,6 @@ public class AfterDonationService {
         if (dto.getNote() != null && !dto.getNote().isBlank())
             existing.setNote(dto.getNote());
         bloodDonationHistoryService.updateFromAfterDonation(existing);
-
-        Profile profile = existing.getHealthCheck().getDonationRegistration().getAccount().getProfile();
-
-        if("PASS".equalsIgnoreCase(dto.getStatus().name())){
-            String accountId = profile.getAccount().getAccountId();
-            profileService.increaseBloodDonationCount(accountId);
-            if(existing.getBlood() != null){
-                profile.setRestDate(LocalDate.now().plusDays(84));
-            }
-        }
-
         return toDTO(afterRepo.save(existing));
     }
 
