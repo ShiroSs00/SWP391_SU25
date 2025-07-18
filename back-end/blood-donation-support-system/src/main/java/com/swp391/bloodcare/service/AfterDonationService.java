@@ -62,7 +62,6 @@ public class AfterDonationService {
         AfterDonationBlood entity = toEntity(dto);
         entity.setIdAfterDonation(generateAfterDonationId());
         entity.setHealthCheck(healthCheck);
-        entity.setStatus(AfterDonationBlood.Status.PENDING);
 
         if (dto.getBloodId() != null) {
             Blood blood = bloodRepo.findByBloodCode(dto.getBloodId())
@@ -95,7 +94,6 @@ public class AfterDonationService {
             }
         }
 
-        // Kiểm tra các thành phần và nhóm máu
         for (BloodBagDTO dto : request.getBloodBags()) {
             if (!componentRepository.existsById(dto.getComponentId())) {
                 throw new IllegalArgumentException("Không tìm thấy thành phần máu: " + dto.getComponentId());
@@ -140,7 +138,7 @@ public class AfterDonationService {
 
             BloodBag bag = BloodBag.builder()
                     .bagId(generateBloodBagId())
-                    .volume(dto.getVolume())
+                    .volume(BloodBag.Volume.fromInt(dto.getVolume()))
                     .collectedDate(dto.getCollectedDate())
                     .expirationDate(java.sql.Date.valueOf(expirationDate))
                     .component(component)

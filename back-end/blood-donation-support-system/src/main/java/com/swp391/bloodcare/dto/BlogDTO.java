@@ -2,9 +2,7 @@ package com.swp391.bloodcare.dto;
 
 
 import com.swp391.bloodcare.entity.Blog;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +17,11 @@ import java.util.Date;
 public class BlogDTO {
     private String blogId;
 
+    @NotBlank(message = "Tiêu đề không được để trống")
+    @Size(min = 5, max = 150, message = "Tiêu đề phải từ 5 đến 150 ký tự")
+    private String title;
+
+
     @NotBlank(message = "Nội dung blog không được để trống")
     @Size(min = 20, message = "Nội dung blog phải ít nhất 20 ký tự")
     private String content;
@@ -28,34 +31,32 @@ public class BlogDTO {
     @Size(max = 100, message = "Tag không được vượt quá 100 ký tự")
     private String tagName;
 
-    @Column(name = "image")
-    @Pattern(
-            regexp = "^(http|https)://.*\\.(jpg|jpeg|png|gif)$",
-            message = "Ảnh phải là link hợp lệ và kết thúc bằng .jpg, .jpeg, .png hoặc .gif"
-    )
     private String img;
 
     private String accountId;
 
     public static BlogDTO toDTO(Blog blog) {
-        return new BlogDTO(
-                blog.getBlogId(),
-                blog.getContent(),
-                blog.getPostDate(),
-                blog.getTagName(),
-                blog.getImg(),
-                blog.getAccount() != null ? blog.getAccount().getAccountId() : null
-        );
+        return BlogDTO.builder()
+                .blogId(blog.getBlogId())
+                .title(blog.getTitle())
+                .content(blog.getContent())
+                .postDate(blog.getPostDate())
+                .tagName(blog.getTagName())
+                .img(blog.getImg())
+                .accountId(blog.getAccount() != null ? blog.getAccount().getAccountId() : null)
+                .build();
     }
 
     public static Blog toEntity(BlogDTO dto) {
         Blog blog = new Blog();
         blog.setBlogId(dto.getBlogId());
+        blog.setTitle(dto.getTitle());
         blog.setContent(dto.getContent());
         blog.setPostDate(dto.getPostDate());
         blog.setTagName(dto.getTagName());
         blog.setImg(dto.getImg());
         return blog;
     }
+
 
 }

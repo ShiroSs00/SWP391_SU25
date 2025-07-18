@@ -1,19 +1,24 @@
 package com.swp391.bloodcare.controller;
 
-import jakarta.validation.Valid;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.http.HttpStatus;
+import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.DonorFeedbackDTO;
 import com.swp391.bloodcare.service.FeedbackService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/feedback")
 public class FeedbackController {
+
     private final FeedbackService feedbackService;
 
     public FeedbackController(FeedbackService feedbackService) {
@@ -21,91 +26,90 @@ public class FeedbackController {
     }
 
     @GetMapping("/average/event/{eventId}")
-    public ResponseEntity<Map<String, Double>> getAverageByEvent(@PathVariable String eventId) {
-        return ResponseEntity.ok(feedbackService.getAverageScoresByEvent(eventId));
+    public ResponseEntity<ApiResponse<Map<String, Double>>> getAverageByEvent(@PathVariable String eventId) {
+        Map<String, Double> averages = feedbackService.getAverageScoresByEvent(eventId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy điểm trung bình thành công", averages));
     }
-
 
     @GetMapping("/filter")
-    public ResponseEntity<List<DonorFeedbackDTO>> getFeedbackByScore(
+    public ResponseEntity<ApiResponse<List<DonorFeedbackDTO>>> getFeedbackByScore(
             @RequestParam("criteria") String criteria,
-            @RequestParam("score") int score
-    ) {
-        return ResponseEntity.ok(feedbackService.getFeedbacksByScore(criteria, score));
+            @RequestParam("score") int score) {
+        List<DonorFeedbackDTO> feedbacks = feedbackService.getFeedbacksByScore(criteria, score);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lọc phản hồi thành công", feedbacks));
     }
-
 
     @PostMapping("/chatbot")
-    public ResponseEntity<String> chatbot(@RequestBody Map<String, String> input) {
+    public ResponseEntity<ApiResponse<String>> chatbot(@RequestBody Map<String, String> input) {
         String message = input.get("message");
         String reply = feedbackService.autoReply(message);
-        return ResponseEntity.ok(reply);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Phản hồi từ chatbot", reply));
     }
 
-
     @GetMapping("/getall")
-    public ResponseEntity<List<DonorFeedbackDTO>> getAllFeedback() {
-        return ResponseEntity.ok(feedbackService.getAllFeedbacks());
+    public ResponseEntity<ApiResponse<List<DonorFeedbackDTO>>> getAllFeedback() {
+        List<DonorFeedbackDTO> feedbacks = feedbackService.getAllFeedbacks();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy tất cả phản hồi thành công", feedbacks));
     }
 
     @GetMapping("/get-by-registration/{registrationId}")
-    public ResponseEntity<DonorFeedbackDTO> getFeedbackByRegistration(@PathVariable String registrationId) {
-        return ResponseEntity.ok(feedbackService.getFeedbackByRegistrationId(registrationId));
+    public ResponseEntity<ApiResponse<DonorFeedbackDTO>> getFeedbackByRegistration(@PathVariable String registrationId) {
+        DonorFeedbackDTO dto = feedbackService.getFeedbackByRegistrationId(registrationId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy phản hồi theo đăng ký thành công", dto));
     }
 
     @PostMapping("/create/{registrationId}")
-    public ResponseEntity<?> createFeedback(
+    public ResponseEntity<ApiResponse<?>> createFeedback(
             @PathVariable String registrationId,
             @Valid @RequestBody DonorFeedbackDTO feedbackDTO,
             BindingResult result) {
+
         if (result.hasErrors()) {
-            List<String> errors = result.getFieldErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .toList();
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", "failed",
-                    "errors", errors
-            ));
+            Map<String, String> errors = result.getFieldErrors().stream()
+                    .filter(error -> error.getDefaultMessage() != null)
+                    .collect(Collectors.toMap(
+                            FieldError::getField,
+                            FieldError::getDefaultMessage,
+                            (a, b) -> b,
+                            LinkedHashMap::new
+                    ));
+
+
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>(false, "Dữ liệu không hợp lệ", null, errors)
+            );
         }
 
         DonorFeedbackDTO created = feedbackService.createFeedback(registrationId, feedbackDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(true, "Tạo phản hồi thành công", created)
+        );
     }
 
 
     @GetMapping("/dashboard")
-    public ResponseEntity<Map<String, Object>> getDashboardSummary() {
-        return ResponseEntity.ok(feedbackService.getDashboardSummary());
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboardSummary() {
+        Map<String, Object> dashboard = feedbackService.getDashboardSummary();
+        return ResponseEntity.ok(new ApiResponse<>(true, "Lấy dashboard thành công", dashboard));
     }
 
     @PutMapping("/update/{registrationId}")
-    public ResponseEntity<DonorFeedbackDTO> updateFeedback(
+    public ResponseEntity<ApiResponse<DonorFeedbackDTO>> updateFeedback(
             @PathVariable String registrationId,
             @Valid @RequestBody DonorFeedbackDTO updatedDTO) {
         DonorFeedbackDTO updated = feedbackService.updateFeedbackByRegistrationId(registrationId, updatedDTO);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật phản hồi thành công", updated));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Map<String, Object>> deleteFeedback(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<DonorFeedbackDTO>> deleteFeedback(@PathVariable String id) {
         DonorFeedbackDTO deleted = feedbackService.deleteFeedback(id);
-        return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "message", "Đã xóa thành công phản hồi",
-                "data", deleted
-        ));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Xóa phản hồi thành công", deleted));
     }
 
     @DeleteMapping("/delete-multiple")
-    public ResponseEntity<Map<String, Object>> deleteMultipleFeedbacks(@RequestBody List<String> ids) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> deleteMultipleFeedbacks(@RequestBody List<String> ids) {
         Map<String, Object> result = feedbackService.deleteMultipleFeedbacksSafe(ids);
-        return ResponseEntity.ok(Map.of(
-                "status", "partial-success",
-                "message", "Đã xử lý xóa danh sách phản hồi",
-                "data", result
-        ));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Xử lý xóa nhiều phản hồi thành công", result));
     }
-
-
-
 }

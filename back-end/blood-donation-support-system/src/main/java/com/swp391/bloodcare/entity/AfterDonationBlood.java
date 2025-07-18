@@ -17,7 +17,6 @@ import lombok.*;
 public class AfterDonationBlood {
 
     public enum Status {
-        PENDING,    // Đang chờ xét nghiệm
         PASSED,     // Máu đạt yêu cầu
         FAILED,     // Không đạt (do chất lượng)
         SEPARATED    // Đã tách máu

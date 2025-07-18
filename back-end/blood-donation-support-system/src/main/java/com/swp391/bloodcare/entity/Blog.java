@@ -23,6 +23,11 @@ public class Blog {
     @NotBlank(message = "ID bài viết không được để trống")
     private String blogId;
 
+    @NotBlank(message = "Tiêu đề không được để trống")
+    @Size(min = 5, max = 150, message = "Tiêu đề phải từ 5 đến 150 ký tự")
+    private String title;
+
+
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     @NotBlank(message = "Nội dung không được để trống")
     @Size(min = 20, message = "Nội dung phải có ít nhất 20 ký tự")
@@ -40,10 +45,11 @@ public class Blog {
 
     @Column(name = "image")
     @Pattern(
-            regexp = "^(http|https)://.*\\.(jpg|jpeg|png|gif)$",
+            regexp = "^(https?:\\/\\/.*|\\/uploads\\/.*\\.(jpg|jpeg|png|gif))$",
             message = "Ảnh phải là link hợp lệ và kết thúc bằng .jpg, .jpeg, .png hoặc .gif"
     )
     private String img;
+
 
 
     @ManyToOne

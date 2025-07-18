@@ -98,26 +98,7 @@ public class DataInitializer {
             roleRepository.save(memberRole);
         }
 
-// Tạo tài khoản member nếu chưa tồn tại
-        if (!accountRepository.existsByUserNameIgnoreCase("member")) {
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-            int randomCode = ThreadLocalRandom.current().nextInt(1000);
-            String randomPart = String.format("%03d", randomCode);
-            String accountId = "AC-" + timestamp + "-" + randomPart;
 
-            Account member = new Account();
-            member.setAccountId(accountId);
-            member.setUserName("member");
-            member.setPassword(passwordEncoder.encode("12345678"));
-            member.setEmail("member@user.local");
-            member.setIsActive(true);
-            Role role = roleRepository.findById("MEMBER").orElseThrow();
-            member.setRole(role);
-            accountRepository.save(member);
-            System.out.println("Member account created: member / 12345678");
-        } else {
-            System.out.println("Member account already exists.");
-        }
 
 // === Khởi tạo các thành phần máu (Component) mặc định ===
         String[] componentIds = {"101", "102", "103", "104"};
@@ -143,8 +124,9 @@ public class DataInitializer {
 
         List<Blood> bloodList = bloodRepository.findAll();
         for (Blood blood : bloodList) {
-            long validQuantity = bloodBagRepository.countValidByBloodCode(blood.getBloodCode());
-            blood.setQuantity(validQuantity);
+            if (blood.getBloodMatch() == null || blood.getBloodMatch().isBlank()) {
+                blood.setBloodMatch("UNKNOWN"); // hoặc tự tính toán lại nếu cần
+            }
         }
         bloodRepository.saveAll(bloodList);
         System.out.println("✅ Đã cập nhật số lượng túi máu (VALID) cho tất cả Blood.");

@@ -34,7 +34,7 @@ public class AchievementService {
 
     public AchievementDTO getAchievementByAccountId(String accountId) {
         Profile profile = profileRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy profile với accountId: " + accountId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy profile, vui lòng tạo profile!!! "));
 
         Achievement achievement = profile.getAchievement();
         return achievement != null ? toDTO(achievement) : null;

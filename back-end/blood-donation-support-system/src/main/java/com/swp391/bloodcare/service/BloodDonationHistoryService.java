@@ -108,7 +108,7 @@ public class BloodDonationHistoryService {
             dto.setEvent(null);
         }
 
-        HealthCheck healCheck = null;
+        
         HealthCheck healthCheck = null;
         if (bloodDonationHistory.getDonationRegistration() != null) {
             healthCheck = bloodDonationHistory.getDonationRegistration().getHealthCheck();
@@ -116,7 +116,7 @@ public class BloodDonationHistoryService {
 
         if (healthCheck != null) {
             // Gán volume
-            dto.setVolumeToTake(healthCheck.getVolumeToTake());
+            dto.setVolumeToTake(healthCheck.getVolumeToTake().getMl());
 
             // Gán ID của HealthCheck
             dto.setHealCheck(healthCheck.getHealthCheckId());
@@ -174,7 +174,6 @@ public class BloodDonationHistoryService {
                 return "DONATION_REJECTED";
             case SEPARATED:
                 return "DONATION_PROCESSING";
-            case PENDING:
             default:
                 return "DONATION_UNDER_REVIEW";
         }

@@ -17,8 +17,8 @@ public class BloodBagDTO {
 
     private String bagId;
 
-    @NotNull(message = "Vui lòng chọn thể tích túi máu (250ml, 350ml hoặc 450ml)")
-    private BloodBag.Volume volume;
+    @NotNull(message = "Vui lòng chọn thể tích túi máu ")
+    private Integer volume;
 
     @PastOrPresent(message = "Ngày tách phải nhỏ hơn hoặc bằng ngày hiện tại")
     @NotNull(message = "Vui lòng nhập ngày lấy máu")
@@ -44,7 +44,7 @@ public class BloodBagDTO {
     public static BloodBagDTO fromEntity(BloodBag bag) {
         return BloodBagDTO.builder()
                 .bagId(bag.getBagId())
-                .volume(bag.getVolume())
+                .volume(bag.getVolume() != null ? bag.getVolume().getMl() : null)
                 .collectedDate(bag.getCollectedDate())
                 .expirationDate(bag.getExpirationDate())
                 .status(bag.getStatus())

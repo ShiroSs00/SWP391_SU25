@@ -7,7 +7,10 @@ import com.swp391.bloodcare.repository.BlogRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,19 +67,44 @@ public class BlogService {
         return BlogDTO.toDTO(blog);
     }
 
-    public BlogDTO createBlogByUserName(BlogDTO dto, String accountId) {
-        if (dto.getContent() == null || dto.getContent().isBlank()) {
-            throw new IllegalArgumentException("Nội dung blog không được để trống");
-        }
-
+    public BlogDTO createBlogByUserName(BlogDTO dto, String accountId, MultipartFile thumbnail) {
         Blog blog = BlogDTO.toEntity(dto);
         blog.setBlogId(generateUniqueBlogId());
         blog.setPostDate(new Date());
 
-        blog.setAccount(accountRepository.findAccountByAccountId(accountId));
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            try {
+                String originalName = thumbnail.getOriginalFilename();
+                String ext = originalName != null && originalName.contains(".")
+                        ? originalName.substring(originalName.lastIndexOf("."))
+                        : ".jpg";
+                String fileName = UUID.randomUUID() + ext;
 
+                String uploadDir = System.getProperty("java.io.tmpdir") + "/blog-thumbnails/";
+                File uploadPath = new File(uploadDir);
+
+                if (!uploadPath.exists()) {
+                    boolean created = uploadPath.mkdirs();
+                    if (!created) {
+                        throw new IllegalStateException("Không thể tạo thư mục upload tại " + uploadPath.getAbsolutePath());
+                    }
+                }
+
+                File savedFile = new File(uploadPath, fileName);
+                thumbnail.transferTo(savedFile);
+
+                blog.setImg("/tmp/blog-thumbnails/" + fileName);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Lỗi khi lưu ảnh blog", e);
+            }
+        }
+        blog.setAccount(accountRepository.findAccountByAccountId(accountId));
         return BlogDTO.toDTO(blogRepository.save(blog));
     }
+
+
 
 
     private String generateUniqueBlogId() {

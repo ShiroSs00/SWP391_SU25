@@ -42,6 +42,9 @@ public class FeedbackService {
         DonationRegistration registration = registrationRepository.findByRegistrationId(registrationId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đăng ký hiến máu với ID: " + registrationId));
 
+        if (!registration.getStatus().name().equalsIgnoreCase("PASSED")) {
+            throw new IllegalStateException("Chưa hoàn thiện quá trình hiến máu để tạo feedback");
+        }
         if (feedbackRepository.findByDonationRegistrationRegistrationId(registrationId).isPresent()) {
             throw new IllegalStateException("Phản hồi đã tồn tại cho đăng ký này");
         }

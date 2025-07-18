@@ -51,9 +51,7 @@ public class SecurityConfig {
                         // Public GET cụ thể
                         .requestMatchers(HttpMethod.GET, "/api/blog/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/event/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/donation/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/achivements/**").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/achievements/**").permitAll()
 
 
                         // Role-based
