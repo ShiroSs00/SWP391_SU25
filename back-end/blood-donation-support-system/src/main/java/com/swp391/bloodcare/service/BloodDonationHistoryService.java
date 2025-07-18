@@ -99,12 +99,16 @@ public class BloodDonationHistoryService {
         }
 
         //Lấy sự kiện
-        if(bloodDonationHistory.getDonationRegistration() != null) {
+        if (bloodDonationHistory.getDonationRegistration() != null &&
+                bloodDonationHistory.getDonationRegistration().getEvent() != null) {
+
             dto.setEvent(bloodDonationHistory.getDonationRegistration().getEvent().getNameOfEvent());
 
+        } else {
+            dto.setEvent(null);
         }
 
-        HealthCheck healCheck = null;
+        
         HealthCheck healthCheck = null;
         if (bloodDonationHistory.getDonationRegistration() != null) {
             healthCheck = bloodDonationHistory.getDonationRegistration().getHealthCheck();
