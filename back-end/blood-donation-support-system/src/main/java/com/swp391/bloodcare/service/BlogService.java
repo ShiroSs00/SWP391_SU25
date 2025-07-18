@@ -67,24 +67,19 @@ public class BlogService {
         return BlogDTO.toDTO(blog);
     }
 
-    public BlogDTO createBlogByUserName(BlogDTO dto, String accountId) {
-        if (dto.getContent() == null || dto.getContent().isBlank()) {
-            throw new IllegalArgumentException("Nội dung blog không được để trống");
-        }
-
+    public BlogDTO createBlogByUserName(BlogDTO dto, String accountId, MultipartFile thumbnail) {
         Blog blog = BlogDTO.toEntity(dto);
         blog.setBlogId(generateUniqueBlogId());
         blog.setPostDate(new Date());
-        MultipartFile thumbnail = dto.getThumbnail();
-        if (thumbnail != null && !thumbnail.isEmpty()) {
-            String originalName = thumbnail.getOriginalFilename();
-            String ext = originalName != null && originalName.contains(".")
-                    ? originalName.substring(originalName.lastIndexOf("."))
-                    : ".jpg";
-            String fileName = UUID.randomUUID() + ext;
-            String uploadDir = "uploads/blog-thumbnails/";
 
+        if (thumbnail != null && !thumbnail.isEmpty()) {
             try {
+                String originalName = thumbnail.getOriginalFilename();
+                String ext = originalName != null && originalName.contains(".")
+                        ? originalName.substring(originalName.lastIndexOf("."))
+                        : ".jpg";
+                String fileName = UUID.randomUUID() + ext;
+                String uploadDir = "src/main/resources/static/uploads/blog-thumbnails/";
                 File uploadPath = new File(uploadDir);
                 if (!uploadPath.exists()) {
                     boolean created = uploadPath.mkdirs();
@@ -93,8 +88,7 @@ public class BlogService {
                     }
                 }
 
-                File dest = new File(uploadDir + fileName);
-                thumbnail.transferTo(dest);
+                thumbnail.transferTo(new File(uploadDir + fileName));
 
                 blog.setImg("/uploads/blog-thumbnails/" + fileName);
             } catch (IOException e) {
@@ -103,9 +97,10 @@ public class BlogService {
         }
 
         blog.setAccount(accountRepository.findAccountByAccountId(accountId));
-
         return BlogDTO.toDTO(blogRepository.save(blog));
     }
+
+
 
 
     private String generateUniqueBlogId() {

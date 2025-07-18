@@ -139,7 +139,7 @@ public class AfterDonationService {
 
             BloodBag bag = BloodBag.builder()
                     .bagId(generateBloodBagId())
-                    .volume(dto.getVolume())
+                    .volume(BloodBag.Volume.fromInt(dto.getVolume()))
                     .collectedDate(dto.getCollectedDate())
                     .expirationDate(java.sql.Date.valueOf(expirationDate))
                     .component(component)

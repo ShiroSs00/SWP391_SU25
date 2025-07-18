@@ -23,6 +23,11 @@ public class Blog {
     @NotBlank(message = "ID bài viết không được để trống")
     private String blogId;
 
+    @NotBlank(message = "Tiêu đề không được để trống")
+    @Size(min = 5, max = 150, message = "Tiêu đề phải từ 5 đến 150 ký tự")
+    private String title;
+
+
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     @NotBlank(message = "Nội dung không được để trống")
     @Size(min = 20, message = "Nội dung phải có ít nhất 20 ký tự")

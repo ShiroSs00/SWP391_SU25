@@ -124,9 +124,6 @@ public class DataInitializer {
 
         List<Blood> bloodList = bloodRepository.findAll();
         for (Blood blood : bloodList) {
-            long validQuantity = bloodBagRepository.countValidByBloodCode(blood.getBloodCode());
-            blood.setQuantity(validQuantity);
-
             if (blood.getBloodMatch() == null || blood.getBloodMatch().isBlank()) {
                 blood.setBloodMatch("UNKNOWN"); // hoặc tự tính toán lại nếu cần
             }

@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 @Data
@@ -17,6 +16,11 @@ import java.util.Date;
 @Builder
 public class BlogDTO {
     private String blogId;
+
+    @NotBlank(message = "Tiêu đề không được để trống")
+    @Size(min = 5, max = 150, message = "Tiêu đề phải từ 5 đến 150 ký tự")
+    private String title;
+
 
     @NotBlank(message = "Nội dung blog không được để trống")
     @Size(min = 20, message = "Nội dung blog phải ít nhất 20 ký tự")
@@ -31,11 +35,10 @@ public class BlogDTO {
 
     private String accountId;
 
-    private MultipartFile thumbnail;
-
     public static BlogDTO toDTO(Blog blog) {
         return BlogDTO.builder()
                 .blogId(blog.getBlogId())
+                .title(blog.getTitle())
                 .content(blog.getContent())
                 .postDate(blog.getPostDate())
                 .tagName(blog.getTagName())
@@ -47,6 +50,7 @@ public class BlogDTO {
     public static Blog toEntity(BlogDTO dto) {
         Blog blog = new Blog();
         blog.setBlogId(dto.getBlogId());
+        blog.setTitle(dto.getTitle());
         blog.setContent(dto.getContent());
         blog.setPostDate(dto.getPostDate());
         blog.setTagName(dto.getTagName());

@@ -46,15 +46,13 @@ public class HealthCheckDTO {
     private String note;
 
 
-    // Custom validation logic
     @AssertTrue(message = "volumeToTake chỉ chấp nhận 250, 350 hoặc 450 nếu đủ điều kiện hiến máu")
     public boolean isVolumeValid() {
-        return !Boolean.TRUE.equals(isFitToDonate) || // Nếu không đủ điều kiện hiến thì không kiểm tra
-                volumeToTake == null ||                // Không bắt buộc truyền nếu không cần
+        return !Boolean.TRUE.equals(isFitToDonate) ||
+                volumeToTake == null ||
                 Arrays.asList(250, 350, 450).contains(volumeToTake);
     }
 
-    // Convert DTO -> Entity
     public static HealthCheck toEntity(HealthCheckDTO dto) {
         return HealthCheck.builder()
                 .healthCheckId(dto.getHealthCheckId())
@@ -71,7 +69,6 @@ public class HealthCheckDTO {
                 .build();
     }
 
-    // Convert Entity -> DTO
     public static HealthCheckDTO toDTO(HealthCheck entity) {
         return HealthCheckDTO.builder()
                 .healthCheckId(entity.getHealthCheckId())

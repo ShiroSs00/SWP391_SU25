@@ -21,13 +21,10 @@ import java.util.stream.Collectors;
 public class BloodBagService {
 
     private final BloodBagRepository bloodBagRepository;
-
-
     private final ComponentRepository componentRepository;
+    private final BloodRepository bloodRepository;
 
-
-    private final BloodRepository  bloodRepository;
-
+    @Transactional
     public BloodBagDTO createBloodBag(BloodBagDTO dto) {
         if (dto.getVolume() == null) {
             throw new IllegalArgumentException("Thể tích túi máu là bắt buộc (ML_250, ML_350, ML_450)");
@@ -37,10 +34,7 @@ public class BloodBagService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Component với ID: " + dto.getComponentId()));
 
         Optional<BloodBag> existingOpt = bloodBagRepository.findByMatchingAttributes(
-                dto.getBloodCode(),
-                dto.getVolume(),
-                dto.getExpirationDate(),
-                component
+                dto.getBloodCode(), BloodBag.Volume.fromInt(dto.getVolume()), dto.getExpirationDate(), component
         );
 
         if (existingOpt.isPresent()) {
@@ -54,11 +48,16 @@ public class BloodBagService {
                 newId = generateBloodBagId();
             } while (bloodBagRepository.existsByBagId(newId));
 
-            BloodBag entity = toEntity(dto, component);
+            BloodBag entity = convertToEntity(dto, component);
             entity.setBagId(newId);
-            entity.setStatus(dto.getStatus() != null ? dto.getStatus() : BloodBag.Status.VALID);
-            entity.setComponent(component);
 
+            if (dto.getExpirationDate() != null && dto.getExpirationDate().before(new Date())) {
+                entity.setStatus(BloodBag.Status.EXPIRED);
+            } else {
+                entity.setStatus(dto.getStatus() != null ? dto.getStatus() : BloodBag.Status.VALID);
+            }
+
+            entity.setComponent(component);
             BloodBag saved = bloodBagRepository.save(entity);
             return BloodBagDTO.fromEntity(saved);
         }
@@ -68,7 +67,8 @@ public class BloodBagService {
     @Transactional
     public int autoUpdateExpiredStatus() {
         List<BloodBag> expiredBags = bloodBagRepository.findByExpirationDateBeforeAndStatus(
-                new Date(), BloodBag.Status.VALID);
+                new Date(), BloodBag.Status.VALID
+        );
         for (BloodBag bag : expiredBags) {
             bag.setStatus(BloodBag.Status.EXPIRED);
         }
@@ -76,10 +76,10 @@ public class BloodBagService {
         return expiredBags.size();
     }
 
-    private BloodBag toEntity(BloodBagDTO dto, Component component) {
+    private BloodBag convertToEntity(BloodBagDTO dto, Component component) {
         return BloodBag.builder()
                 .bagId(dto.getBagId())
-                .volume(dto.getVolume())
+                .volume(BloodBag.Volume.fromInt(dto.getVolume()))
                 .collectedDate(dto.getCollectedDate())
                 .expirationDate(dto.getExpirationDate())
                 .status(dto.getStatus())
@@ -89,6 +89,7 @@ public class BloodBagService {
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu " + dto.getBloodCode())))
                 .build();
     }
+
 
     @Transactional
     public Map<String, List<String>> deleteBloodBags(List<String> bagIds) {
@@ -113,24 +114,34 @@ public class BloodBagService {
         );
     }
 
-
-
-    public BloodBagDTO updateBloodBag( BloodBagDTO dto) {
+    @Transactional
+    public BloodBagDTO updateBloodBag(BloodBagDTO dto) {
         BloodBag existing = bloodBagRepository.findByBagId(dto.getBagId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy túi máu có ID: " + dto.getBagId()));
 
-        // Cập nhật các trường nếu có
-        if (dto.getVolume() != null) existing.setVolume(dto.getVolume());
+        if (dto.getVolume() != null) existing.setVolume(BloodBag.Volume.fromInt(dto.getVolume()));
         if (dto.getCollectedDate() != null) existing.setCollectedDate(dto.getCollectedDate());
-        if (dto.getExpirationDate() != null) existing.setExpirationDate(dto.getExpirationDate());
+        if (dto.getExpirationDate() != null) {
+            existing.setExpirationDate(dto.getExpirationDate());
+            if (dto.getExpirationDate().before(new Date())) {
+                existing.setStatus(BloodBag.Status.EXPIRED);
+            }
+        }
+
         if (dto.getStatus() != null) {
             existing.setStatus(dto.getStatus());
         }
+
         if (dto.getComponentId() != null) {
             Component component = componentRepository.findById(dto.getComponentId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Component với ID: " + dto.getComponentId()));
             existing.setComponent(component);
         }
+
+        if (dto.getQuantity() > 0) {
+            existing.setQuantity(dto.getQuantity());
+        }
+
         BloodBag saved = bloodBagRepository.save(existing);
         return BloodBagDTO.fromEntity(saved);
     }
@@ -143,14 +154,12 @@ public class BloodBagService {
         bloodBagRepository.deleteBloodBagBybagId(bagId);
     }
 
-
     public List<BloodBagDTO> getAllBloodBags() {
         return bloodBagRepository.findAll()
                 .stream()
                 .map(BloodBagDTO::fromEntity)
                 .collect(Collectors.toList());
     }
-
 
     public static String generateBloodBagId() {
         String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());

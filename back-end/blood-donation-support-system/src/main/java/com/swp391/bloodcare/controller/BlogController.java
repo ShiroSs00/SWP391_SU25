@@ -5,14 +5,16 @@ import com.swp391.bloodcare.dto.BlogDTO;
 import com.swp391.bloodcare.service.BlogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -28,24 +30,33 @@ public class BlogController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Lấy blog mới nhất thành công", latestBlogs));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<ApiResponse<?>> createBlog(@Valid @RequestBody BlogDTO dto, BindingResult bindingResult) {
+    @PostMapping(value = "/create", consumes = {"multipart/form-data"})
+    public ResponseEntity<ApiResponse<?>> createBlog(
+            @ModelAttribute @Valid BlogDTO dto,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail,
+            BindingResult bindingResult
+    ) {
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = bindingResult.getFieldErrors().stream()
                     .collect(Collectors.toMap(
-                            fieldError -> fieldError.getField(),
-                            DefaultMessageSourceResolvable::getDefaultMessage,
-                            (e1, e2) -> e1 // nếu trùng field, giữ lỗi đầu tiên
+                            FieldError::getField,
+                            field -> Optional.ofNullable(field.getDefaultMessage()).orElse("Lỗi không xác định"),
+                            (e1, e2) -> e1
                     ));
+            String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
+            dto.setBlogId(accountId);
+
             return ResponseEntity.badRequest().body(
                     new ApiResponse<>(false, "Dữ liệu không hợp lệ", null, errors)
             );
         }
 
         String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
-        BlogDTO created = blogService.createBlogByUserName(dto, accountId);
-        return ResponseEntity.status(201).body(new ApiResponse<>(true, "Tạo blog thành công", created));
+        BlogDTO created = blogService.createBlogByUserName(dto, accountId, thumbnail);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "Tạo blog thành công", created));
     }
+
+
 
     @GetMapping("/getall")
     public ResponseEntity<ApiResponse<List<BlogDTO>>> getAll() {
