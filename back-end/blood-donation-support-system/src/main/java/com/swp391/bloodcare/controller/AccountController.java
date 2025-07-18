@@ -29,21 +29,10 @@ public class AccountController {
     private AccountService accountService;
 
     // Lấy tất cả tài khoản với phân trang
-    @GetMapping("/paged")
+    @GetMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
-    public ResponseEntity<ApiResponse<Page<AccountResponseDTO>>> getAllAccountsWithPaging(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "creationDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            Authentication auth){
-        Sort sort = sortDir.equalsIgnoreCase("desc") ?
-                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        String currentUserRole = auth.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
-        ApiResponse<Page<AccountResponseDTO>> response = accountService.getAllAccountsWithPaging(pageable, currentUserRole);
-
+    public ResponseEntity<ApiResponse<List<AccountResponseDTO>>> getAllAccounts(Authentication auth) {
+        ApiResponse<List<AccountResponseDTO>> response = accountService.getAllAccounts();
         return ResponseEntity.ok(response);
     }
 
