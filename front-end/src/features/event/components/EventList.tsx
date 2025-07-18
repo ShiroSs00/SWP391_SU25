@@ -44,14 +44,14 @@ const EventsList: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       const data = await getAllEvents();
-      
+
       // VALIDATION: Kiểm tra response
       if (!Array.isArray(data)) {
         throw new Error('Dữ liệu trả về không đúng định dạng');
       }
-      
+
       // VALIDATION: Kiểm tra từng event
       const validatedEvents = data.filter(event => {
         return (
@@ -64,15 +64,15 @@ const EventsList: React.FC = () => {
           event.location.trim() !== ''
         );
       });
-      
+
       if (validatedEvents.length === 0 && data.length > 0) {
         throw new Error('Không có sự kiện hợp lệ');
       }
-      
+
       setEvents(validatedEvents);
     } catch (err: any) {
       console.error('Error fetching events:', err);
-      
+
       // HANDLE DIFFERENT ERROR TYPES
       if (err.response?.status === 404) {
         setError('Không tìm thấy dữ liệu sự kiện');
@@ -124,7 +124,7 @@ const EventsList: React.FC = () => {
     if (dateFilter) {
       const today = new Date();
       const filterDate = new Date(dateFilter);
-      
+
       filtered = filtered.filter(event => {
         const eventStart = new Date(event.startDate || '');
         const eventEnd = new Date(event.endDate || '');
@@ -166,10 +166,11 @@ const EventsList: React.FC = () => {
   const getStatistics = () => {
     const total = events.length;
     const ongoing = events.filter(e => e.status === 'ONGOING').length;
-    const upcoming = events.filter(e => e.status === 'Sắp diễn ra').length;
+    const upcoming = events.filter(e => e.status === 'UPCOMING').length;
+    const completed = events.filter(e => e.status === 'FINISHED').length;
     const totalBloodGoal = events.reduce((sum, e) => sum + (e.expectedBloodVolume || 0), 0);
-    
-    return { total, ongoing, upcoming, totalBloodGoal };
+
+    return { total, ongoing, upcoming, completed,  totalBloodGoal };
   };
 
   const stats = getStatistics();
@@ -177,7 +178,7 @@ const EventsList: React.FC = () => {
   // PHÂN LOẠI SỰ KIỆN THEO TRẠNG THÁI
   const ongoingEvents = filteredEvents.filter(event => event.status === 'ONGOING');
   const upcomingEvents = filteredEvents.filter(event => event.status === 'UPCOMING');
-  const completedEvents = filteredEvents.filter(event => event.status === 'COMPLETED');
+  const completedEvents = filteredEvents.filter(event => event.status === 'FINISHED');
 
   /**
    * HÀM XỬ LÝ NAVIGATION ĐẾN FORM ĐĂNG KÝ
@@ -185,17 +186,17 @@ const EventsList: React.FC = () => {
    */
   const handleEventRegistration = (eventId: string, eventStatus: string) => {
     // VALIDATION: Chỉ cho phép đăng ký sự kiện đang diễn ra hoặc sắp diễn ra
-    if (eventStatus === 'Đã kết thúc') {
+    if (eventStatus === 'FINISH') {
       alert('Sự kiện này đã kết thúc, không thể đăng ký');
       return;
     }
-    
+
     // VALIDATION: Kiểm tra eventId hợp lệ
     if (!eventId || eventId.trim() === '') {
       alert('Có lỗi xảy ra. Vui lòng thử lại');
       return;
     }
-    
+
     // Navigate to registration page with eventId
     navigate(`/donation`);
   };
@@ -248,7 +249,7 @@ const EventsList: React.FC = () => {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }} />
         </div>
-        
+
         {/* Hero Content */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
@@ -264,26 +265,30 @@ const EventsList: React.FC = () => {
               </span>
             </h1>
             <p className="text-xl text-red-100 max-w-3xl mx-auto leading-relaxed">
-              Tham gia các sự kiện hiến máu để mang lại hy vọng và sự sống cho những người cần được giúp đỡ. 
+              Tham gia các sự kiện hiến máu để mang lại hy vọng và sự sống cho những người cần được giúp đỡ.
               Mỗi giọt máu của bạn là một món quà vô giá.
             </p>
           </div>
 
           {/* Statistics Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-5 mt-12">
+            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-5 text-center">
               <div className="text-2xl font-bold">{stats.total}</div>
               <div className="text-red-100 text-sm">Tổng sự kiện</div>
             </div>
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4 text-center">
+            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-5 text-center">
               <div className="text-2xl font-bold">{stats.ongoing}</div>
               <div className="text-red-100 text-sm">Đang diễn ra</div>
             </div>
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4 text-center">
+            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-5 text-center">
               <div className="text-2xl font-bold">{stats.upcoming}</div>
               <div className="text-red-100 text-sm">Sắp diễn ra</div>
             </div>
-            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4 text-center">
+            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-5 text-center">
+              <div className="text-2xl font-bold">{stats.completed}</div>
+              <div className="text-red-100 text-sm">Đã kết thúc</div>
+            </div>
+            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-5 text-center">
               <div className="text-2xl font-bold">{stats.totalBloodGoal}</div>
               <div className="text-red-100 text-sm">Đơn vị máu mục tiêu</div>
             </div>
@@ -309,7 +314,7 @@ const EventsList: React.FC = () => {
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Bộ lọc nâng cao</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}
             <div className="relative">
@@ -334,7 +339,7 @@ const EventsList: React.FC = () => {
                 <option value="all">Tất cả trạng thái</option>
                 <option value="ONGOING">🟢 Đang diễn ra</option>
                 <option value="UPCOMING">🔵 Sắp diễn ra</option>
-                <option value="COMPLETED">⚫ Đã kết thúc</option>
+                <option value="FINISH">⚫ Đã kết thúc</option>
               </select>
             </div>
 
@@ -403,6 +408,17 @@ const EventsList: React.FC = () => {
               className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium hover:bg-blue-200 transition-colors"
             >
               🔵 Sắp diễn ra
+            </button>
+                        <button
+              onClick={() => {
+                setStatusFilter('FINISHED');
+                setSearchTerm('');
+                setLocationFilter('');
+                setDateFilter('');
+              }}
+              className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium hover:bg-blue-200 transition-colors"
+            >
+              🔵 Đã Kết Thúc
             </button>
             <button
               onClick={() => {
@@ -478,9 +494,9 @@ const EventsList: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {ongoingEvents.map(event => (
-                    <EventCard 
-                      key={event.eventId} 
-                      event={event} 
+                    <EventCard
+                      key={event.eventId}
+                      event={event}
                       onRegister={handleEventRegistration}
                     />
                   ))}
@@ -495,7 +511,7 @@ const EventsList: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <Calendar className="w-6 h-6 text-blue-500" />
                     <h2 className="text-3xl font-bold text-gray-900">
-                     UPCOMING
+                      UPCOMING
                     </h2>
                     <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                       {upcomingEvents.length} sự kiện
@@ -505,9 +521,9 @@ const EventsList: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {upcomingEvents.map(event => (
-                    <EventCard 
-                      key={event.eventId} 
-                      event={event} 
+                    <EventCard
+                      key={event.eventId}
+                      event={event}
                       onRegister={handleEventRegistration}
                     />
                   ))}
@@ -522,7 +538,7 @@ const EventsList: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-gray-400 rounded-full"></div>
                     <h2 className="text-3xl font-bold text-gray-900">
-                      COMPLETED
+                      FINISH
                     </h2>
                     <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
                       {completedEvents.length} sự kiện
@@ -532,9 +548,9 @@ const EventsList: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {completedEvents.map(event => (
-                    <EventCard 
-                      key={event.eventId} 
-                      event={event} 
+                    <EventCard
+                      key={event.eventId}
+                      event={event}
                       onRegister={handleEventRegistration}
                     />
                   ))}
