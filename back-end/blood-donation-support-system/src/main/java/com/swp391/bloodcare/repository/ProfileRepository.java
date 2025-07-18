@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ProfileRepository extends JpaRepository<Profile, Long> {
+public interface ProfileRepository extends JpaRepository<Profile, String> {
 
     @Query("SELECT p FROM Profile p WHERE p.account.accountId = :accountId")
     Optional<Profile> findByAccountId(@Param("accountId") String accountId);

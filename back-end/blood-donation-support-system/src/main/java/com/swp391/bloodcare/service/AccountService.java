@@ -132,20 +132,6 @@ public class AccountService {
         }
     }
 
-    //lấy tất cả có phân trang
-    public ApiResponse<Page<AccountResponseDTO>> getAllAccountsWithPaging(Pageable pageable, String currentUserRole) {
-        try {
-            Page<Account> accountPage = accountRepository.findAll(pageable);
-
-            Page<AccountResponseDTO> accountDTOPage = accountPage.map(account ->
-                    convertToDTO(account, currentUserRole));
-
-            return new ApiResponse<>(true, "Lấy danh sách tài khoản thành công", accountDTOPage);
-        } catch (Exception e) {
-            return new ApiResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
-        }
-    }
-
     //tìm kiếm theo nhiều chỉ tiêu và có phân trang
     public ApiResponse<Page<AccountResponseDTO>> searchAccountsMultiCriteriaWithPaging(
             String username, String email, String roleName, Boolean isActive, String currentUserRole, Pageable pageable)  {
@@ -289,6 +275,7 @@ public class AccountService {
             dto.setProfileId(null); // hoặc "Chưa cập nhật"
         }
         dto.setCreationDate(account.getCreationDate());
+        dto.setActive(account.getIsActive());
         return dto;
     }
 
