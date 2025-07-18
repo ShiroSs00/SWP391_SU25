@@ -289,11 +289,15 @@ const AfterDonationManage: React.FC = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentRecords = filteredAfterDonationData.slice(startIndex, endIndex);
 
-  // Statistics
+  // Get unique statuses from data
+  const uniqueStatuses = [...new Set(afterDonationData.map(record => record.status))];
+
+  // Statistics - Dynamic based on actual data
   const totalRecords = afterDonationData.length;
-  const pendingRecords = afterDonationData.filter(r => r.status === 'PENDING').length;
-  const completedRecords = afterDonationData.filter(r => r.status === 'COMPLETED').length;
-  const processedRecords = afterDonationData.filter(r => r.status === 'PROCESSED').length;
+  const statusCounts = uniqueStatuses.reduce((acc, status) => {
+    acc[status] = afterDonationData.filter(r => r.status === status).length;
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
     <div className="space-y-6">
@@ -361,83 +365,101 @@ const AfterDonationManage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
-          <div className="flex items-center">
-            <div className="bg-yellow-100 rounded-lg p-3 mr-4">
-              <svg
-                className="w-6 h-6 text-yellow-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Chờ Xử Lý</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {pendingRecords}
-              </p>
-            </div>
-          </div>
-        </div>
+        {uniqueStatuses.slice(0, 3).map((status, index) => {
+          const getStatusInfo = (status: string) => {
+            switch (status.toLowerCase()) {
+              case 'passed':
+                return {
+                  label: 'Đã Qua',
+                  color: 'from-green-50 to-emerald-50',
+                  borderColor: 'border-green-200',
+                  iconBg: 'bg-green-100',
+                  iconColor: 'text-green-600',
+                  icon: (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  )
+                };
+              case 'failed':
+                return {
+                  label: 'Thất Bại',
+                  color: 'from-red-50 to-pink-50',
+                  borderColor: 'border-red-200',
+                  iconBg: 'bg-red-100',
+                  iconColor: 'text-red-600',
+                  icon: (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  )
+                };
+              case 'separated':
+                return {
+                  label: 'Đã Tách',
+                  color: 'from-purple-50 to-pink-50',
+                  borderColor: 'border-purple-200',
+                  iconBg: 'bg-purple-100',
+                  iconColor: 'text-purple-600',
+                  icon: (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                    />
+                  )
+                };
+              default:
+                return {
+                  label: status,
+                  color: 'from-gray-50 to-gray-100',
+                  borderColor: 'border-gray-200',
+                  iconBg: 'bg-gray-100',
+                  iconColor: 'text-gray-600',
+                  icon: (
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  )
+                };
+            }
+          };
 
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
-          <div className="flex items-center">
-            <div className="bg-green-100 rounded-lg p-3 mr-4">
-              <svg
-                className="w-6 h-6 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+          const statusInfo = getStatusInfo(status);
+          
+          return (
+            <div key={status} className={`bg-gradient-to-r ${statusInfo.color} rounded-xl p-6 border ${statusInfo.borderColor}`}>
+              <div className="flex items-center">
+                <div className={`${statusInfo.iconBg} rounded-lg p-3 mr-4`}>
+                  <svg
+                    className={`w-6 h-6 ${statusInfo.iconColor}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    {statusInfo.icon}
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">{statusInfo.label}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {statusCounts[status] || 0}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Hoàn Thành</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {completedRecords}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
-          <div className="flex items-center">
-            <div className="bg-purple-100 rounded-lg p-3 mr-4">
-              <svg
-                className="w-6 h-6 text-purple-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Đã Xử Lý</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {processedRecords}
-              </p>
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
       {/* Filters */}
@@ -477,9 +499,14 @@ const AfterDonationManage: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Tất cả trạng thái</option>
-              <option value="PENDING">Chờ Xử Lý</option>
-              <option value="COMPLETED">Hoàn Thành</option>
-              <option value="CANCELLED">Đã Hủy</option>
+              {uniqueStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {status === 'PENDING' ? 'Chờ Xử Lý' : 
+                   status === 'COMPLETED' ? 'Hoàn Thành' : 
+                   status === 'PROCESSED' ? 'Đã Xử Lý' :
+                   status === 'CANCELLED' ? 'Đã Hủy' : status}
+                </option>
+              ))}
             </select>
           </div>
         </div>

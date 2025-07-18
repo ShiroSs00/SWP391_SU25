@@ -11,7 +11,7 @@ export const updateHealthCheck = async (healthCheckId: string, data: HealthCheck
   
   if (data.volumeToTake === null) {
     // Explicitly set to null for database update
-    finalData.volumeToTake = null;
+    finalData.volumeToTake = 0;
   } else if (data.volumeToTake !== undefined) {
     finalData.volumeToTake = data.volumeToTake;
   }
@@ -28,7 +28,30 @@ export const updateHealthCheck = async (healthCheckId: string, data: HealthCheck
 export const createHealthCheck = async (donationRegistrationId: string, data: HealthCheckData) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { donationRegistrationId: _, ...requestData } = data;
-  const response = await api.post(`/healthcheck/create/${donationRegistrationId}`, requestData);
+  
+  // Clean up undefined values and handle volumeToTake
+  const finalData = { ...requestData };
+  
+  // If not fit to donate, set volumeToTake to 0
+  if (!data.isFitToDonate) {
+    finalData.volumeToTake = 0;
+  } else if (data.volumeToTake === undefined || data.volumeToTake === null) {
+    // If fit to donate but no volume selected, remove the field
+    delete finalData.volumeToTake;
+  }
+  
+  // Remove other undefined values
+  Object.keys(finalData).forEach(key => {
+    if (finalData[key as keyof typeof finalData] === undefined) {
+      delete finalData[key as keyof typeof finalData];
+    }
+  });
+  
+  console.log('Sending create data:', finalData);
+  console.log('Original data:', data);
+  console.log('Final data:', finalData);
+  
+  const response = await api.post(`/healthcheck/create/${donationRegistrationId}`, finalData);
   return response.data.data;
 };
 

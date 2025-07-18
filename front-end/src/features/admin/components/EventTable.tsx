@@ -3,20 +3,16 @@ import { getAllEvents, createEvent, updateEvent, deleteEvent, deleteMultipleEven
 import type { AdminEvent } from '../types/admin.types';
 import { FaRegEdit, FaTrashAlt, FaPlus, FaCalendarAlt } from 'react-icons/fa';
 
-const EVENT_STATUSES = [
-  'Sắp diễn ra',
-  'Đang diễn ra',
-  'Đã kết thúc',
-];
-
 const initialForm: Omit<AdminEvent, 'eventId' | 'creationDate'> = {
   nameOfEvent: '',
   startDate: '',
   endDate: '',
   expectedBloodVolume: 0,
-  actualVolume: 0,
   location: '',
-  status: EVENT_STATUSES[0],
+  expectedCost: 0,
+  // Fields không cần hiển thị trên UI
+  actualVolume: 0,
+  status: '',
   accountId: '',
 };
 
@@ -38,6 +34,7 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
   const [editId, setEditId] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false); // Thêm state để prevent multiple submissions
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -65,12 +62,14 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
   const handleAdd = () => {
     setForm({ ...initialForm, accountId: getAccountId() });
     setEditId(null);
+    setSubmitting(false);
     setShowForm(true);
   };
 
   const handleEdit = (event: AdminEvent) => {
     setForm({ ...event });
     setEditId(event.eventId);
+    setSubmitting(false);
     setShowForm(true);
   };
 
@@ -112,18 +111,37 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (submitting) return;
+    
+    setSubmitting(true);
+    
+    // Chỉ gửi những field mà API cần
+    const requestData = {
+      nameOfEvent: form.nameOfEvent,
+      startDate: form.startDate,
+      endDate: form.endDate,
+      expectedBloodVolume: form.expectedBloodVolume,
+      location: form.location,
+      expectedCost: form.expectedCost,
+    };
+    
     try {
       if (editId) {
-        await updateEvent(editId, form);
+        await updateEvent(editId, requestData);
         if (showToast) showToast('Cập nhật sự kiện thành công', 'success');
       } else {
-        await createEvent({ ...form, accountId: getAccountId() });
+        await createEvent(requestData);
         if (showToast) showToast('Tạo sự kiện thành công', 'success');
       }
       setShowForm(false);
       fetchEvents();
-    } catch {
+    } catch (error) {
+      console.error('Error submitting event:', error);
       if (showToast) showToast('Thao tác thất bại', 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -219,8 +237,12 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
               {editId ? 'Chỉnh sửa sự kiện' : 'Thêm sự kiện mới'}
             </h3>
             <button
-              onClick={() => setShowForm(false)}
+              onClick={() => {
+                setShowForm(false);
+                setSubmitting(false);
+              }}
               className="text-gray-400 hover:text-gray-600 transition-colors"
+              disabled={submitting}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -288,49 +310,41 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
               />
             </div>
             
-            {editId && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Máu đã nhận (đơn vị)</label>
-                <input 
-                  name="actualVolume" 
-                  value={form.actualVolume} 
-                  onChange={handleInputChange} 
-                  type="number" 
-                  min={0} 
-                  placeholder="Nhập số đơn vị máu thực tế" 
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
-                />
-              </div>
-            )}
-            
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Trạng thái</label>
-              <select 
-                name="status" 
-                value={form.status} 
+              <label className="text-sm font-medium text-gray-700">Chi phí dự kiến (VND)</label>
+              <input 
+                name="expectedCost" 
+                value={form.expectedCost} 
                 onChange={handleInputChange} 
+                type="number" 
+                min={0} 
+                placeholder="Nhập chi phí dự kiến" 
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
-                required
-              >
-                {EVENT_STATUSES.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
+              />
             </div>
             
             <div className="col-span-full flex gap-3 mt-6 justify-end">
               <button 
                 type="button" 
-                className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors" 
+                className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
                 onClick={() => setShowForm(false)}
+                disabled={submitting}
               >
                 Hủy
               </button>
               <button 
                 type="submit" 
-                className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
+                className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={submitting}
               >
-                {editId ? 'Cập nhật' : 'Tạo mới'}
+                {submitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    {editId ? 'Đang cập nhật...' : 'Đang tạo...'}
+                  </>
+                ) : (
+                  editId ? 'Cập nhật' : 'Tạo mới'
+                )}
               </button>
             </div>
           </form>
@@ -396,6 +410,9 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
                     Dự kiến (đv máu)
                   </th>
                   <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Chi phí dự kiến
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Máu đã nhận
                   </th>
                   <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -407,7 +424,7 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {events.map((event, index) => (
+                {events.map((event) => (
                   <tr key={event.eventId} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
@@ -433,15 +450,23 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
                       <div className="text-sm font-medium text-gray-900">{event.expectedBloodVolume}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="text-sm font-medium text-gray-900">
+                        {event.expectedCost ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(event.expectedCost) : '0 ₫'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="text-sm font-medium text-gray-900">{event.actualVolume}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
-                        event.status === 'Sắp diễn ra' ? 'bg-blue-100 text-blue-800' :
-                        event.status === 'Đang diễn ra' ? 'bg-green-100 text-green-800' :
+                        event.status === 'UPCOMING' ? 'bg-blue-100 text-blue-800' :
+                        event.status === 'ONGOING' ? 'bg-green-100 text-green-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {event.status}
+                        {event.status === 'UPCOMING' ? 'Sắp diễn ra' :
+                         event.status === 'ONGOING' ? 'Đang diễn ra' :
+                         event.status === 'COMPLETED' ? 'Đã kết thúc' :
+                         event.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">

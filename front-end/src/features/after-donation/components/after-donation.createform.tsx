@@ -174,7 +174,7 @@ const AfterDonationCreateForm: React.FC<AfterDonationCreateFormProps> = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="PENDING">Chờ Xử Lý</option>
-            <option value="COMPLETED">Hoàn Thành</option>
+            <option value="PASSED">Hoàn Thành</option>
             <option value="CANCELLED">Đã Hủy</option>
           </select>
         </div>

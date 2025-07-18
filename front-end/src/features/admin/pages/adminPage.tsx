@@ -3,14 +3,14 @@ import AdminSidebar from '../components/AdminSidebar';
 import AdminHeader from '../components/AdminHeader';
 import AdminDashboard from '../components/AdminDashboard';
 import EventPage from './eventPage';
-
+import AccountManage from '../components/accountmanage';
 interface AdminPageProps {
   showToast: (message: string, type: 'success' | 'error') => void;
 }
 
 const AdminPage: React.FC<AdminPageProps> = ({ showToast }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activePage, setActivePage] = useState<'dashboard' | 'events'>('dashboard');
+  const [activePage, setActivePage] = useState<'dashboard' | 'events'| 'users'>('dashboard');
 
   const handleToggleSidebar = () => {
     setIsSidebarCollapsed((prev) => !prev);
@@ -19,6 +19,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ showToast }) => {
   // Chuyển trang nội bộ, không đổi route
   const handleMenuClick = (key: string) => {
     if (key === 'events') setActivePage('events');
+    else if (key === 'users') setActivePage('users');
     else setActivePage('dashboard');
   };
 
@@ -30,6 +31,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ showToast }) => {
         <main className="flex-1 p-8">
           {activePage === 'dashboard' && <><h1 className="text-3xl font-bold text-center text-[#b71c1c] mb-8">Trang quản trị hệ thống</h1><AdminDashboard /></>}
           {activePage === 'events' && <EventPage />}
+          {activePage === 'users' && <AccountManage />}
         </main>
       </div>
     </div>

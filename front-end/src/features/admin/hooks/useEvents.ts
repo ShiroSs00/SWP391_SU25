@@ -10,22 +10,22 @@ export const getAllEvents = async (): Promise<AdminEvent[]> => {
 // Tạo mới event
 export const createEvent = async (event: {
   nameOfEvent: string;
-  startDate?: string; // Made optional
-  endDate?: string;   // Made optional
-  expectedBloodVolume?: number; // Made optional
+  startDate?: string;
+  endDate?: string;
+  expectedBloodVolume?: number;
   location: string;
-  status: string;
-  accountId: string;
+  expectedCost?: number;
 }): Promise<{
   eventId: string;
   nameOfEvent: string;
   creationDate: string;
-  startDate?: string; // Made optional
-  endDate?: string;   // Made optional
-  expectedBloodVolume?: number; // Made optional
+  startDate?: string;
+  endDate?: string;
+  expectedBloodVolume?: number;
   location: string;
   status: string;
   accountId: string;
+  expectedCost?: number;
 }> => {
   const res = await api.post<{ data: {
     eventId: string;
@@ -37,6 +37,7 @@ export const createEvent = async (event: {
     location: string;
     status: string;
     accountId: string;
+    expectedCost?: number;
   } }>('/event/create', event);
   return res.data.data;
 };
@@ -50,8 +51,7 @@ export const updateEvent = async (
     endDate?: string;
     expectedBloodVolume?: number;
     location?: string;
-    status?: string;
-    accountId?: string;
+    expectedCost?: number;
   }
 ): Promise<{
   eventId: string;
@@ -63,6 +63,7 @@ export const updateEvent = async (
   location: string;
   status: string;
   accountId: string;
+  expectedCost?: number;
 }> => {
   const res = await api.put<{ data: {
     eventId: string;
@@ -74,6 +75,7 @@ export const updateEvent = async (
     location: string;
     status: string;
     accountId: string;
+    expectedCost?: number;
   } }>(`/event/update/${id}`, event);
   return res.data.data;
 };

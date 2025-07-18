@@ -69,6 +69,13 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
+    
+    console.log('=== FORM FIELD CHANGED ===');
+    console.log('Field name:', name);
+    console.log('Field value:', value);
+    console.log('Field type:', type);
+    console.log('Field checked:', checked);
+    
     setFormData((prev) => {
       const newData = { 
         ...prev, 
@@ -79,11 +86,10 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
             : value 
       };
       
-      // Set volumeToTake to null when isFitToDonate is unchecked
+      // Set volumeToTake to 0 when isFitToDonate is unchecked
       if (name === 'isFitToDonate' && !checked) {
-        newData.volumeToTake = null;
+        newData.volumeToTake = 0;
       }
-      
       return newData;
     });
   };
@@ -92,6 +98,8 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
     e.preventDefault();
     setLoading(true);
     setError(null);
+    
+
     try {
       await createHealthCheck(formData.donationRegistrationId, formData);
       onSuccess();
@@ -109,7 +117,9 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
         note: '',
       });
     } catch (err) {
-      setError((err as Error).message || 'An error occurred while creating the health check.');
+      const errorMessage = err instanceof Error ? err.message : 'Có lỗi xảy ra khi tạo kiểm tra sức khỏe';
+      setError(errorMessage);
+      console.error('Error creating health check:', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -295,9 +305,9 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
                         checked={formData.isFitToDonate === false}
                         onChange={(e) => setFormData(prev => {
                           const newData = { ...prev, isFitToDonate: e.target.value === 'true' };
-                          // Set volumeToTake to null when not fit to donate
+                          // Set volumeToTake to 0 when not fit to donate
                           if (e.target.value === 'false') {
-                            newData.volumeToTake = null;
+                            newData.volumeToTake = 0;
                           }
                           return newData;
                         })}

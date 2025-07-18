@@ -53,7 +53,7 @@ const UpdateHealthCheckModal: React.FC<UpdateHealthCheckModalProps> = ({
       if (field === 'isFitToDonate') {
         if (!value) {
           // Set volumeToTake to null when isFitToDonate is unchecked
-          newData.volumeToTake = null;
+          newData.volumeToTake = 0;
           console.log('Setting volumeToTake to null because not fit to donate');
         } else {
           // Reset volumeToTake to undefined when isFitToDonate is checked (force user to select)

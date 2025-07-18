@@ -8,7 +8,6 @@ interface AdminSidebarProps {
 const adminFeatures = [
   { key: 'users', title: 'Quản lí tài khoản người dùng', icon: '👤' },
   { key: 'events', title: 'Quản lý sự kiện', icon: '🩸' },
-  { key: 'roles', title: 'Phân quyền cho người dùng', icon: '🔑' },
   { key: 'feedback', title: 'Quản lí feedback', icon: '💬' },
   { key: 'blood', title: 'Quản lí danh sách máu', icon: '🧪' },
   { key: 'achievements', title: 'Quản lý các thành tựu', icon: '🏆' },
