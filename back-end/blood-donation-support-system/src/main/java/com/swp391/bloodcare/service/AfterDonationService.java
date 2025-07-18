@@ -60,22 +60,33 @@ public class AfterDonationService {
         entity.setIdAfterDonation(generateAfterDonationId());
         entity.setHealthCheck(healthCheck);
 
+        // 🚨 Logic xử lý trạng thái
+        if (Boolean.TRUE.equals(dto.getInfectiousDiseasesChecked()) && Boolean.TRUE.equals(dto.getIsBloodUsable())) {
+            entity.setStatus(AfterDonationBlood.Status.PASSED);
+        } else {
+            entity.setStatus(AfterDonationBlood.Status.FAILED);
+        }
+
+        // Cập nhật nhóm máu nếu cần
         if (dto.getBloodId() != null) {
             Blood blood = bloodRepo.findByBloodCode(dto.getBloodId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Blood"));
 
             Profile profile = healthCheck.getDonationRegistration().getAccount().getProfile();
-            if(profile.getBloodCode() == null){
+            if (profile.getBloodCode() == null) {
                 profile.setBloodCode(blood);
                 profileRepo.save(profile);
             }
 
             entity.setBlood(blood);
         }
+
+        // Cập nhật lịch sử hiến máu
         bloodDonationHistoryService.updateFromAfterDonation(entity);
 
         return toDTO(afterRepo.save(entity));
     }
+
 
     @Transactional
     public Map<String, Object> separateManually(BloodBagCreateRequest request) {
@@ -200,23 +211,35 @@ public class AfterDonationService {
         }
     }
 
-
     @Transactional
-    public AfterDonationBloodDTO updateById(String idAfterDonation, AfterDonationBloodDTO dto) {
-        AfterDonationBlood existing = afterRepo.findAfterDonationBloodByIdAfterDonation(idAfterDonation)
-                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi AfterDonation"));
+    public AfterDonationBloodDTO update(String id, AfterDonationBloodDTO dto) {
+        AfterDonationBlood entity = afterRepo.findAfterDonationBloodByIdAfterDonation(id)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi AfterDonationBlood"));
 
-        if (dto.getInfectiousDiseasesChecked() != null)
-            existing.setInfectiousDiseasesChecked(dto.getInfectiousDiseasesChecked());
-        if (dto.getIsBloodUsable() != null)
-            existing.setIsBloodUsable(dto.getIsBloodUsable());
-        if (dto.getStatus() != null)
-            existing.setStatus(dto.getStatus());
-        if (dto.getNote() != null && !dto.getNote().isBlank())
-            existing.setNote(dto.getNote());
-        bloodDonationHistoryService.updateFromAfterDonation(existing);
-        return toDTO(afterRepo.save(existing));
+        entity.setInfectiousDiseasesChecked(dto.getInfectiousDiseasesChecked());
+        entity.setIsBloodUsable(dto.getIsBloodUsable());
+        entity.setNote(dto.getNote());
+
+        // ⚠️ Cập nhật trạng thái dựa trên logic truyền nhiễm và usable
+        if (Boolean.TRUE.equals(dto.getInfectiousDiseasesChecked()) && Boolean.TRUE.equals(dto.getIsBloodUsable())) {
+            entity.setStatus(AfterDonationBlood.Status.PASSED);
+        } else {
+            entity.setStatus(AfterDonationBlood.Status.FAILED);
+        }
+
+        // Cập nhật nhóm máu nếu cần
+        if (dto.getBloodId() != null) {
+            Blood blood = bloodRepo.findByBloodCode(dto.getBloodId())
+                    .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Blood"));
+            entity.setBlood(blood);
+        }
+
+        // Cập nhật lịch sử hiến máu
+        bloodDonationHistoryService.updateFromAfterDonation(entity);
+
+        return toDTO(afterRepo.save(entity));
     }
+
 
     @Transactional
     public AfterDonationBloodDTO delete(String id) {
@@ -257,7 +280,6 @@ public class AfterDonationService {
         AfterDonationBlood entity = new AfterDonationBlood();
         entity.setInfectiousDiseasesChecked(dto.getInfectiousDiseasesChecked());
         entity.setIsBloodUsable(dto.getIsBloodUsable());
-        entity.setStatus(dto.getStatus());
         entity.setHealthCheck(
                 healthCheckRepo.findByHealthCheckId(dto.getHealthCheckId())
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy HealthCheck với ID: " + dto.getHealthCheckId()))
@@ -271,7 +293,6 @@ public class AfterDonationService {
         dto.setIdAfterDonation(entity.getIdAfterDonation());
         dto.setInfectiousDiseasesChecked(entity.getInfectiousDiseasesChecked());
         dto.setIsBloodUsable(entity.getIsBloodUsable());
-        dto.setStatus(entity.getStatus());
         dto.setNote(entity.getNote());
         if (entity.getHealthCheck() != null)
             dto.setHealthCheckId(entity.getHealthCheck().getHealthCheckId());

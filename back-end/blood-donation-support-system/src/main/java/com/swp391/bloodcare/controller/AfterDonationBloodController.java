@@ -54,7 +54,7 @@ public class AfterDonationBloodController {
     public ResponseEntity<ApiResponse<AfterDonationBloodDTO>> update(
             @PathVariable String idAfterDonation,
             @Valid @RequestBody AfterDonationBloodDTO dto) {
-        AfterDonationBloodDTO updated = afterDonationService.updateById(idAfterDonation, dto);
+        AfterDonationBloodDTO updated = afterDonationService.update(idAfterDonation, dto);
         return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật bản ghi sau hiến thành công", updated));
     }
 
