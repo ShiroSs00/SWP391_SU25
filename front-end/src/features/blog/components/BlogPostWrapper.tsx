@@ -1,13 +1,12 @@
 import React from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { BlogPostPage } from '../pages/BlogPostPage';
+import { BlogManagementPage } from '../pages/BlogManagementPage';
 
 export const BlogPostWrapper: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { blogId } = useParams<{ blogId: string }>();
   const navigate = useNavigate();
 
-  // Validate that we have an ID
-  if (!id) {
+  if (!blogId) {
     return <Navigate to="/blogs" replace />;
   }
 
@@ -16,14 +15,15 @@ export const BlogPostWrapper: React.FC = () => {
   };
 
   const handleEdit = () => {
-    navigate(`/blogs/edit/${id}`);
+    navigate(`/blogs/edit/${blogId}`);
   };
 
   return (
-    <BlogPostPage
-      blogId={id}
+    <BlogManagementPage
+      initialViewMode="detail"
+      blogId={blogId}
       onBack={handleBack}
-      onEdit={handleEdit}
+      onEditPost={handleEdit}
     />
   );
 };

@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
-import { createBloodRequest, getAllBloodRequests } from '../services/request-blood.services';
+import { createBloodRequest, getAllBloodRequests } from '../services/blood-request.services';
 import type { BloodRequestPayload, BloodRequest } from '../types/request-blood.types';
+import { se } from 'date-fns/locale';
 
 export const useRequestBlood = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+
 
   const createRequest = async (payload: BloodRequestPayload) => {
     console.log('Payload gửi lên API:', payload); // Log chi tiết payload
     setLoading(true);
     setError(null);
+    setSuccess(false);
     try {
       await createBloodRequest(payload);
+      setSuccess(true);
     } catch (err: unknown) {
       console.error('Response lỗi từ backend:', err); // Log chi tiết response lỗi
       if (
@@ -34,7 +39,13 @@ export const useRequestBlood = () => {
     }
   };
 
-  return { createRequest, loading, error };
+  const clearMessages = () => {
+    setError(null);
+    setSuccess(false);
+  };
+  
+
+  return { createRequest, loading, error, clearMessages, success };
 };
 
 export const useAllBloodRequests = () => {
@@ -49,7 +60,7 @@ export const useAllBloodRequests = () => {
       try {
         const token = localStorage.getItem('authToken');
         if (token) {
-          const response = await getAllBloodRequests(token);
+          const response = await getAllBloodRequests();
           setBloodRequests(response.data);
         } else {
           throw new Error('Token not found');
@@ -67,3 +78,4 @@ export const useAllBloodRequests = () => {
 
   return { bloodRequests, loading, error };
 };
+

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/card';
 import {
     Heart as HeartIcon,
@@ -12,211 +13,178 @@ import {
 } from 'lucide-react';
 
 export function FeaturesSection() {
-    const features = [
-        {
-            icon: HeartIcon,
-            title: 'Đăng ký hiến máu dễ dàng',
-            description: 'Quy trình đăng ký đơn giản, nhanh chóng với giao diện thân thiện và hướng dẫn chi tiết từng bước.',
-            color: 'text-blood-600',
-            bgColor: 'bg-blood-50',
-            borderColor: 'border-blood-200'
-        },
-        {
-            icon: MapPinIcon,
-            title: 'Tìm kiếm thông minh',
-            description: 'Hệ thống AI tìm kiếm người hiến máu và bệnh viện gần nhất dựa trên vị trí và tình trạng khẩn cấp.',
-            color: 'text-blue-600',
-            bgColor: 'bg-blue-50',
-            borderColor: 'border-blue-200'
-        },
-        {
-            icon: ClockIcon,
-            title: 'Phản hồi khẩn cấp 24/7',
-            description: 'Hệ thống hoạt động liên tục, đảm bảo phản hồi trong vòng 30 phút cho các trường hợp khẩn cấp.',
-            color: 'text-emergency-600',
-            bgColor: 'bg-emergency-50',
-            borderColor: 'border-emergency-200'
-        },
-        {
-            icon: ShieldCheckIcon,
-            title: 'An toàn & Bảo mật',
-            description: 'Mã hóa end-to-end, tuân thủ GDPR và các tiêu chuẩn bảo mật y tế quốc tế cao nhất.',
-            color: 'text-purple-600',
-            bgColor: 'bg-purple-50',
-            borderColor: 'border-purple-200'
-        },
-        {
-            icon: UserGroupIcon,
-            title: 'Cộng đồng kết nối',
-            description: 'Xây dựng mạng lưới người hiến máu tình nguyện với hệ thống điểm thưởng và thành tích.',
-            color: 'text-life-600',
-            bgColor: 'bg-life-50',
-            borderColor: 'border-life-200'
-        },
-        {
-            icon: ChartBarIcon,
-            title: 'Thống kê thông minh',
-            description: 'Dashboard phân tích dữ liệu hiến máu, dự đoán nhu cầu và tối ưu hóa quy trình.',
-            color: 'text-indigo-600',
-            bgColor: 'bg-indigo-50',
-            borderColor: 'border-indigo-200'
-        },
-        {
-            icon: BellIcon,
-            title: 'Thông báo thông minh',
-            description: 'Hệ thống thông báo đa kênh với AI cá nhân hóa theo sở thích và lịch trình của bạn.',
-            color: 'text-pink-600',
-            bgColor: 'bg-pink-50',
-            borderColor: 'border-pink-200'
-        },
-    ];
+  const navigate = useNavigate()
 
-    const process = [
-        {
-            step: "01",
-            title: "Đăng ký hiến máu",
-            description: "Điền thông tin cá nhân và đặt lịch hẹn hiến máu tại trung tâm gần nhất.",
-            icon: CalendarIcon
-        },
-        {
-            step: "02",
-            title: "Kiểm tra sức khỏe",
-            description: "Bác sĩ sẽ kiểm tra sức khỏe tổng quát và xét nghiệm máu cơ bản.",
-            icon: ShieldCheckIcon
-        },
-        {
-            step: "03",
-            title: "Hiến máu an toàn",
-            description: "Quy trình hiến máu diễn ra an toàn với thiết bị y tế hiện đại.",
-            icon: DropletsIcon
-        },
-        {
-            step: "04",
-            title: "Nghỉ ngơi & chăm sóc",
-            description: "Nghỉ ngơi và được chăm sóc chu đáo sau khi hiến máu hoàn tất.",
-            icon: HeartIcon
-        }
-    ];
+  const mainFeatures = [
+    {
+      icon: HeartIcon,
+      title: "Đăng ký hiến máu",
+      description: "Quy trình đăng ký đơn giản, nhanh chóng với giao diện thân thiện.",
+      color: "text-red-600",
+      bgColor: "bg-red-50",
+    },
+    {
+      icon: MapPinIcon,
+      title: "Lịch sử hiến máu",
+      description: "Theo dõi lịch sử hiến máu cá nhân và nhận chứng nhận điện tử.",
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+    },
+    {
+      icon: BellIcon,
+      title: "Thông báo khẩn cấp",
+      description: "Nhận thông báo khẩn cấp khi có nhu cầu máu gấp trong khu vực.",
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+    },
+    {
+      icon: ClockIcon,
+      title: "Sự kiện hiến máu",
+      description: "Tham gia các sự kiện hiến máu trong cộng đồng và nhận điểm thưởng.",
+      color: "text-green-600",
+      bgColor: "bg-green-50",
+    },
+  ]
 
-    return (
-        <section className="py-24 bg-gradient-to-b from-white to-dark-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* Header */}
-                <div className="text-center mb-20 animate-slide-up">
-                    <div className="inline-flex items-center px-4 py-2 rounded-full bg-blood-100 text-blood-700 text-sm font-medium mb-6">
-                        <HeartIcon className="w-4 h-4 mr-2" />
-                        Tính năng nổi bật
-                    </div>
+  const supportFeatures = [
+    {
+      icon: ShieldCheckIcon,
+      title: "An toàn & Bảo mật",
+      description: "Mã hóa end-to-end, tuân thủ các tiêu chuẩn bảo mật y tế cao nhất.",
+    },
+    {
+      icon: UserGroupIcon,
+      title: "Cộng đồng kết nối",
+      description: "Xây dựng mạng lưới người hiến máu với hệ thống điểm thưởng.",
+    },
+    {
+      icon: ChartBarIcon,
+      title: "Thống kê thông minh",
+      description: "Dashboard phân tích dữ liệu và tối ưu hóa quy trình hiến máu.",
+    },
+    {
+      icon: CalendarIcon,
+      title: "Lịch hiến máu",
+      description: "Lên lịch hiến máu định kỳ và nhận nhắc nhở tự động.",
+    },
+    {
+      icon: DropletsIcon,
+      title: "Hỗ trợ trực tuyến",
+      description: "Trung tâm hỗ trợ 24/7 qua chat, email và điện thoại.",
+    },
+  ]
 
-                    <h2 className="text-4xl lg:text-5xl font-display font-bold text-[#222222] mb-6">
-                        Công nghệ tiên tiến cho
-                        <span className="block bg-gradient-to-r from-blood-600 to-blood-800 bg-clip-text text-transparent">
-              sứ mệnh cứu người
+  const handleLearnMoreClick = () => {
+    navigate("/blood-types")
+  }
+
+  return (
+    <section className="py-16 sm:py-20 lg:py-24 bg-rose 50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-red-100 text-red-700 text-sm font-medium mb-6">
+            <HeartIcon className="w-4 h-4 mr-2" />
+            Tính năng chính
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            Giải pháp hiến máu
+            <span className="block bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+              toàn diện & thông minh
             </span>
-                    </h2>
+          </h2>
 
-                    <p className="text-xl text-[#222222] max-w-3xl mx-auto leading-relaxed">
-                        BloodConnect sử dụng AI và công nghệ blockchain để tạo ra hệ sinh thái hiến máu
-                        thông minh, minh bạch và hiệu quả nhất.
-                    </p>
+          <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            BloodConnect kết hợp công nghệ AI và blockchain để tạo ra hệ sinh thái hiến máu minh bạch, an toàn và hiệu quả nhất.
+          </p>
+        </div>
+
+        {/* Main Features Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-16">
+          {mainFeatures.map((feature, index) => (
+            <Card
+              key={index}
+              className={`group relative overflow-hidden border-2 hover:border-red-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl`}
+              padding="lg"
+            >
+              {/* Background Gradient */}
+              <div className={`absolute inset-0 ${feature.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+
+              <div className="relative z-10 text-center">
+                {/* Icon */}
+                <div className={`w-16 h-16 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className={`w-8 h-8 ${feature.color}`} />
                 </div>
 
-                {/* Features Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {features.map((feature, index) => (
-                        <Card
-                            key={index}
-                            variant="default"
-                            padding="lg"
-                            className={`group relative overflow-hidden border-2 border-[#222222]/10 hover:border-[#222222]/10 transition-all duration-300 animate-slide-up`}
-                            style={{ animationDelay: `${index * 100}ms` }}
-                        >
-                            {/* Background Gradient */}
-                            <div className={`absolute inset-0 ${feature.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                {/* Content */}
+                <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-gray-800 transition-colors">
+                  {feature.title}
+                </h3>
 
-                            <div className="relative z-10">
-                                {/* Icon */}
-                                <div className={`w-16 h-16 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                                    <feature.icon className="w-8 h-8 text-[#222222]" />
-                                </div>
+                <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors">
+                  {feature.description}
+                </p>
+              </div>
+            </Card>
+          ))}
+        </div>
 
-                                {/* Content */}
-                                <h3 className="text-xl font-bold text-[#222222] mb-4 group-hover:text-[#222222] transition-colors">
-                                    {feature.title}
-                                </h3>
+        {/* Support Features */}
+        <div className="mb-16">
+          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">Công nghệ & Dịch vụ hỗ trợ</h3>
 
-                                <p className="text-[#222222] leading-relaxed group-hover:text-[#222222] transition-colors">
-                                    {feature.description}
-                                </p>
-
-                                {/* Hover Effect */}
-                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-current to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            </div>
-                        </Card>
-                    ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {supportFeatures.map((feature, index) => (
+              <Card
+                key={index}
+                className="text-center hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 hover:border-gray-200"
+                padding="lg"
+              >
+                <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <feature.icon className="w-6 h-6 text-gray-600" />
                 </div>
+                <h4 className="font-semibold text-gray-900 mb-3">{feature.title}</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">{feature.description}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
 
-                {/* Process Section */}
-                <section id="process" className="section-padding bg-gray-50">
-                    <div className="container-custom">
-                        <div className="text-center mb-16">
-                            <h2 className="section-title text-gray-900 mb-4">
-                                Quy trình hiến máu
-                            </h2>
-                            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                                Quy trình hiến máu được thực hiện theo tiêu chuẩn quốc tế,
-                                đảm bảo an toàn tuyệt đối cho người hiến.
-                            </p>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {process.map((item, index) => {
-                                const Icon = item.icon;
-                                return (
-                                    <div key={index} className="process-step">
-                                        <div className="text-center">
-                                            <div className="w-16 h-16 mx-auto bg-gradient-blood rounded-full flex items-center justify-center mb-4">
-                                                <Icon className="w-8 h-8 text-white" />
-                                            </div>
-                                            <div className="text-blood-600 font-bold text-sm mb-2">BƯỚC {item.step}</div>
-                                            <h3 className="font-semibold text-gray-900 mb-3">{item.title}</h3>
-                                            <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </section>
-
-                {/* CTA Section */}
-                <div className="text-center mt-20 animate-slide-up">
-                    <div className="bg-gradient-to-r from-blood-600 to-blood-800 rounded-3xl p-12 text-[#222222] relative overflow-hidden">
-                        {/* Background Pattern */}
-                        <div className="absolute inset-0 bg-hero-pattern opacity-10"></div>
-
-                        <div className="relative z-10">
-                            <h3 className="text-3xl font-bold mb-4 text-[#222222]">
-                                Sẵn sàng tham gia cứu sống?
-                            </h3>
-                            <p className="text-xl text-[#222222] mb-8 max-w-2xl mx-auto">
-                                Hãy trở thành một phần của cộng đồng hiến máu tình nguyện và góp phần cứu sống hàng ngàn người.
-                            </p>
-
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <button className="bg-white text-[#222222] px-8 py-4 rounded-xl font-semibold hover:bg-[#f5f5f5] transition-colors duration-200 transform hover:scale-105">
-                                    Tìm hiểu thêm
-                                </button>
-                                <button className="border-2 border-white text-[#222222] px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-[#222222] transition-all duration-200 transform hover:scale-105">
-                                    Liên hệ hỗ trợ
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        {/* CTA Section */}
+        <div className="text-center">
+          <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.15)_1px,transparent_0)] bg-[length:20px_20px]"></div>
             </div>
-        </section>
-    );
+
+            <div className="relative z-10">
+              <h3 className="text-2xl sm:text-3xl font-bold mb-4">Sẵn sàng tham gia cứu sống?</h3>
+              <p className="text-lg sm:text-xl text-red-100 mb-8 max-w-2xl mx-auto">
+                Hãy trở thành một phần của cộng đồng hiến máu tình nguyện và góp phần cứu sống hàng ngàn người.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={handleLearnMoreClick}
+                  className="bg-white text-red-600 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold hover:bg-red-50 transition-colors duration-200 transform hover:scale-105"
+                >
+                  Tìm hiểu thêm
+                </button>
+                <button
+                  onClick={() => navigate("/contact")}
+                  className="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold hover:bg-white hover:text-red-600 transition-all duration-200 transform hover:scale-105"
+                >
+                  Liên hệ hỗ trợ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
 }
 
-export default FeaturesSection;
+export default FeaturesSection

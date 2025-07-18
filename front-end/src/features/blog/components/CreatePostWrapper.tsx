@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreatePostPage } from '../pages/CreatePostPage';
+import { BlogManagementPage } from '../pages/BlogManagementPage';
 
 export const CreatePostWrapper: React.FC = () => {
   const navigate = useNavigate();
@@ -9,12 +9,13 @@ export const CreatePostWrapper: React.FC = () => {
     navigate('/blogs');
   };
 
-  const handleSuccess = () => {
-    navigate('/blogs');
+  const handleSuccess = (blogId: string) => {
+    navigate(`/blogs/${blogId}`);
   };
 
   return (
-    <CreatePostPage
+    <BlogManagementPage
+      initialViewMode="create"
       onBack={handleBack}
       onSuccess={handleSuccess}
     />

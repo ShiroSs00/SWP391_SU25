@@ -1,143 +1,162 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Eye, Heart, MessageCircle } from 'lucide-react';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { Calendar, User, Eye, Edit, Trash2, Heart } from 'lucide-react';
+import { useAuthStore } from '../hooks/useAuth';
 import type { BlogPost } from '../types/blog.types';
-import { useComments } from '../hooks/useComments';
+import { BLOG_TAGS } from '../types/blog.types';
 
 interface BlogCardProps {
   blog: BlogPost;
-  onClick: () => void;
+  onView: (blog: BlogPost) => void;
+  onEdit?: (blog: BlogPost) => void;
+  onDelete?: (blog: BlogPost) => void;
+  showActions?: boolean;
   className?: string;
 }
 
-export const BlogCard: React.FC<BlogCardProps> = ({ blog, onClick, className = '' }) => {
-  const { getBlogInteraction } = useComments();
-  const interaction = getBlogInteraction(blog.id);
+export const BlogCard: React.FC<BlogCardProps> = ({
+  blog,
+  onView,
+  onEdit,
+  onDelete,
+  showActions = true,
+  className = '',
+}) => {
+  const { canEditPost, canDeletePost } = useAuthStore();
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'dd/MM/yyyy', { locale: vi });
+      return new Date(dateString).toLocaleDateString('vi-VN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
     } catch {
-      return 'N/A';
+      return 'Không xác định';
     }
   };
 
-  const getTagColor = (tag: string) => {
-    const colors: Record<string, string> = {
-      'Câu chuyện': 'bg-blue-100 text-blue-800',
-      'Kinh nghiệm': 'bg-green-100 text-green-800',
-      'Y học': 'bg-purple-100 text-purple-800',
-      'Tin tức': 'bg-red-100 text-red-800',
-      'Hướng dẫn': 'bg-yellow-100 text-yellow-800',
-      'Sự kiện': 'bg-pink-100 text-pink-800',
-      'Thống kê': 'bg-indigo-100 text-indigo-800',
-      'Nghiên cứu': 'bg-gray-100 text-gray-800',
-    };
-    return colors[tag] || 'bg-gray-100 text-gray-800';
+  const getTagStyle = (tagName: string) => {
+    const tag = BLOG_TAGS.find(t => t.name === tagName);
+    return tag ? tag.color : 'bg-gray-100 text-gray-800';
+  };
+
+  const getPreviewContent = (content: string, maxLength: number = 150) => {
+    // Remove markdown syntax for preview
+    const cleanContent = content
+      .replace(/#{1,6}\s+/g, '') // Remove headers
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links
+      .replace(/!\[(.*?)\]\(.*?\)/g, '') // Remove images
+      .replace(/`(.*?)`/g, '$1') // Remove inline code
+      .replace(/\n+/g, ' ') // Replace newlines with spaces
+      .trim();
+
+    return cleanContent.length > maxLength 
+      ? cleanContent.substring(0, maxLength) + '...' 
+      : cleanContent;
   };
 
   return (
-    <motion.article
-      className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group ${className}`}
-      whileHover={{ y: -4 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}
+      className={`bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 overflow-hidden group cursor-pointer ${className}`}
+      onClick={() => onView(blog)}
     >
-      {/* Cover Image */}
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={blog.coverImage || 'https://images.pexels.com/photos/6823568/pexels-photo-6823568.jpeg?auto=compress&cs=tinysrgb&w=800'}
-          alt={blog.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-        
-        {/* Tags */}
-        <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-          {blog.tags.slice(0, 2).map((tag) => (
-            <span
-              key={tag}
-              className={`px-2 py-1 rounded-full text-xs font-medium ${getTagColor(tag)}`}
-            >
-              {tag}
-            </span>
-          ))}
-          {blog.tags.length > 2 && (
-            <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-              +{blog.tags.length - 2}
-            </span>
-          )}
+      {/* Thumbnail */}
+      {blog.thumbnail && (
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src={blog.thumbnail}
+            alt="Blog thumbnail"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
         </div>
-      </div>
+      )}
 
-      {/* Content */}
       <div className="p-6">
-        {/* Title */}
-        <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 group-hover:text-primary-600 transition-colors">
-          {blog.title}
-        </h3>
+        {/* Tag */}
+        <div className="flex items-center justify-between mb-3">
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getTagStyle(blog.tagName)}`}>
+            {blog.tagName}
+          </span>
+          <div className="flex items-center text-gray-500 text-sm">
+            <Heart className="w-4 h-4 mr-1" />
+            <span>Hiến máu</span>
+          </div>
+        </div>
 
-        {/* Summary */}
-        {blog.summary && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
-            {blog.summary}
+        {/* Content Preview */}
+        <div className="mb-4">
+          <p className="text-gray-700 leading-relaxed text-sm">
+            {getPreviewContent(blog.content)}
           </p>
-        )}
-
-        {/* Author & Date */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <img
-              src={blog.author.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150'}
-              alt={blog.author.name}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <div>
-              <p className="text-sm font-medium text-gray-900">{blog.author.name}</p>
-              <div className="flex items-center text-xs text-gray-500">
-                <Calendar className="w-3 h-3 mr-1" />
-                {formatDate(blog.createdAt)}
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
-            {blog.viewCount !== undefined && (
-              <div className="flex items-center">
-                <Eye className="w-4 h-4 mr-1" />
-                {blog.viewCount}
-              </div>
-            )}
-            <div className="flex items-center">
-              <Heart className="w-4 h-4 mr-1" />
-              {interaction.likeCount}
-            </div>
-            <div className="flex items-center">
-              <MessageCircle className="w-4 h-4 mr-1" />
-              {interaction.commentCount}
-            </div>
-          </div>
-          
+        {/* Meta Information */}
+        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
           <div className="flex items-center">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              blog.author.role === 'STAFF' ? 'bg-primary-100 text-primary-800' :
-              blog.author.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {blog.author.role}
-            </span>
+            <Calendar className="w-4 h-4 mr-1" />
+            <span>{formatDate(blog.postDate)}</span>
+          </div>
+          <div className="flex items-center">
+            <User className="w-4 h-4 mr-1" />
+            <span>ID: {blog.accountId}</span>
           </div>
         </div>
+
+        {/* Actions */}
+        {showActions && (
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onView(blog);
+              }}
+              className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              <span>Xem chi tiết</span>
+            </button>
+
+            <div className="flex items-center space-x-2">
+              {canEditPost(blog.accountId) && onEdit && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(blog);
+                  }}
+                  className="flex items-center text-green-600 hover:text-green-800 transition-colors"
+                >
+                  <Edit className="w-4 h-4 mr-1" />
+                  <span>Sửa</span>
+                </button>
+              )}
+
+              {canDeletePost(blog.accountId) && onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(blog);
+                  }}
+                  className="flex items-center text-red-600 hover:text-red-800 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  <span>Xóa</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-    </motion.article>
+    </motion.div>
   );
 };

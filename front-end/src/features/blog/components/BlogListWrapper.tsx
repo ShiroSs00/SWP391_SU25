@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BlogListPage } from '../pages/BlogListPage';
+import { BlogManagementPage } from '../pages/BlogManagementPage';
 import type { BlogPost } from '../types/blog.types';
 
 export const BlogListWrapper: React.FC = () => {
@@ -11,15 +11,16 @@ export const BlogListWrapper: React.FC = () => {
   };
 
   const handleViewPost = (blog: BlogPost) => {
-    navigate(`/blogs/${blog.id}`);
+    navigate(`/blogs/${blog.blogId}`);
   };
 
   const handleEditPost = (blog: BlogPost) => {
-    navigate(`/blogs/edit/${blog.id}`);
+    navigate(`/blogs/edit/${blog.blogId}`);
   };
 
   return (
-    <BlogListPage
+    <BlogManagementPage
+      initialViewMode="list"
       onCreatePost={handleCreatePost}
       onViewPost={handleViewPost}
       onEditPost={handleEditPost}

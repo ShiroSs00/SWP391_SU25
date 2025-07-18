@@ -1,12 +1,11 @@
 import React from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { EditPostPage } from '../pages/EditPostPage';
+import { BlogManagementPage } from '../pages/BlogManagementPage';
 
 export const EditPostWrapper: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Validate that we have an ID
   if (!id) {
     return <Navigate to="/blogs" replace />;
   }
@@ -20,7 +19,8 @@ export const EditPostWrapper: React.FC = () => {
   };
 
   return (
-    <EditPostPage
+    <BlogManagementPage
+      initialViewMode="edit"
       blogId={id}
       onBack={handleBack}
       onSuccess={handleSuccess}

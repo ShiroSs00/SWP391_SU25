@@ -6,7 +6,6 @@ export interface DonationRegistrationDTO {
   accountId: string; // lấy từ account.accountId
   dateCreated: string; // ISO date string
   status: string;
-  componentId: string;
   healthCheckId: string;
   donorFeedbackId: string;
   donationDate: string; // thêm donationDate
@@ -16,7 +15,6 @@ export interface DonationRegistration {
   registrationId: string;
   dateCreated: string; // ISO date string
   status: string;
-  componentId: string;
   healthCheckId: string;
   donorFeedbackId: string;
   donationDate: string; // thêm donationDate
@@ -31,7 +29,6 @@ export interface DonationCreatePayload {
   donationDate: string; // ISO datetime string
   registrationId: string | null;
   dateCreated: string; // ISO date string
-  componentId: string | null;
   healthCheckId: string | null;
   donorFeedbackId: string | null;
 }
