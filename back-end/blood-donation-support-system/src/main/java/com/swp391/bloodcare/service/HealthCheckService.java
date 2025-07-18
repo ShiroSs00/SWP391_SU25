@@ -3,6 +3,7 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.HealthCheckDTO;
 import com.swp391.bloodcare.entity.DonationRegistration;
 import com.swp391.bloodcare.entity.HealthCheck;
+import com.swp391.bloodcare.entity.Profile;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import com.swp391.bloodcare.repository.HealthCheckRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,10 +26,13 @@ public class HealthCheckService {
 
     private final BloodDonationHistoryService bloodDonationHistoryService;
 
-    public HealthCheckService(HealthCheckRepository healthCheckRepository, DonationRegistrationRepository donationRegistrationRepository, BloodDonationHistoryService bloodDonationHistoryService) {
+    private final ProfileService profileService;
+
+    public HealthCheckService(HealthCheckRepository healthCheckRepository, DonationRegistrationRepository donationRegistrationRepository, BloodDonationHistoryService bloodDonationHistoryService, ProfileService profileService) {
         this.healthCheckRepository = healthCheckRepository;
         this.donationRegistrationRepository = donationRegistrationRepository;
         this.bloodDonationHistoryService = bloodDonationHistoryService;
+        this.profileService = profileService;
     }
 
     @Transactional
@@ -63,7 +67,7 @@ public class HealthCheckService {
             throw new IllegalStateException("Đã tồn tại kiểm tra sức khoẻ cho đơn này");
         }
 
-        if (!dto.getIsFitToDonate() && dto.getVolumeToTake() != null) {
+        if (!dto.getIsFitToDonate() && dto.getVolumeToTake() != 0) {
             throw new IllegalArgumentException("Người không đủ điều kiện thì không được có volumeToTake");
         }
 
@@ -79,9 +83,12 @@ public class HealthCheckService {
 
         HealthCheck saved = healthCheckRepository.save(healthCheck);
 
-        //cập nhật lịch sử
         bloodDonationHistoryService.updateFromHealthCheck(saved);
         reg.setStatus(DonationRegistration.Status.PASSED);
+        Profile profile = healthCheck.getDonationRegistration().getAccount().getProfile();
+        String accountId = profile.getAccount().getAccountId();
+        profileService.increaseBloodDonationCount(accountId);
+        profile.setRestDate(LocalDate.now().plusDays(84));
         donationRegistrationRepository.save(reg);
         return toDTO(saved);
     }
@@ -106,7 +113,11 @@ public class HealthCheckService {
         if (dto.getNote() != null && !dto.getNote().isBlank()) existing.setNote(dto.getNote());
 
         bloodDonationHistoryService.updateFromHealthCheck(existing);
-
+        existing.getDonationRegistration().setStatus(DonationRegistration.Status.CANCELLED);
+        Profile profile = existing.getDonationRegistration().getAccount().getProfile();
+        String accountId = profile.getAccount().getAccountId();
+        profileService.increaseBloodDonationCount(accountId);
+        profile.setRestDate(LocalDate.now().plusDays(0));
         return HealthCheckDTO.toDTO(healthCheckRepository.save(existing));
     }
 
@@ -117,7 +128,6 @@ public class HealthCheckService {
         HealthCheck existing = healthCheckRepository.findByHealthCheckId(healthCheckId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck để xóa"));
 
-        // Cắt liên kết với DonationRegistration nếu có
         if (existing.getDonationRegistration() != null) {
             existing.getDonationRegistration().setHealthCheck(null);
             existing.setDonationRegistration(null); // rất quan trọng

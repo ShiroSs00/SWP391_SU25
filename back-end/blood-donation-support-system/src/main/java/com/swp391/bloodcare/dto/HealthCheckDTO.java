@@ -38,6 +38,7 @@ public class HealthCheckDTO {
     @DecimalMin(value = "7.0", message = "Hemoglobin quá thấp, không hợp lệ")
     private Double hemoglobin;
 
+    @NotNull(message = "Volume không được để trống")
     private Integer volumeToTake;
 
     @NotNull(message = "Chưa xác định được tình trạng đủ điều kiện hiến máu")
@@ -61,13 +62,14 @@ public class HealthCheckDTO {
                 .bloodPressure(dto.getBloodPressure())
                 .pulse(dto.getPulse())
                 .hemoglobin(dto.getHemoglobin())
-                .volumeToTake(Boolean.TRUE.equals(dto.getIsFitToDonate()) && dto.getVolumeToTake() != null
+                .volumeToTake(dto.getVolumeToTake() != null
                         ? HealthCheck.Volume.fromInt(dto.getVolumeToTake())
                         : null)
                 .isFitToDonate(dto.getIsFitToDonate())
                 .note(dto.getNote())
                 .build();
     }
+
 
     public static HealthCheckDTO toDTO(HealthCheck entity) {
         return HealthCheckDTO.builder()

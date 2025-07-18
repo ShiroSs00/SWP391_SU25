@@ -16,8 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -155,13 +153,24 @@ public class ProfileService {
 
     }
 
-    public void increaseBloodDonationCount(String accountId){
+    public void decreaseBloodDonationCount(String accountId){
         Profile profile = profileRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy profile cho accountId: " + accountId));
         Long current = profile.getNumberOfBloodDonation();
         if(current == null)
             current = 0L;
         profile.setNumberOfBloodDonation(current + 1);
+        achievementService.updateAchievementForProfile(profile);
+        profileRepository.save(profile);
+    }
+
+    public void increaseBloodDonationCount(String accountId){
+        Profile profile = profileRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy profile cho accountId: " + accountId));
+        Long current = profile.getNumberOfBloodDonation();
+        if(current == null)
+            current = 0L;
+        profile.setNumberOfBloodDonation(current - 1);
         achievementService.updateAchievementForProfile(profile);
         profileRepository.save(profile);
     }

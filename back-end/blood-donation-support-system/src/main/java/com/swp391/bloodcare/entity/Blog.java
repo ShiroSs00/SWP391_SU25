@@ -45,10 +45,11 @@ public class Blog {
 
     @Column(name = "image")
     @Pattern(
-            regexp = "^(https?:\\/\\/.*|\\/uploads\\/.*\\.(jpg|jpeg|png|gif))$",
+            regexp = "^(/images/blog-thumbnails/.*\\.(jpg|jpeg|png|gif)|https?://.*)$",
             message = "Ảnh phải là link hợp lệ và kết thúc bằng .jpg, .jpeg, .png hoặc .gif"
     )
     private String img;
+
 
 
 
