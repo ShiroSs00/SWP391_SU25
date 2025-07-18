@@ -1,6 +1,7 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.BlogDTO;
+import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.Blog;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.BlogRepository;
@@ -93,16 +94,22 @@ public class BlogService {
                 File savedFile = new File(uploadPath, fileName);
                 thumbnail.transferTo(savedFile);
 
-                blog.setImg("/tmp/blog-thumbnails/" + fileName);
+                // ❗ Lưu đường dẫn PUBLIC để truy cập được qua controller
+                blog.setImg("/images/blog-thumbnails/" + fileName);
 
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException("Lỗi khi lưu ảnh blog", e);
             }
         }
-        blog.setAccount(accountRepository.findAccountByAccountId(accountId));
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
+        blog.setAccount(account);
+
         return BlogDTO.toDTO(blogRepository.save(blog));
     }
+
 
 
 

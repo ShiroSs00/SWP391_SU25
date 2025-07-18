@@ -30,6 +30,7 @@ public class BlogController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Lấy blog mới nhất thành công", latestBlogs));
     }
 
+
     @PostMapping(value = "/create", consumes = {"multipart/form-data"})
     public ResponseEntity<ApiResponse<?>> createBlog(
             @ModelAttribute @Valid BlogDTO dto,
