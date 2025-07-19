@@ -298,6 +298,7 @@ public class AfterDonationService {
             dto.setHealthCheckId(entity.getHealthCheck().getHealthCheckId());
         if (entity.getBlood() != null)
             dto.setBloodId(entity.getBlood().getBloodCode());
+        dto.setStatus(entity.getStatus());
         return dto;
     }
 }
