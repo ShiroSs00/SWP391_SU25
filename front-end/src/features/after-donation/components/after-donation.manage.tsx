@@ -289,8 +289,8 @@ const AfterDonationManage: React.FC = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentRecords = filteredAfterDonationData.slice(startIndex, endIndex);
 
-  // Get unique statuses from data
-  const uniqueStatuses = [...new Set(afterDonationData.map(record => record.status))];
+  // Get unique statuses from data - filter out null/undefined values
+  const uniqueStatuses = [...new Set(afterDonationData.map(record => record.status).filter(status => status != null && status !== ''))];
 
   // Statistics - Dynamic based on actual data
   const totalRecords = afterDonationData.length;
@@ -365,10 +365,28 @@ const AfterDonationManage: React.FC = () => {
           </div>
         </div>
 
-        {uniqueStatuses.slice(0, 3).map((status, index) => {
+        {uniqueStatuses.slice(0, 3).map((status) => {
           const getStatusInfo = (status: string) => {
+            if (!status) {
+              return {
+                label: 'Không xác định',
+                color: 'from-gray-50 to-gray-100',
+                borderColor: 'border-gray-200',
+                iconBg: 'bg-gray-100',
+                iconColor: 'text-gray-600',
+                icon: (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                )
+              };
+            }
+            
             switch (status.toLowerCase()) {
-              case 'passed':
+              case 'PASSED':
                 return {
                   label: 'Đã Qua',
                   color: 'from-green-50 to-emerald-50',
@@ -384,7 +402,7 @@ const AfterDonationManage: React.FC = () => {
                     />
                   )
                 };
-              case 'failed':
+              case 'FAILED':
                 return {
                   label: 'Thất Bại',
                   color: 'from-red-50 to-pink-50',
@@ -400,7 +418,7 @@ const AfterDonationManage: React.FC = () => {
                     />
                   )
                 };
-              case 'separated':
+              case 'SEPARATED':
                 return {
                   label: 'Đã Tách',
                   color: 'from-purple-50 to-pink-50',
@@ -500,11 +518,11 @@ const AfterDonationManage: React.FC = () => {
             >
               <option value="">Tất cả trạng thái</option>
               {uniqueStatuses.map((status) => (
-                <option key={status} value={status}>
-                  {status === 'PENDING' ? 'Chờ Xử Lý' : 
-                   status === 'COMPLETED' ? 'Hoàn Thành' : 
-                   status === 'PROCESSED' ? 'Đã Xử Lý' :
-                   status === 'CANCELLED' ? 'Đã Hủy' : status}
+                <option key={status || 'unknown'} value={status || ''}>
+                  {status === 'passed' ? 'Đã Qua' : 
+                   status === 'failed' ? 'Thất Bại' : 
+                   status === 'separated' ? 'Đã Tách' : 
+                   status || 'Không xác định'}
                 </option>
               ))}
             </select>
@@ -715,18 +733,22 @@ const AfterDonationManage: React.FC = () => {
                           </h4>
                           <span
                             className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                              record.status === "COMPLETED"
+                              record.status === "passed"
                                 ? "bg-green-100 text-green-800"
-                                : record.status === "PENDING"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
+                                : record.status === "failed"
+                                ? "bg-red-100 text-red-800"
+                                : record.status === "separated"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-gray-100 text-gray-800"
                             }`}
                           >
-                            {record.status === "COMPLETED"
-                              ? "Hoàn thành"
-                              : record.status === "PENDING"
-                              ? "Chờ xử lý"
-                              : "Đã hủy"}
+                            {record.status === "passed"
+                              ? "Đã qua"
+                              : record.status === "failed"
+                              ? "Thất bại"
+                              : record.status === "separated"
+                              ? "Đã tách"
+                              : record.status || "Không xác định"}
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">

@@ -1,5 +1,5 @@
 import api from '../../../services/axios/api';
-import type { AfterDonationData, ManualSeparateData } from '../types/after-donation.types';
+import type { AfterDonationData, ManualSeparateRequest } from '../types/after-donation.types';
 
 export const createAfterDonation = async (healthCheckId: string, data: AfterDonationData) => {
     const response = await api.post<{ data: AfterDonationData }>(`/after-donation/create/${healthCheckId}`, data);
@@ -23,7 +23,7 @@ export const deleteMultipleAfterDonations = async (ids: string[]) => {
     });
     return response.data.data;
 }
-export const manualseparateAfterDonation = async (bloodBagsData: ManualSeparateData) => {
+export const manualseparateAfterDonation = async (bloodBagsData: ManualSeparateRequest) => {
     console.log('Manual separate service called with:', bloodBagsData);
     console.log('API endpoint:', '/after-donation/manual-separate');
     

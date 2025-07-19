@@ -17,8 +17,6 @@ import AboutPage from "./pages/AboutPage.tsx";
 import { MainLayout } from "./layouts/MainLayout/MainLayouts.tsx";
 import BloodTypesPage from "./pages/Blood-TypesPage.tsx";
 import EmergencyPage from "./pages/EmergencyPage.tsx";
-//health-check
-import HealthCheckPage from "./features/health-checks/pages/healthcheckPages";
 //donation
 import DonationPages from "./features/donation-register/pages/donationpages";
 //blood-requests
@@ -85,13 +83,12 @@ function App() {
           element={<ProtectedRoute allowedRoles={["ADMIN", "STAFF", "USER"]} />}
         ></Route>
         <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-          <Route path="/admin" element={<AdminPage showToast={showToast} />} />
+          <Route path="/admin/*" element={<AdminPage showToast={showToast} />} />
           <Route path="blogs/create" element={<CreatePostWrapper />} />
           <Route path="/blogs/edit/:id" element={<EditPostWrapper />} />
         </Route>
         <Route element={<ProtectedRoute allowedRoles={["STAFF","ADMIN"]} />}>
-          <Route path="/staff" element={<StaffPage />} />
-          <Route path="/health-checks/*" element={<HealthCheckPage />} />
+          <Route path="/staff/*" element={<StaffPage />} />
         </Route>
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>

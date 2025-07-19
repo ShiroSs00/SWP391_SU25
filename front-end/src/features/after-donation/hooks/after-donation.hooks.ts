@@ -7,7 +7,7 @@ import {
     deleteMultipleAfterDonations,
     manualseparateAfterDonation,
 } from '../services/after-donation.services';
-import type { AfterDonationData, ManualSeparateData } from '../types/after-donation.types';
+import type { AfterDonationData, ManualSeparateRequest } from '../types/after-donation.types';
 
 /**
  * Custom hook to handle after donation operations.
@@ -109,9 +109,9 @@ export const useManualSeparate = () => {
 
     /**
      * Separate blood manually.
-     * @param data ManualSeparateData object
+     * @param data ManualSeparateRequest object
      */
-    const separateBlood = useCallback(async (data: ManualSeparateData) => {
+    const separateBlood = useCallback(async (data: ManualSeparateRequest) => {
         setLoading(true);
         setError(null);
 
