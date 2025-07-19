@@ -54,8 +54,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, showToast, isLoading }) 
         console.log('Navigate to /staff');
         setTimeout(() => navigate('/staff'), 0);
       } else if (role === 'MEMBER') {
-        console.log('Navigate to /');
-        setTimeout(() => navigate('/'), 0);
+        console.log('Navigate to /member/dashboard');
+        setTimeout(() => navigate('/member/dashboard'), 0);
       } else {
         console.log('Navigate to / (unknown role)');
         setTimeout(() => navigate('/'), 0);

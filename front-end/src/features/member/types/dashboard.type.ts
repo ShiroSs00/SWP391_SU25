@@ -15,33 +15,57 @@ export interface ProfileData {
   sendToFamily: boolean;
   rangeNotifications: number;
   // Real API fields
-  accountId: string ;
+  accountId: string;
   address?: string;
   dateCreated?: string;
   status?: string;
 }
 
+
+export interface DonorFeedback {
+  feedbackId: string;
+  registrationId: string;
+  process: number;
+  bloodTest: number;
+  postDonationCare: number;
+  comfortable: number;
+  description: string;
+}
+
+
 export interface DonationRecord {
   id: string;
-  registrationId: string;
   name: string;
   event: string;
   bloodCode: string;
+  volumeToTake: number;
+  healCheck?: string;
+  healthCheck?: string; // Alternative spelling
+  afterDonationBlood: string;
+  status: string;
+  type: 'donation' | 'receiving';
+  donorFeedbackId?: DonorFeedback;
   date: string;
   location: string;
-  volume: number;
-  status: 'Completed' | 'Pending' | 'Cancelled' | 'Approved' | 'Rejected' | 'Success' | 'SEPARATED';
-  type: 'donation' | 'receiving' ;
-  feedback?: string;
-  // Real API fields
-  accountId?: string;
-  dateCreated?: string;
-  donationDate?: string;
-  requestedVolume?: number;
-  requestId?: string;
-  volumeToTake?: string;
-  healthCheck?: string;
-  afterDonationBlood:string;
+  registrationId: string;
+  volume?: number; // For blood requests
+
+  // Blood request specific fields
+  requesterName?: string;
+  requesterPhone?: string;
+  requesterEmail?: string;
+  requesterAddress?: string;
+  bloodType?: string;
+  component?: string;
+  emergency?: boolean;
+  requestCreationDate?: string;
+  processedBy?: string | null;
+  processedDate?: string | null;
+  rejectionReason?: string | null;
+  bloodBagId?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  requestDate?: string;
 }
 
 export interface Achievement {

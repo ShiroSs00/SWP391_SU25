@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Send, AlertCircle, CheckCircle, Heart, Star, Info, Clock, RefreshCw } from 'lucide-react';
 import RatingStars from './RatingStars';
-import type { CreateFeedbackRequest } from '../types/feedback.types';
+import type { CreateFeedbackRequest, DonorFeedback } from '../types/feedback.types';
 import { validateFeedbackForm, type ValidationError, sanitizeInput, formatErrorMessage } from '../utils/validation';
 import { canSubmitFeedback, getFeedbackByRegistrationId } from '../services/feedback.service';
 import toast from "react-hot-toast";
 
 interface FeedbackFormProps {
   onSubmit: (data: CreateFeedbackRequest) => Promise<void>;
+  initialData?: DonorFeedback,
+  onSubmitSuccess?: () => void; // Callback khi gửi thành công
   loading?: boolean;
   registrationId: string;
 }
@@ -15,6 +17,8 @@ interface FeedbackFormProps {
 const FeedbackForm: React.FC<FeedbackFormProps> = ({
   onSubmit,
   loading = false,
+  onSubmitSuccess,
+  initialData,
   registrationId,
 }) => {
   const [formData, setFormData] = useState<CreateFeedbackRequest>({
@@ -65,6 +69,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
       setCheckingEligibility(true);
       setRetryCount(0);
       
+      
       // Check if feedback already exists
       const existing = await getFeedbackByRegistrationId(registrationId);
       if (existing) {
@@ -91,11 +96,22 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
     }
   };
 
+
   useEffect(() => {
     if (registrationId) {
       checkFeedbackEligibility();
     }
-  }, [registrationId]);
+
+    if(initialData){
+      setFormData({
+        process: initialData.process || 0,
+        bloodTest: initialData.bloodTest || 0,
+        postDonationCare: initialData.postDonationCare || 0,
+        comfortable: initialData.comfortable || 0,
+        description: initialData.description || "",
+      })
+    }
+  }, [registrationId, initialData]);
 
   const handleRatingChange = (category: keyof CreateFeedbackRequest, rating: number) => {
     setFormData(prev => ({

@@ -211,7 +211,7 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({ onCreatePost, onView
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                     >
-                      {tag.color}
+                      {tag.name}
                     </button>
                   ))}
                 </div>

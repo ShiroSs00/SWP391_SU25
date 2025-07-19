@@ -98,10 +98,31 @@ export const getBloodDonationHistoryByAccountId = async (accountId: string) => {
 };
 
 // ==================== BLOOD REQUEST HISTORY (RECEIVING) ====================
+// ==================== BLOOD REQUEST UPDATE SERVICE ====================
+export const updateBloodRequest = async (
+  bloodRequestId: string, 
+  updateData: {
+    requestDate?:string,
+    bloodType?: string;
+    component?: string;
+    volume?: number;
+    emergency?: boolean;
+  }
+): Promise<any> => {
+  try {
+    const response = await api.put(`/blood-requests/update/${bloodRequestId}`, updateData);
+    return response.data.data || response.data;
+  } catch (error) {
+    console.error('Error updating blood request:', error);
+    throw error;
+  }
+};
+// ==================== BLOOD REQUEST HISTORY (RECEIVING) ====================
 export const getReceivingHistory = async (): Promise<DonationRecord[]> => {
   try {
     const response = await api.get('/blood-requests/my-requests');
     let receivingRecords = [];
+    
     if (response.data && Array.isArray(response.data.data)) {
       receivingRecords = response.data.data;
     } else if (response.data && Array.isArray(response.data)) {
@@ -114,19 +135,36 @@ export const getReceivingHistory = async (): Promise<DonationRecord[]> => {
     }
 
     return receivingRecords.map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      event: item.event || '',
-      bloodCode: item.bloodCode || '',
-      volumeToTake: parseInt(item.volumeToTake) || 450,
-      healCheck: item.healCheck || '',
-      afterDonationBlood: item.afterDonationBlood || '',
-      status: item.status,
+      id: item.idBloodRequest,
+      name: item.requesterName,
+      event: '', // Blood requests không có event
+      bloodCode: item.bloodBagId || '', // Sử dụng bloodBagId làm bloodCode
+      volumeToTake: parseInt(item.volume) || 450,
+      healCheck: '', // Blood request không có health check
+      afterDonationBlood: '', // Blood request không có after donation
+      status: mapBloodRequestStatus(item.status),
       type: 'receiving' as const,
-      feedback: item.feedback,
-      date: item.receivingDate || item.dateCreated || new Date().toISOString(),
-      location: item.location || 'Không có thông tin địa điểm',
-      registrationId: item.registrationId || item.id,
+      feedback: '', // Có thể thêm feedback sau
+      date: item.requestDate || item.requestCreationDate || new Date().toISOString(),
+      location: item.requesterAddress || 'Không có thông tin địa điểm',
+      registrationId: item.idBloodRequest,
+      
+      // Thêm các field đặc thù của blood request
+      requesterName: item.requesterName,
+      requesterPhone: item.requesterPhone,
+      requesterEmail: item.requesterEmail,
+      requesterAddress: item.requesterAddress,
+      bloodType: item.bloodType,
+      component: item.component,
+      volume: item.volume,
+      emergency: item.emergency,
+      requestCreationDate: item.requestCreationDate,
+      processedBy: item.processedBy,
+      processedDate: item.processedDate,
+      rejectionReason: item.rejectionReason,
+      contactPhone: item.contactPhone,
+      contactEmail: item.contactEmail,
+      requestDate: item.requestDate
     }));
   } catch (error) {
     console.error('Error fetching receiving history:', error);
@@ -134,10 +172,22 @@ export const getReceivingHistory = async (): Promise<DonationRecord[]> => {
   }
 };
 
+// Helper function để map status từ API sang format hiển thị
+const mapBloodRequestStatus = (apiStatus: string): string => {
+  const statusMap: { [key: string]: string } = {
+    'PENDING': 'Pending',
+    'APPROVED': 'Approved', 
+    'REJECTED': 'Rejected',
+    'CANCELLED': 'Cancelled'
+  };
+  
+  return statusMap[apiStatus] || apiStatus;
+};
+
 
 export const getHealthCheckByRegistrationId = async (registrationId: string) => {
   try {
-    const response = await api.get(`/api/healthcheck/get-by-registration/${registrationId}`);
+    const response = await api.get(`/healthcheck/get-by-registration/${registrationId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching healthcheck:", error);
@@ -147,7 +197,7 @@ export const getHealthCheckByRegistrationId = async (registrationId: string) => 
 
 export const getAfterDonationByHealthCheckId = async (healthCheckId: string) => {
   try {
-    const response = await api.get(`/api/after-donation/get-by-healthcheck/${healthCheckId}`);
+    const response = await api.get(`/after-donation/get-by-healthcheck/${healthCheckId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching after-donation:", error);
@@ -449,3 +499,4 @@ export const validateAuth = async () => {
     return false;
   }
 };
+
