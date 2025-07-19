@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,22 +61,35 @@ public class BloodBagService {
 
             entity.setComponent(component);
             BloodBag saved = bloodBagRepository.save(entity);
+            autoUpdateExpiredStatus();
             return BloodBagDTO.fromEntity(saved);
         }
     }
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?") // Chạy mỗi ngày lúc 0h
     @Transactional
     public int autoUpdateExpiredStatus() {
-        List<BloodBag> expiredBags = bloodBagRepository.findByExpirationDateBeforeAndStatus(
-                new Date(), BloodBag.Status.VALID
-        );
-        for (BloodBag bag : expiredBags) {
-            bag.setStatus(BloodBag.Status.EXPIRED);
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        Date todayDate = Date.from(today.atStartOfDay(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant());
+
+        List<BloodBag> allBags = bloodBagRepository.findAll();
+        int updatedCount = 0;
+
+        for (BloodBag bag : allBags) {
+            if (bag.getExpirationDate().before(todayDate) && bag.getStatus() != BloodBag.Status.EXPIRED) {
+                bag.setStatus(BloodBag.Status.EXPIRED);
+                updatedCount++;
+            }
+            else if (!bag.getExpirationDate().before(todayDate) && bag.getStatus() != BloodBag.Status.VALID) {
+                bag.setStatus(BloodBag.Status.VALID);
+                updatedCount++;
+            }
         }
-        bloodBagRepository.saveAll(expiredBags);
-        return expiredBags.size();
+
+        bloodBagRepository.saveAll(allBags);
+        return updatedCount;
     }
+
 
     private BloodBag convertToEntity(BloodBagDTO dto, Component component) {
         return BloodBag.builder()
@@ -142,6 +157,7 @@ public class BloodBagService {
             existing.setQuantity(dto.getQuantity());
         }
 
+        autoUpdateExpiredStatus();
         BloodBag saved = bloodBagRepository.save(existing);
         return BloodBagDTO.fromEntity(saved);
     }

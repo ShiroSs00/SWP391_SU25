@@ -60,6 +60,13 @@ public class BloodBag {
     @JoinColumn(name = "blood_code")
     private Blood blood;
 
+    @AssertTrue(message = "Hạn sử dụng phải sau hoặc bằng ngày lấy máu")
+    public boolean isExpirationAfterCollected() {
+        if (collectedDate == null || expirationDate == null) {
+            return true;
+        }
+        return !expirationDate.before(collectedDate);
+    }
 
 
 

@@ -2,6 +2,7 @@ package com.swp391.bloodcare.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.swp391.bloodcare.entity.BloodBag;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -24,7 +25,7 @@ public class BloodBagDTO {
     @NotNull(message = "Vui lòng nhập ngày lấy máu")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date collectedDate;
-
+    @NotNull(message = "Vui lòng nhập ngày lấy máu")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     private Date expirationDate;
 
@@ -39,6 +40,16 @@ public class BloodBagDTO {
 
     @NotNull(message = "Nhóm máu không được để trống")
     private String bloodCode;
+
+    @AssertTrue(message = "Hạn sử dụng phải sau hoặc bằng ngày lấy máu")
+    public boolean isExpirationAfterCollected() {
+        if (collectedDate == null || expirationDate == null) {
+            return true;
+        }
+        return !expirationDate.before(collectedDate);
+    }
+
+
 
 
     public static BloodBagDTO fromEntity(BloodBag bag) {
