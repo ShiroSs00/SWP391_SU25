@@ -23,9 +23,6 @@ public class AfterDonationBloodDTO {
     @Size(max = 500, message = "Ghi chú tối đa 500 ký tự")
     private String note;
 
-    @NotNull(message = "Trạng thái máu không được để trống")
-    private AfterDonationBlood.Status status;
-
     private String healthCheckId;
 
     @NotNull(message = "Nhóm máu không được để trống")

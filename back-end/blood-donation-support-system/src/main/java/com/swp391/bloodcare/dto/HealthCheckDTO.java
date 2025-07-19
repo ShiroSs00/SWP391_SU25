@@ -47,14 +47,18 @@ public class HealthCheckDTO {
     private String note;
 
 
-    @AssertTrue(message = "volumeToTake chỉ chấp nhận 250, 350 hoặc 450 nếu đủ điều kiện hiến máu")
+    @AssertTrue(message = "volumeToTake chỉ chấp nhận 0, 250, 350 hoặc 450 nếu đủ điều kiện hiến máu")
     public boolean isVolumeValid() {
         return !Boolean.TRUE.equals(isFitToDonate) ||
                 volumeToTake == null ||
-                Arrays.asList(250, 350, 450).contains(volumeToTake);
+                Arrays.asList(0, 250, 350, 450).contains(volumeToTake);
     }
 
     public static HealthCheck toEntity(HealthCheckDTO dto) {
+        int volumeInt = (dto.getVolumeToTake() == null || !Boolean.TRUE.equals(dto.getIsFitToDonate()))
+                ? 0
+                : dto.getVolumeToTake();
+
         return HealthCheck.builder()
                 .healthCheckId(dto.getHealthCheckId())
                 .weight(dto.getWeight())
@@ -62,13 +66,13 @@ public class HealthCheckDTO {
                 .bloodPressure(dto.getBloodPressure())
                 .pulse(dto.getPulse())
                 .hemoglobin(dto.getHemoglobin())
-                .volumeToTake(dto.getVolumeToTake() != null
-                        ? HealthCheck.Volume.fromInt(dto.getVolumeToTake())
-                        : null)
+                .volumeToTake(HealthCheck.Volume.fromInt(volumeInt)) // never null
                 .isFitToDonate(dto.getIsFitToDonate())
                 .note(dto.getNote())
                 .build();
     }
+
+
 
 
     public static HealthCheckDTO toDTO(HealthCheck entity) {

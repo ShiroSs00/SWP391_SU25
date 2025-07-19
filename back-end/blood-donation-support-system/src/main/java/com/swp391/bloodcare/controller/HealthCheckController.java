@@ -31,10 +31,18 @@ public class HealthCheckController {
     @PutMapping("/update/{healthCheckId}")
     public ResponseEntity<ApiResponse<HealthCheckDTO>> updateHealthCheck(
             @PathVariable String healthCheckId,
-            @Valid @RequestBody HealthCheckDTO updatedHealthCheckDTO) {
+            @Valid @RequestBody HealthCheckDTO updatedHealthCheckDTO,
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, "Dữ liệu không hợp lệ", null, errors));
+        }
+
         HealthCheckDTO updated = healthCheckService.updateHealthCheckById(healthCheckId, updatedHealthCheckDTO);
         return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật bản ghi thành công", updated));
     }
+
 
     @PostMapping("/create/{registrationId}")
     public ResponseEntity<ApiResponse<HealthCheckDTO>> createHealthCheck(

@@ -85,8 +85,9 @@ public class HealthCheck {
                     .filter(v -> v.ml == ml)
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
-                            "Thể tích không hợp lệ. Chỉ chấp nhận: " + Arrays.toString(Arrays.stream(values()).mapToInt(v -> v.ml).toArray())));
+                            "Thể tích không hợp lệ. Chỉ chấp nhận: 0, 250, 350, 450"));
         }
+
 
     }
 }
