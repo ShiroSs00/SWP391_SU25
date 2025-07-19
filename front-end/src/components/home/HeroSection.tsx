@@ -22,7 +22,7 @@ export function HeroSection() {
 
   // Hàm xử lý khi nhấn nút "Đăng ký hiến máu"
   const handleDonateClick = () => {
-    navigate("/request-blood")
+    navigate("/donation")
   }
 
   // Hàm xử lý khi nhấn nút "Yêu cầu máu khẩn cấp"

@@ -45,11 +45,6 @@ const VOLUME_OPTIONS_BY_COMPONENT = {
     { value: 200, label: '200ml', description: '1 đơn vị nhỏ', isStandard: true },
     { value: 300, label: '300ml', description: '1 đơn vị chuẩn', isStandard: true },
   ],
-  'default': [
-    { value: 100, label: '100ml', description: 'Lượng nhỏ', isStandard: true },
-    { value: 200, label: '200ml', description: 'Lượng chuẩn', isStandard: true },
-    { value: 300, label: '300ml', description: 'Lượng lớn', isStandard: true },
-  ]
 };
 
 interface BloodRequestFormProps {
@@ -84,9 +79,42 @@ const BloodRequestForm: React.FC<BloodRequestFormProps> = ({ onSuccess, onError,
   const [currentStep, setCurrentStep] = useState(1);
 
   // Volume options theo giao diện trong ảnh
-  const getVolumeOptions = (): VolumeOptionType[] => {
-    return VOLUME_OPTIONS_BY_COMPONENT[formData.selectedComponent as keyof typeof VOLUME_OPTIONS_BY_COMPONENT] || VOLUME_OPTIONS_BY_COMPONENT['default'];
-  };
+// CÁCH 2: Tạo volume options dựa trên component type
+const getVolumeOptions = (): VolumeOptionType[] => {
+  if (!formData.componentId) {
+    console.log('No componentId selected');
+    return VOLUME_OPTIONS_BY_COMPONENT['Toàn phần'];
+  }
+
+  // Tìm component được chọn
+  const selectedComponent = components.find(c => c.componentId === formData.componentId);
+  if (!selectedComponent) {
+    console.log('Component not found for ID:', formData.componentId);
+    return VOLUME_OPTIONS_BY_COMPONENT['Toàn phần'];
+  }
+
+  console.log('Selected component:', selectedComponent);
+  
+  // Map component type với volume options
+  const componentType = selectedComponent.type.toLowerCase();
+  console.log('Component type:', componentType);
+  
+  let volumeKey: keyof typeof VOLUME_OPTIONS_BY_COMPONENT = 'Toàn phần'; // Specify type
+  
+  if (componentType.includes('hồng cầu') || componentType.includes('hong cau')) {
+    volumeKey = 'Hồng cầu';
+  } else if (componentType.includes('tiểu cầu') || componentType.includes('tieu cau')) {
+    volumeKey = 'Tiểu cầu';
+  } else if (componentType.includes('huyết tương') || componentType.includes('huyet tuong')) {
+    volumeKey = 'Huyết tương';
+  }
+  
+  console.log('Volume key:', volumeKey);
+  console.log('Volume options:', VOLUME_OPTIONS_BY_COMPONENT[volumeKey]);
+  
+  return VOLUME_OPTIONS_BY_COMPONENT[volumeKey];
+};
+
 
   /**
    * LẤY THÀNH PHẦN MÁU KHẢ DỤNG DỰA TRÊN MÃ MÁU ĐÃ CHỌN
