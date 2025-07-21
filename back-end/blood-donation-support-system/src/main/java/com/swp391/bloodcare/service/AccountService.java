@@ -4,6 +4,7 @@ import com.swp391.bloodcare.dto.account.AccountRegistrationDTO;
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.account.AccountResponseDTO;
 import com.swp391.bloodcare.dto.account.ChangePassDTO;
+import com.swp391.bloodcare.dto.log.GoogleAccountCompletionDTO;
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.Address;
 import com.swp391.bloodcare.entity.Profile;
@@ -11,6 +12,7 @@ import com.swp391.bloodcare.entity.Role;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
 import com.swp391.bloodcare.repository.RoleRepository;
+import com.swp391.bloodcare.util.JwtUtil;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +43,12 @@ public class AccountService {
     private RoleRepository roleRepository;
 
     @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
+
 
 
     //tạo account
@@ -354,6 +361,59 @@ public class AccountService {
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new ApiResponse<>(false, "Có lỗi xảy ra: " + e.getMessage(), null);
+        }
+    }
+
+    @Transactional
+    public ApiResponse<String> completeGoogleAccount(String email, @Valid GoogleAccountCompletionDTO dto){
+        try{
+            if (accountRepository.existsByEmailIgnoreCase(email)) {
+                return new ApiResponse<>(false, "Email đã tồn tại", null);
+            }
+
+            Account account = new Account();
+            account.setAccountId(UUID.randomUUID().toString());
+            account.setUserName(email); // dùng email làm username luôn
+            account.setEmail(email);
+            account.setPassword(passwordEncoder.encode(dto.getPassword()));
+            account.setIsActive(true);
+            account.setCreationDate(LocalDate.now());
+
+            Role role = roleRepository.findByRole("MEMBER")
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy role mặc định"));
+            account.setRole(role);
+            Account savedAccount = accountRepository.save(account);
+
+            // Tạo Profile
+            Profile profile = new Profile();
+            profile.setProfileId(generateProfileId());
+            profile.setAccount(savedAccount);
+            profile.setName(dto.getName());
+            profile.setPhone(dto.getPhone());
+            profile.setDob(dto.getDob());
+            profile.setGender(dto.isGender());
+
+            Address address = new Address();
+            address.setCity(dto.getAddress().getCity());
+            address.setDistrict(dto.getAddress().getDistrict());
+            address.setWard(dto.getAddress().getWard());
+            address.setStreet(dto.getAddress().getStreet());
+            address.setLongitude(dto.getAddress().getLongitude());
+            address.setLatitude(dto.getAddress().getLatitude());
+
+            profile.setAddress(address);
+            profile.setNumberOfBloodDonation(0);
+            profile.setRestDate(LocalDate.now());
+            profile.setCancelCount(0);
+            profile.setCanRequestBlood(true);
+
+            profileRepository.save(profile);
+            String token = jwtUtil.generateToken(savedAccount);
+            return new ApiResponse<>(true, "Tạo tài khoản thành công", token);
+
+        }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new ApiResponse<>(false, "Có lỗi khi tạo tài khoản: " + e.getMessage(), null);
         }
     }
 

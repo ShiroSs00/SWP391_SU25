@@ -3,6 +3,8 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.account.AccountRegistrationDTO;
 import com.swp391.bloodcare.dto.ApiResponse;
+import com.swp391.bloodcare.dto.log.GoogleAccountCompletionDTO;
+import com.swp391.bloodcare.dto.log.GoogleLoginRequest;
 import com.swp391.bloodcare.dto.log.LoginRequest;
 import com.swp391.bloodcare.dto.log.LoginResponse;
 import com.swp391.bloodcare.service.AccountService;
@@ -15,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -99,6 +102,19 @@ public class AuthController {
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+    }
+
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> request) {
+        String idToken = request.get("idToken");
+        return ResponseEntity.ok(authService.loginWithGoogle(idToken));
+    }
+
+    @PostMapping("/google-complete")
+    public ResponseEntity<?> completeGoogle(
+            @RequestParam("email") String email,
+            @Valid @RequestBody GoogleAccountCompletionDTO dto) {
+        return ResponseEntity.ok(accountService.completeGoogleAccount(email, dto));
     }
 
 }

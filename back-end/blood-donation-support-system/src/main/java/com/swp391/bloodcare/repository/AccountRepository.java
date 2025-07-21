@@ -99,4 +99,6 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
     boolean existsByAccountId(String accountId);
 
+    Optional<Account> findByEmailIgnoreCase(String email);
+
 }
