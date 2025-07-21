@@ -3,6 +3,7 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.AddressDTO;
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.PageResponse;
+import com.swp391.bloodcare.dto.account.AccountRegistrationDTO;
 import com.swp391.bloodcare.dto.account.AccountSearchDTO;
 import com.swp391.bloodcare.dto.profile.ProfileResponseDTO;
 import com.swp391.bloodcare.entity.*;
@@ -10,12 +11,15 @@ import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -70,6 +74,38 @@ public class ProfileService {
 
     }
 
+    public ApiResponse<String> updateProfile(@Valid AccountRegistrationDTO dto){
+       try{
+           Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+           String currentAcc = auth.getName();
+           Account acc = accountRepository.findByAccountId(currentAcc);
+           if(acc == null){
+               return new ApiResponse<>(false, "Không tìm thấy tài khoản", null);
+           }
+
+           Profile pro = profileRepository.findByProfileId(acc.getProfile().getProfileId());
+           if(dto.getName() != null) pro.setName(dto.getName());
+           if(dto.getPhone() != null) pro.setPhone(dto.getPhone());
+           pro.setGender(dto.isGender());
+           if(dto.getDob() != null) pro.setDob(dto.getDob());
+           if (dto.getAddress() != null) {
+               Address address = new Address();
+               address.setCity(dto.getAddress().getCity());
+               address.setDistrict(dto.getAddress().getDistrict());
+               address.setWard(dto.getAddress().getWard());
+               address.setStreet(dto.getAddress().getStreet());
+               address.setLongitude(dto.getAddress().getLongitude());
+               address.setLatitude(dto.getAddress().getLatitude());
+               pro.setAddress(address);
+           }
+
+           profileRepository.save(pro);
+
+       }catch(Exception e){
+           TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+           return new ApiResponse<>(false, "Lỗi khi cập nhật tài khoản: " + e.getMessage(), null);
+       }
+    }
 
     //Lấy profile cho username -token
     public ApiResponse<ProfileResponseDTO> getProfileFromToken(){

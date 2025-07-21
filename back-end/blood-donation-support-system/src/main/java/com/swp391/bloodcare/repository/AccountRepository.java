@@ -101,4 +101,5 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
     Optional<Account> findByEmailIgnoreCase(String email);
 
+    Account findByAccountId(String accountId);
 }
