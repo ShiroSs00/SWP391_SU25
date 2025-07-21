@@ -2,6 +2,8 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.BloodDonationHistoryDTO;
+import com.swp391.bloodcare.entity.Account;
+import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.service.BloodDonationHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,15 +21,33 @@ public class BloodDonationHistoryController {
     @Autowired
     private BloodDonationHistoryService bloodDonationHistoryService;
 
-    @GetMapping("/{accountId}")
-    public ResponseEntity<ApiResponse<List<BloodDonationHistoryDTO>>> getBloodDonationHistory(@PathVariable("accountId") String accountId) {
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @GetMapping()
+    public ResponseEntity<ApiResponse<List<BloodDonationHistoryDTO>>> getBloodDonationHistory() {
         try{
-            List<BloodDonationHistoryDTO> histories = bloodDonationHistoryService.getHistoryByAccountId(accountId);
+            List<BloodDonationHistoryDTO> histories = bloodDonationHistoryService.getAllHistory();
             return ResponseEntity.ok(new ApiResponse<>(true, "Lấy lịch sử hiến máu thành công", histories));
         }catch(Exception e){
             return ResponseEntity
                     .badRequest()
                     .body(new ApiResponse<>(false, "Lỗi khi lấy lịch sử: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/{accountId}")
+    public ResponseEntity<ApiResponse<List<BloodDonationHistoryDTO>>> getBloodDonationHistoryByAccountId(@PathVariable String accountId) {
+        try{
+            Account account = accountRepository.findById(accountId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
+
+            System.out.println(account);
+
+            List<BloodDonationHistoryDTO> list = bloodDonationHistoryService.getAllHistoryByAccount(account);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Danh sách lịch sử làm đơn hiến máu theo tài khoản", list));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
 

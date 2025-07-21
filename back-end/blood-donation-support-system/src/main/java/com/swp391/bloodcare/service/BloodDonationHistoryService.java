@@ -2,10 +2,7 @@ package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.BloodDonationHistoryDTO;
 
-import com.swp391.bloodcare.entity.AfterDonationBlood;
-import com.swp391.bloodcare.entity.BloodDonationHistory;
-import com.swp391.bloodcare.entity.DonationRegistration;
-import com.swp391.bloodcare.entity.HealthCheck;
+import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.BloodDonationHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -77,9 +74,15 @@ public class BloodDonationHistoryService {
         return repository.save(history);
     }
 
-    //Toàn bộ lịch sử theo accountId
-    public List<BloodDonationHistoryDTO> getHistoryByAccountId(String id){
+    //Toàn bộ lịch sử
+    public List<BloodDonationHistoryDTO> getAllHistory(){
         List<BloodDonationHistory> histories = repository.findAll();
+        return toDTOList(histories);
+    }
+
+    //Lấy lịch sử theo account
+    public List<BloodDonationHistoryDTO> getAllHistoryByAccount(Account account){
+        List<BloodDonationHistory> histories = repository.findByAccount(account);
         return toDTOList(histories);
     }
 

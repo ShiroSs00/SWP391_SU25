@@ -1,5 +1,6 @@
 package com.swp391.bloodcare.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -13,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder // để dùng Account.builder() khi tạo object
+@ToString(exclude = {"bloodDonationHistory", "donationRegistrations", "profile"})
 public class Account {
 
     @Id
@@ -58,9 +60,11 @@ public class Account {
     private List<Blog> blogs;
 
     @OneToMany(mappedBy = "account")
+    @JsonIgnore
     private List<DonationRegistration> donationRegistrations;
 
     @OneToOne
+    @JsonIgnore
     private BloodDonationHistory bloodDonationHistory;
 
     @OneToMany(mappedBy = "account")

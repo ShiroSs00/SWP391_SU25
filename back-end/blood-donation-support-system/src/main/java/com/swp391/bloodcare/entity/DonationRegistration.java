@@ -1,5 +1,6 @@
 package com.swp391.bloodcare.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -58,5 +59,6 @@ public class DonationRegistration {
     private DonorFeedback donorFeedback;
 
     @OneToOne(mappedBy = "donationRegistration", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private BloodDonationHistory bloodDonationHistory;
 }
