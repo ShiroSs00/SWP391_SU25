@@ -123,13 +123,15 @@ public class AfterDonationService {
             result.put(id, "Cập nhật trạng thái: ĐÃ TÁCH");
         }
 
-        // Tạo các túi máu
         for (BloodBagDTO dto : request.getBloodBags()) {
             Blood blood = bloodRepo.findById(dto.getBloodCode())
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm máu: " + dto.getBloodCode()));
 
             Component component = componentRepository.findById(dto.getComponentId())
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thành phần máu: " + dto.getComponentId()));
+
+            AfterDonationBlood after = afterRepo.findAfterDonationBloodByIdAfterDonation(dto.getAfterDonationId())
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + dto.getAfterDonationId()));
 
             if (dto.getCollectedDate() == null) {
                 throw new IllegalArgumentException("Ngày tách máu (collectedDate) không được để trống");
@@ -152,11 +154,12 @@ public class AfterDonationService {
                     .component(component)
                     .status(status)
                     .blood(blood)
-                    .quantity(dto.getQuantity())
+                    .afterDonationBlood(after)
                     .build();
 
             bloodBagRepo.save(bag);
         }
+
 
         return Map.of("message", "Đã tách thành công các túi máu thủ công", "after", result);
     }
@@ -220,7 +223,6 @@ public class AfterDonationService {
         entity.setIsBloodUsable(dto.getIsBloodUsable());
         entity.setNote(dto.getNote());
 
-        // ⚠️ Cập nhật trạng thái dựa trên logic truyền nhiễm và usable
         if (Boolean.TRUE.equals(dto.getInfectiousDiseasesChecked()) && Boolean.TRUE.equals(dto.getIsBloodUsable())) {
             entity.setStatus(AfterDonationBlood.Status.PASSED);
         } else {
