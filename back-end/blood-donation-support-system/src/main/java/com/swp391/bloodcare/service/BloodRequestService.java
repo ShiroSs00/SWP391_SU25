@@ -357,7 +357,7 @@ public class BloodRequestService {
             bloodBagRepository.save(bag);
 
             sendApprovalNotification(request);
-
+            sendDonorNotification(bag);
             BloodRequest savedRequest = bloodRequestRepository.save(request);
             return convertToResponseDTO(savedRequest);
         } else {
@@ -510,6 +510,10 @@ public class BloodRequestService {
      */
     private void sendApprovalNotification(BloodRequest request) {
         notificationService.sendApprovalNotification(request);
+    }
+
+    public void sendDonorNotification(BloodBag bag){
+        notificationService.sendDonorNotification(bag);
     }
 
     /**

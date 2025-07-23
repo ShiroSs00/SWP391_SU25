@@ -1,13 +1,8 @@
 package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.NotificationDTO;
-import com.swp391.bloodcare.entity.Account;
+import com.swp391.bloodcare.entity.*;
 
-import com.swp391.bloodcare.entity.BloodRequest;
-
-import com.swp391.bloodcare.entity.DonationRegistration;
-
-import com.swp391.bloodcare.entity.Notification;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import com.swp391.bloodcare.repository.NotificationRepository;
@@ -256,5 +251,32 @@ public class NotificationService {
                 request.getIdBloodRequest(),
                 request.getRejectionReason() != null ? request.getRejectionReason() : "Không có máu phù hợp"
         );
+    }
+
+    public void sendDonorNotification(BloodBag bag){
+        Account donor = new Account(); // về sau khi merge thì thay
+
+        if(donor == null || donor.getEmail() == null){
+            return;
+        }
+        String subject = "Cảm ơn bạn vì hành động cao cả!";
+        String content = String.format("""
+            Xin chào %s,
+
+            Chúng tôi xin trân trọng thông báo rằng túi máu của bạn (Mã: %s) đã được sử dụng để cứu giúp một bệnh nhân.
+
+            Cảm ơn bạn vì sự đóng góp quý giá cho cộng đồng.
+
+            Trân trọng,
+            Đội ngũ BloodCare
+            """,
+                donor.getProfile().getName(), bag.getBagId());
+        emailService.sendEmail(donor.getEmail(), subject, content);
+        sendSystemNotification(
+                donor.getAccountId(),
+                "Túi máu của bạn đã được sử dụng",
+                "Túi máu (Mã: " + bag.getBagId() + ") của bạn đã được sử dụng để giúp một bệnh nhân. Cảm ơn bạn!"
+        );
+
     }
 }
