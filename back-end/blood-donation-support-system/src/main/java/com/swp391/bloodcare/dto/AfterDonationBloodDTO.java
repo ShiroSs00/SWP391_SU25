@@ -28,5 +28,7 @@ public class AfterDonationBloodDTO {
     @NotNull(message = "Nhóm máu không được để trống")
     private String bloodId;
 
+    private AfterDonationBlood.Status status;
+
 
 }

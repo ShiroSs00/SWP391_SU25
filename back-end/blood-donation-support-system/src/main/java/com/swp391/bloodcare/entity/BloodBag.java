@@ -27,18 +27,12 @@ public class BloodBag {
     @NotNull(message = "Thể tích không được để trống")
     private Volume volume;
 
-
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
     @Column(name = "collected_date", nullable = false)
     @NotNull(message = "Ngày lấy máu không được để trống")
     @PastOrPresent(message = "Ngày tách phải nhỏ hơn hoặc bằng ngày hiện tại")
     private Date collectedDate;
-
-    @NotNull(message = "Số lượng không được để trống")
-    @Min(value = 1, message = "Phải lấy ít nhất là 1")
-    @Column(name = "quantity")
-    private int quantity;
 
     @Temporal(TemporalType.DATE)
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Ho_Chi_Minh")
@@ -59,6 +53,18 @@ public class BloodBag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "blood_code")
     private Blood blood;
+
+    @AssertTrue(message = "Hạn sử dụng phải sau hoặc bằng ngày lấy máu")
+    public boolean isExpirationAfterCollected() {
+        if (collectedDate == null || expirationDate == null) {
+            return true;
+        }
+        return !expirationDate.before(collectedDate);
+    }
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "after_donation_blood_id", nullable = false)
+    private AfterDonationBlood afterDonationBlood;
 
 
 

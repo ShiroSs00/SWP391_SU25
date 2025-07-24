@@ -8,8 +8,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -37,6 +37,12 @@ public class BloodBagController {
                     new ApiResponse<>(false, "Lỗi khi tạo túi máu: " + e.getMessage(), null)
             );
         }
+    }
+
+    @PostMapping("/import-excel")
+    public ResponseEntity<List<BloodBagDTO>> importBloodBagExcel(@RequestParam("file") MultipartFile file) {
+        List<BloodBagDTO> imported = bloodBagService.importFromExcel(file);
+        return ResponseEntity.ok(imported);
     }
 
 

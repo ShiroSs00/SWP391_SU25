@@ -3,16 +3,25 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.BloodBagDTO;
 import com.swp391.bloodcare.entity.BloodBag;
 import com.swp391.bloodcare.entity.Component;
+import com.swp391.bloodcare.repository.AfterDonationRepository;
 import com.swp391.bloodcare.repository.BloodBagRepository;
 import com.swp391.bloodcare.repository.BloodRepository;
 import com.swp391.bloodcare.repository.ComponentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,6 +32,7 @@ public class BloodBagService {
     private final BloodBagRepository bloodBagRepository;
     private final ComponentRepository componentRepository;
     private final BloodRepository bloodRepository;
+    private final AfterDonationRepository afterDonationRepository;
 
     @Transactional
     public BloodBagDTO createBloodBag(BloodBagDTO dto) {
@@ -39,7 +49,6 @@ public class BloodBagService {
 
         if (existingOpt.isPresent()) {
             BloodBag existing = existingOpt.get();
-            existing.setQuantity(existing.getQuantity() + dto.getQuantity());
             BloodBag updated = bloodBagRepository.save(existing);
             return BloodBagDTO.fromEntity(updated);
         } else {
@@ -59,22 +68,88 @@ public class BloodBagService {
 
             entity.setComponent(component);
             BloodBag saved = bloodBagRepository.save(entity);
+            autoUpdateExpiredStatus();
             return BloodBagDTO.fromEntity(saved);
         }
     }
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public List<BloodBagDTO> importFromExcel(MultipartFile file) {
+        List<BloodBagDTO> importedList = new ArrayList<>();
+
+        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+                Row row = sheet.getRow(rowIndex);
+                if (row == null) continue;
+
+                try {
+                    BloodBagDTO dto = parseRowToDTO(row);
+                    BloodBagDTO saved = createBloodBag(dto); // dùng lại logic đã có
+                    importedList.add(saved);
+                } catch (Exception ex) {
+                    // Log lỗi từng dòng, hoặc gom lỗi lại nếu muốn
+                    System.err.println("Lỗi tại dòng " + (rowIndex + 1) + ": " + ex.getMessage());
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi đọc file Excel: " + e.getMessage());
+        }
+
+        return importedList;
+    }
+
+    private BloodBagDTO parseRowToDTO(Row row) {
+        DataFormatter formatter = new DataFormatter();
+
+        String bloodCode = formatter.formatCellValue(row.getCell(0));           // Nhóm máu
+        int volume = Integer.parseInt(formatter.formatCellValue(row.getCell(1))); // 250/350/450
+        String componentId = formatter.formatCellValue(row.getCell(2));         // TP-HC/TP-HH...
+        String collectedStr = formatter.formatCellValue(row.getCell(3));        // yyyy-MM-dd
+        String expirationStr = formatter.formatCellValue(row.getCell(4));
+        String afterDonationId = formatter.formatCellValue(row.getCell(5));     // ID afterDonation
+
+        Date collectedDate = java.sql.Date.valueOf(collectedStr);
+        Date expirationDate = java.sql.Date.valueOf(expirationStr);
+
+        return BloodBagDTO.builder()
+                .bloodCode(bloodCode)
+                .volume(volume)
+                .componentId(componentId)
+                .collectedDate(collectedDate)
+                .expirationDate(expirationDate)
+                .afterDonationId(afterDonationId)
+                .build();
+    }
+
+
+    @Scheduled(cron = "0 0 0 * * ?") // Chạy mỗi ngày lúc 0h
     @Transactional
     public int autoUpdateExpiredStatus() {
-        List<BloodBag> expiredBags = bloodBagRepository.findByExpirationDateBeforeAndStatus(
-                new Date(), BloodBag.Status.VALID
-        );
-        for (BloodBag bag : expiredBags) {
-            bag.setStatus(BloodBag.Status.EXPIRED);
+
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        Date todayDate = Date.from(today.atStartOfDay(ZoneId.of("Asia/Ho_Chi_Minh")).toInstant());
+
+        List<BloodBag> allBags = bloodBagRepository.findAll();
+        int updatedCount = 0;
+
+        for (BloodBag bag : allBags) {
+            if (bag.getExpirationDate().before(todayDate) && bag.getStatus() != BloodBag.Status.EXPIRED) {
+                bag.setStatus(BloodBag.Status.EXPIRED);
+                updatedCount++;
+            }
+            else if (!bag.getExpirationDate().before(todayDate) && bag.getStatus() != BloodBag.Status.VALID) {
+                bag.setStatus(BloodBag.Status.VALID);
+                updatedCount++;
+            }
         }
-        bloodBagRepository.saveAll(expiredBags);
-        return expiredBags.size();
+
+        bloodBagRepository.saveAll(allBags);
+        return updatedCount;
     }
+
 
     private BloodBag convertToEntity(BloodBagDTO dto, Component component) {
         return BloodBag.builder()
@@ -84,11 +159,13 @@ public class BloodBagService {
                 .expirationDate(dto.getExpirationDate())
                 .status(dto.getStatus())
                 .component(component)
-                .quantity(dto.getQuantity())
                 .blood(bloodRepository.findByBloodCode(dto.getBloodCode())
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu " + dto.getBloodCode())))
+                .afterDonationBlood(afterDonationRepository.findById(dto.getAfterDonationId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy AfterDonationBlood với ID: " + dto.getAfterDonationId())))
                 .build();
     }
+
 
 
     @Transactional
@@ -138,10 +215,7 @@ public class BloodBagService {
             existing.setComponent(component);
         }
 
-        if (dto.getQuantity() > 0) {
-            existing.setQuantity(dto.getQuantity());
-        }
-
+        autoUpdateExpiredStatus();
         BloodBag saved = bloodBagRepository.save(existing);
         return BloodBagDTO.fromEntity(saved);
     }

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import java.util.*;
 
 @Entity
 @Table(name = "after_donation_blood")
@@ -52,5 +53,8 @@ public class AfterDonationBlood {
     @JoinColumn(name = "blood_code")
     @NotNull(message = "Nhóm máu không được để trống")
     private Blood blood;
+
+    @OneToMany(mappedBy = "afterDonationBlood", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<BloodBag> bloodBags;
 
 }
