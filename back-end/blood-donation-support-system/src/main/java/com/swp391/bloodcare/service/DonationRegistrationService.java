@@ -35,7 +35,12 @@ public class DonationRegistrationService {
     public DonationRegistrationDTO createDonation(@Valid DonationRegistrationDTO dto, String accountId) {
         String eventId = dto.getEventId();
         LocalDate donationDate = dto.getDonationDate();
+
         validateDonation(accountId, donationDate, eventId, false);
+
+        if (dto.getVolumeToTake() == null) {
+            throw new IllegalArgumentException("Volume không được để trống");
+        }
 
         Account acc = accountRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy tài khoản"));
@@ -50,19 +55,20 @@ public class DonationRegistrationService {
                 .event(event)
                 .dateCreated(new Date())
                 .status(DonationRegistration.Status.PENDING)
+                .volumeToTake(DonationRegistration.Volume.fromInt(dto.getVolumeToTake()))
                 .build();
 
         reg.setRegistrationId(generateUniqueIdWithRetry());
 
         try {
             DonationRegistration saved = donationRegistrationRepository.save(reg);
-            //tạo lịch sử
             bloodDonationHistoryService.create(saved);
             return DonationRegistrationDTO.toDTO(saved);
         } catch (Exception e) {
             throw new RuntimeException("Lỗi khi lưu đơn đăng ký: " + e.getMessage(), e);
         }
     }
+
 
     private void validateDonation(String accountId, LocalDate donationDate, String eventId, boolean isUpdate) {
         LocalDate today = LocalDate.now();
@@ -113,7 +119,7 @@ public class DonationRegistrationService {
 
         List<DonationRegistration> completedRegs = donationRegistrationRepository
                 .findByAccountAccountId(accountId).stream()
-                .filter(reg -> reg.getStatus() == DonationRegistration.Status.PASSED)
+                .filter(reg -> reg.getStatus() == DonationRegistration.Status.COMPLETED)
                 .sorted(Comparator.comparing(DonationRegistration::getDonationDate).reversed())
                 .toList();
 
@@ -139,7 +145,7 @@ public class DonationRegistrationService {
                 .filter(reg -> reg.getDonationDate().isBefore(today))
                 .peek(reg -> {
                     if (reg.getHealthCheck() != null) {
-                        reg.setStatus(DonationRegistration.Status.PASSED);
+                        reg.setStatus(DonationRegistration.Status.COMPLETED);
                     } else {
                         reg.setStatus(DonationRegistration.Status.CANCELLED);
                     }
@@ -174,11 +180,11 @@ public class DonationRegistrationService {
 
         reg.setStatus(newStatus);
         DonationRegistration saved = donationRegistrationRepository.save(reg);
-        bloodDonationHistoryService.create(reg); // cập nhật lịch sử
+        bloodDonationHistoryService.create(reg);
         return DonationRegistrationDTO.toDTO(saved);
     }
 
-    public DonationRegistrationDTO updateDonationDate(String id, LocalDate newDonationDate) {
+    public DonationRegistrationDTO updateDonation(String id, LocalDate newDonationDate, int newBloodVolume) {
         DonationRegistration reg = donationRegistrationRepository.findByRegistrationId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn đăng ký với ID: " + id));
 
@@ -188,6 +194,8 @@ public class DonationRegistrationService {
         validateDonation(accountId, newDonationDate, eventId, true);
 
         reg.setDonationDate(newDonationDate);
+        reg.setVolumeToTake(DonationRegistration.Volume.fromInt(newBloodVolume));
+
         return DonationRegistrationDTO.toDTO(donationRegistrationRepository.save(reg));
     }
 

@@ -68,42 +68,34 @@ public class HealthCheckService {
             throw new IllegalStateException("Đã tồn tại kiểm tra sức khoẻ cho đơn này");
         }
 
-        if (!Boolean.TRUE.equals(dto.getIsFitToDonate())) {
-            dto.setVolumeToTake(0);
-        }
-
         if (LocalDate.now().isBefore(reg.getDonationDate())) {
             throw new IllegalStateException("Chỉ được tạo HealthCheck vào đúng ngày hiến máu");
         }
 
         HealthCheck healthCheck = HealthCheckDTO.toEntity(dto);
-        healthCheck.setDonationRegistration(reg);
         healthCheck.setHealthCheckId(generateHealthCheckId());
-
-        // QUAN TRỌNG: set lại 2 chiều
+        healthCheck.setDonationRegistration(reg);
         reg.setHealthCheck(healthCheck);
 
-        Profile profile = reg.getAccount().getProfile();
-        String accountId = profile.getAccount().getAccountId();
-
         if (Boolean.TRUE.equals(dto.getIsFitToDonate())) {
-            reg.setStatus(DonationRegistration.Status.PASSED);
-            profileService.increaseBloodDonationCount(accountId);
-            profile.setRestDate(LocalDate.now().plusDays(84));
+            reg.setStatus(DonationRegistration.Status.CHECKING);
+            if (dto.getVolumeToTake() == null || !Arrays.asList(250, 350, 450).contains(dto.getVolumeToTake())) {
+                throw new IllegalArgumentException("Thể tích không hợp lệ hoặc chưa chọn");
+            }
+            reg.setVolumeToTake(DonationRegistration.Volume.fromInt(dto.getVolumeToTake()));
         } else {
             reg.setStatus(DonationRegistration.Status.CANCELLED);
-            profile.setRestDate(null);
+            reg.setVolumeToTake(DonationRegistration.Volume.fromInt(0));
         }
 
-        // Lưu cả 2
-        donationRegistrationRepository.save(reg); // lưu reg sẽ cascade luôn HealthCheck
+        donationRegistrationRepository.save(reg);
         HealthCheck saved = healthCheckRepository.findByHealthCheckId(healthCheck.getHealthCheckId())
                 .orElseThrow(() -> new IllegalStateException("Không lưu được HealthCheck"));
 
         bloodDonationHistoryService.updateFromHealthCheck(saved);
-
         return toDTO(saved);
     }
+
 
 
     @Transactional
@@ -112,48 +104,58 @@ public class HealthCheckService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck với ID: " + healthCheckId));
 
         DonationRegistration reg = existing.getDonationRegistration();
-        Boolean oldFit = existing.getIsFitToDonate();
-        Boolean newFit = dto.getIsFitToDonate();
-
-        int volumeInt = (!Boolean.TRUE.equals(newFit) || dto.getVolumeToTake() == null)
-                ? 0 : dto.getVolumeToTake();
-
-        if (Boolean.TRUE.equals(newFit) && !Arrays.asList(250, 350, 450).contains(volumeInt)) {
-            throw new IllegalArgumentException("Thể tích không hợp lệ");
+        if (reg.getStatus() == DonationRegistration.Status.COMPLETED) {
+            throw new IllegalStateException("Không thể cập nhật vì đơn đã hoàn thành");
         }
 
-        // Cập nhật dữ liệu
         existing.setWeight(dto.getWeight());
         existing.setTemperature(dto.getTemperature());
         existing.setBloodPressure(dto.getBloodPressure());
         existing.setPulse(dto.getPulse());
         existing.setHemoglobin(dto.getHemoglobin());
         existing.setNote(dto.getNote());
-        existing.setVolumeToTake(HealthCheck.Volume.fromInt(volumeInt));
-        existing.setIsFitToDonate(newFit);
+        existing.setIsFitToDonate(dto.getIsFitToDonate());
 
-        Profile profile = reg.getAccount().getProfile();
-        String accountId = profile.getAccount().getAccountId();
-
-        if (Boolean.TRUE.equals(newFit)) {
-            reg.setStatus(DonationRegistration.Status.PASSED);
-            if (!Boolean.TRUE.equals(oldFit)) {
-                profileService.increaseBloodDonationCount(accountId);
-                profile.setRestDate(LocalDate.now().plusDays(84));
-            }
-        } else {
-            reg.setStatus(DonationRegistration.Status.CANCELLED);
-            if (Boolean.TRUE.equals(oldFit)) {
-                profileService.decreaseBloodDonationCount(accountId);
-                profile.setRestDate(null);
-            }
-        }
-
-        bloodDonationHistoryService.updateFromHealthCheck(existing);
-        donationRegistrationRepository.save(reg);
         HealthCheck saved = healthCheckRepository.save(existing);
         return toDTO(saved);
     }
+
+    @Transactional
+    public void updateStatus(String healthCheckId) {
+        HealthCheck healthCheck = healthCheckRepository.findByHealthCheckId(healthCheckId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy HealthCheck với ID: " + healthCheckId));
+
+        DonationRegistration reg = healthCheck.getDonationRegistration();
+        Profile profile = reg.getAccount().getProfile();
+        String accountId = profile.getAccount().getAccountId();
+
+        DonationRegistration.Status oldStatus = reg.getStatus();
+
+        switch (oldStatus) {
+            case CANCELLED:
+            case CHECKING:
+                reg.setStatus(DonationRegistration.Status.COMPLETED);
+                profileService.increaseBloodDonationCount(accountId);
+                profile.setRestDate(LocalDate.now().plusDays(84));
+                break;
+
+            case COMPLETED:
+                reg.setStatus(DonationRegistration.Status.CANCELLED);
+                profileService.decreaseBloodDonationCount(accountId);
+                profile.setRestDate(null);
+                break;
+
+            default:
+                throw new IllegalStateException("Chỉ xử lý nếu đơn đang ở CANCELLED, COMPLETED hoặc CHECKING");
+        }
+
+        donationRegistrationRepository.save(reg);
+        bloodDonationHistoryService.updateFromHealthCheck(healthCheck);
+    }
+
+
+
+
 
 
     @Transactional

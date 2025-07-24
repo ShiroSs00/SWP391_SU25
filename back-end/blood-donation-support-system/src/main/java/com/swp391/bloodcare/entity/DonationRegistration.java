@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Date;
 
 @Entity
@@ -19,8 +20,9 @@ public class DonationRegistration {
 
     public enum Status {
         PENDING,    // Đang đợi
-        PASSED,     // Đã hiến / Đủ điều kiện
-        CANCELLED   // Đã hủy
+        COMPLETED,     // Đã hiến / Đủ điều kiện
+        CANCELLED,   // Đã hủy
+        CHECKING    // Da den kiem tra
     }
 
     @Id
@@ -59,4 +61,32 @@ public class DonationRegistration {
 
     @OneToOne(mappedBy = "donationRegistration", cascade = CascadeType.ALL, orphanRemoval = true)
     private BloodDonationHistory bloodDonationHistory;
+
+    @Column(name = "volume_to_take")
+    @NotNull(message = "Volume không được để trống")
+    private Volume volumeToTake;
+
+    @Getter
+    public enum Volume {
+        ML_0(0),
+        ML_250(250),
+        ML_350(350),
+        ML_450(450);
+
+        private final int ml;
+
+        Volume(int ml) {
+            this.ml = ml;
+        }
+
+        public static DonationRegistration.Volume fromInt(int ml) {
+            return Arrays.stream(values())
+                    .filter(v -> v.ml == ml)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Thể tích không hợp lệ. Chỉ chấp nhận: 0, 250, 350, 450"));
+        }
+
+
+    }
 }

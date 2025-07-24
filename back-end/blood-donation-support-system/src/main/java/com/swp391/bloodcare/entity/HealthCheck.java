@@ -48,10 +48,6 @@ public class HealthCheck {
     @DecimalMin(value = "7.0", message = "Hemoglobin quá thấp")
     private Double hemoglobin;
 
-    @Column(name = "volume_to_take")
-    @NotNull(message = "Volume không được để trống")
-    private Volume volumeToTake;
-
     @Column(name = "is_fit_to_donate", nullable = false)
     @NotNull(message = "Chưa xác định được tình trạng đủ điều kiện hiến máu")
     private Boolean isFitToDonate;
@@ -67,27 +63,4 @@ public class HealthCheck {
     @OneToOne(mappedBy = "healthCheck", cascade = CascadeType.ALL, orphanRemoval = true)
     private AfterDonationBlood afterDonationBlood;
 
-    @Getter
-    public enum Volume {
-        ML_0(0),
-        ML_250(250),
-        ML_350(350),
-        ML_450(450);
-
-        private final int ml;
-
-        Volume(int ml) {
-            this.ml = ml;
-        }
-
-        public static HealthCheck.Volume fromInt(int ml) {
-            return Arrays.stream(values())
-                    .filter(v -> v.ml == ml)
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Thể tích không hợp lệ. Chỉ chấp nhận: 0, 250, 350, 450"));
-        }
-
-
-    }
 }

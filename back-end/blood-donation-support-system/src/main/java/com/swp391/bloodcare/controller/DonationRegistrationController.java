@@ -7,12 +7,9 @@ import com.swp391.bloodcare.service.DonationRegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -58,24 +55,25 @@ public class DonationRegistrationController {
         }
     }
 
-    @PutMapping("/update-donation-date/{id}")
-    public ResponseEntity<ApiResponse<DonationRegistrationDTO>> updateDonationDate(
-            @PathVariable String id,
-            @RequestBody Map<String, String> body) {
+    @PutMapping("/update-donation/{id}")
+    public ResponseEntity<ApiResponse<DonationRegistrationDTO>> updateDonation(
+            @PathVariable("id") String id,
+            @RequestBody @Valid DonationRegistrationDTO dto) {
         try {
-            String dateStr = body.get("donationDate");
-            if (dateStr == null || dateStr.isBlank()) {
-                throw new IllegalArgumentException("Ngày hiến máu không được để trống");
-            }
-
-            LocalDate donationDate = LocalDate.parse(dateStr);
-            DonationRegistrationDTO updated = donationRegistrationService.updateDonationDate(id, donationDate);
-            return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật ngày hiến máu thành công", updated));
-
-        } catch (Exception e) {
+            DonationRegistrationDTO updated = donationRegistrationService.updateDonation(
+                    id,
+                    dto.getDonationDate(),
+                    dto.getVolumeToTake()
+            );
+            return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật thành công", updated));
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(false, "Lỗi hệ thống: " + e.getMessage(), null));
         }
     }
+
+
 
     @PatchMapping("/update-status/{id}")
     public ResponseEntity<ApiResponse<DonationRegistrationDTO>> updateStatus(

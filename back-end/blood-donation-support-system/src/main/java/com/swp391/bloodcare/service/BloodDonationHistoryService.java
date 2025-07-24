@@ -115,8 +115,6 @@ public class BloodDonationHistoryService {
         }
 
         if (healthCheck != null) {
-            // Gán volume
-            dto.setVolumeToTake(healthCheck.getVolumeToTake().getMl());
 
             // Gán ID của HealthCheck
             dto.setHealCheck(healthCheck.getHealthCheckId());
@@ -148,7 +146,7 @@ public class BloodDonationHistoryService {
         if (registrationStatus == null) return "PENDING";
 
         switch (registrationStatus) {
-            case PASSED:
+            case COMPLETED:
                 return "REGISTERED";
             case CANCELLED:
                 return "REGISTRATION_CANCELLED";

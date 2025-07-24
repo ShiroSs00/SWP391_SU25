@@ -55,10 +55,6 @@ public class HealthCheckDTO {
     }
 
     public static HealthCheck toEntity(HealthCheckDTO dto) {
-        int volumeInt = (dto.getVolumeToTake() == null || !Boolean.TRUE.equals(dto.getIsFitToDonate()))
-                ? 0
-                : dto.getVolumeToTake();
-
         return HealthCheck.builder()
                 .healthCheckId(dto.getHealthCheckId())
                 .weight(dto.getWeight())
@@ -66,11 +62,11 @@ public class HealthCheckDTO {
                 .bloodPressure(dto.getBloodPressure())
                 .pulse(dto.getPulse())
                 .hemoglobin(dto.getHemoglobin())
-                .volumeToTake(HealthCheck.Volume.fromInt(volumeInt)) // never null
                 .isFitToDonate(dto.getIsFitToDonate())
                 .note(dto.getNote())
                 .build();
     }
+
 
 
 
@@ -83,9 +79,13 @@ public class HealthCheckDTO {
                 .bloodPressure(entity.getBloodPressure())
                 .pulse(entity.getPulse())
                 .hemoglobin(entity.getHemoglobin())
-                .volumeToTake(entity.getVolumeToTake() != null ? entity.getVolumeToTake().getMl() : null)
                 .isFitToDonate(entity.getIsFitToDonate())
                 .note(entity.getNote())
+                .volumeToTake(entity.getDonationRegistration() != null &&
+                        entity.getDonationRegistration().getVolumeToTake() != null
+                        ? entity.getDonationRegistration().getVolumeToTake().getMl()
+                        : null)
                 .build();
     }
+
 }
