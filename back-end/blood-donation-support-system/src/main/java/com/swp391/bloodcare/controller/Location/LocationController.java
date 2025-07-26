@@ -1,5 +1,6 @@
 package com.swp391.bloodcare.controller.Location;
 
+import com.swp391.bloodcare.dto.Location.ProvinceDTO;
 import com.swp391.bloodcare.entity.Location.Province;
 import com.swp391.bloodcare.service.Location.LocationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,8 @@ public class LocationController {
     private LocationService locationService;
 
     @GetMapping("/provinces")
-    public ResponseEntity<List<Province>> getProvincesWithWards() {
-        return ResponseEntity.ok(locationService.getAllProvincesWithWard());
+    public ResponseEntity<List<ProvinceDTO>> getProvincesWithWards() {
+        List<ProvinceDTO> provinceDTOs = locationService.getAllProvincesWithWards();
+        return ResponseEntity.ok(provinceDTOs);
     }
 }

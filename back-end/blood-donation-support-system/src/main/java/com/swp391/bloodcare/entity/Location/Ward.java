@@ -1,11 +1,11 @@
 package com.swp391.bloodcare.entity.Location;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
+@Table(name= "wards")
 public class Ward {
     @Id
     private String code;

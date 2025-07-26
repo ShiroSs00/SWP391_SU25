@@ -1,10 +1,15 @@
 package com.swp391.bloodcare.entity.Location;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Data
 @Entity
+@Table(name= "provinces")
 public class Province {
     @Id
     private String code;
@@ -20,5 +25,10 @@ public class Province {
 
     @OneToMany(mappedBy = "province", fetch = FetchType.LAZY)
     private List<Ward> wards;
+
+    @ManyToOne
+    @JoinColumn(name = "region_id")
+    private AdministrativeRegion region;
+
 }
 
