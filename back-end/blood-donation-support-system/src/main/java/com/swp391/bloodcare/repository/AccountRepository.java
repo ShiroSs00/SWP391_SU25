@@ -3,6 +3,7 @@ package com.swp391.bloodcare.repository;
 
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.Blood;
+import com.swp391.bloodcare.entity.Role;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -99,7 +100,11 @@ public interface AccountRepository extends JpaRepository<Account, String> {
 
     boolean existsByAccountId(String accountId);
 
+
     Optional<Account> findByEmailIgnoreCase(String email);
 
+
+
+    List<Account> findByRole(Role role);
 
 }

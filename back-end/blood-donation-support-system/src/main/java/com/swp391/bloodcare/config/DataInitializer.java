@@ -3,11 +3,13 @@ package com.swp391.bloodcare.config;
 import com.swp391.bloodcare.entity.*;
 
 import com.swp391.bloodcare.repository.*;
+import com.swp391.bloodcare.service.BloodCompatibilityService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Collections;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -22,11 +24,9 @@ public class DataInitializer {
 
     private final ComponentRepository componentRepository;
     private final BloodRepository bloodRepository;
+    private final BloodCompatibilityService bloodCompatibilityService;
 
     private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private BloodBagRepository bloodBagRepository;
 
     private final AchievementRepository achievementRepository;
 
@@ -176,6 +176,46 @@ public class DataInitializer {
         achievementRepository.saveAll(defaultAchievements);
         System.out.println("✅ Đã thêm thành tựu mặc định vào bảng achievement");
 
+        if (bloodRepository.count() == 0) {
+            for (Blood.BloodType type : Blood.BloodType.values()) {
+                for (Blood.RhFactor rh : Blood.RhFactor.values()) {
+                    String code = generateBloodCode(type, rh);
+
+                    Blood blood = new Blood();
+                    blood.setBloodCode(code);
+                    blood.setBloodType(type);
+                    blood.setRh(rh);
+                    blood.setIsRareBlood(isRare(type, rh));
+                    blood.setQuantity(0L);
+                    blood.setBloodMatch(generateCompatibleGroups(type, rh)); // <<< đây nè
+
+                    bloodRepository.save(blood);
+                }
+            }
+            System.out.println("✅ Đã khởi tạo dữ liệu nhóm máu.");
+        }
+
 
     }
+    private String generateBloodCode(Blood.BloodType type, Blood.RhFactor rh) {
+        return type.name() + (rh == Blood.RhFactor.POSITIVE ? "+" : "-");
+    }
+
+    private boolean isRare(Blood.BloodType type, Blood.RhFactor rh) {
+        String code = generateBloodCode(type, rh);
+        return List.of("AB-", "B-", "A-", "O-").contains(code);
+    }
+
+
+
+    private String generateCompatibleGroups(Blood.BloodType type, Blood.RhFactor rh) {
+        String bloodCode = generateBloodCode(type, rh);
+        List<String> recipients = bloodCompatibilityService.getCompatibleRecipients(bloodCode);
+
+        // Sắp xếp để dễ nhìn
+        Collections.sort(recipients);
+
+        return String.join(", ", recipients);
+    }
+
 }

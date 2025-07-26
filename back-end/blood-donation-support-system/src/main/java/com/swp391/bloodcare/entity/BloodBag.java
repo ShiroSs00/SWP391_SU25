@@ -63,7 +63,7 @@ public class BloodBag {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "after_donation_blood_id", nullable = false)
+    @JoinColumn(name = "after_donation_blood_id", nullable = true)
     private AfterDonationBlood afterDonationBlood;
 
 

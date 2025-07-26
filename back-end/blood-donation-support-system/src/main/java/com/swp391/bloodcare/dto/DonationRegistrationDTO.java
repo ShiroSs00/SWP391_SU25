@@ -24,6 +24,9 @@ public class DonationRegistrationDTO {
     @FutureOrPresent(message = "Ngày hiến máu không được nhỏ hơn ngày hiện tại")
     private LocalDate donationDate;
 
+    @NotNull(message = "Volume không được để trống")
+    private Integer volumeToTake;
+
     private String eventId;
 
     private String accountId;
@@ -33,15 +36,19 @@ public class DonationRegistrationDTO {
     private String donorFeedbackId;
 
     public static DonationRegistrationDTO toDTO(DonationRegistration reg) {
+        int volumeInt = reg.getVolumeToTake() != null ? reg.getVolumeToTake().getMl() : 0;
+
         return DonationRegistrationDTO.builder()
                 .registrationId(reg.getRegistrationId())
                 .dateCreated(reg.getDateCreated())
-                .status(reg.getStatus()) // enum
+                .status(reg.getStatus())
                 .donationDate(reg.getDonationDate())
                 .eventId(reg.getEvent() != null ? reg.getEvent().getEventId() : null)
                 .accountId(reg.getAccount() != null ? reg.getAccount().getAccountId() : null)
                 .healthCheckId(reg.getHealthCheck() != null ? reg.getHealthCheck().getHealthCheckId() : null)
                 .donorFeedbackId(reg.getDonorFeedback() != null ? reg.getDonorFeedback().getFeedbackId() : null)
+                .volumeToTake(volumeInt)
                 .build();
     }
+
 }

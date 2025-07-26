@@ -40,10 +40,19 @@ public class BloodBagController {
     }
 
     @PostMapping("/import-excel")
-    public ResponseEntity<List<BloodBagDTO>> importBloodBagExcel(@RequestParam("file") MultipartFile file) {
-        List<BloodBagDTO> imported = bloodBagService.importFromExcel(file);
-        return ResponseEntity.ok(imported);
+    public ResponseEntity<?> importBloodBagExcel(@RequestParam("file") MultipartFile file) {
+        Map<String, Object> result = bloodBagService.importFromExcel(file);
+
+        List<String> errors = (List<String>) result.get("errorList");
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(result);
+        }
+
+        return ResponseEntity.ok(result);
     }
+
+
+
 
 
     @PutMapping("/update/{bagId}")

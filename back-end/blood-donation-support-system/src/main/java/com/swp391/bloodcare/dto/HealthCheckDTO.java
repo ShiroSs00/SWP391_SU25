@@ -38,7 +38,6 @@ public class HealthCheckDTO {
     @DecimalMin(value = "7.0", message = "Hemoglobin quá thấp, không hợp lệ")
     private Double hemoglobin;
 
-    @NotNull(message = "Volume không được để trống")
     private Integer volumeToTake;
 
     @NotNull(message = "Chưa xác định được tình trạng đủ điều kiện hiến máu")
@@ -46,19 +45,7 @@ public class HealthCheckDTO {
 
     private String note;
 
-
-    @AssertTrue(message = "volumeToTake chỉ chấp nhận 0, 250, 350 hoặc 450 nếu đủ điều kiện hiến máu")
-    public boolean isVolumeValid() {
-        return !Boolean.TRUE.equals(isFitToDonate) ||
-                volumeToTake == null ||
-                Arrays.asList(0, 250, 350, 450).contains(volumeToTake);
-    }
-
     public static HealthCheck toEntity(HealthCheckDTO dto) {
-        int volumeInt = (dto.getVolumeToTake() == null || !Boolean.TRUE.equals(dto.getIsFitToDonate()))
-                ? 0
-                : dto.getVolumeToTake();
-
         return HealthCheck.builder()
                 .healthCheckId(dto.getHealthCheckId())
                 .weight(dto.getWeight())
@@ -66,11 +53,11 @@ public class HealthCheckDTO {
                 .bloodPressure(dto.getBloodPressure())
                 .pulse(dto.getPulse())
                 .hemoglobin(dto.getHemoglobin())
-                .volumeToTake(HealthCheck.Volume.fromInt(volumeInt)) // never null
                 .isFitToDonate(dto.getIsFitToDonate())
                 .note(dto.getNote())
                 .build();
     }
+
 
 
 
@@ -83,9 +70,13 @@ public class HealthCheckDTO {
                 .bloodPressure(entity.getBloodPressure())
                 .pulse(entity.getPulse())
                 .hemoglobin(entity.getHemoglobin())
-                .volumeToTake(entity.getVolumeToTake() != null ? entity.getVolumeToTake().getMl() : null)
                 .isFitToDonate(entity.getIsFitToDonate())
                 .note(entity.getNote())
+                .volumeToTake(entity.getDonationRegistration() != null &&
+                        entity.getDonationRegistration().getVolumeToTake() != null
+                        ? entity.getDonationRegistration().getVolumeToTake().getMl()
+                        : null)
                 .build();
     }
+
 }

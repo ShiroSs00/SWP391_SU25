@@ -3,6 +3,7 @@ package com.swp391.bloodcare.controller;
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.HealthCheckDTO;
 import com.swp391.bloodcare.service.HealthCheckService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -73,6 +74,18 @@ public class HealthCheckController {
     public ResponseEntity<ApiResponse<HealthCheckDTO>> deleteHealthCheck(@PathVariable String id) {
         HealthCheckDTO deleted = healthCheckService.deleteHealthCheck(id);
         return ResponseEntity.ok(new ApiResponse<>(true, "Đã xóa thành công bản ghi kiểm tra sức khỏe", deleted));
+    }
+
+    @PutMapping("/status/{id}")
+    public ResponseEntity<ApiResponse<String>> updateHealthCheckStatus(@PathVariable("id") String healthCheckId) {
+        try {
+            healthCheckService.updateStatus(healthCheckId);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật trạng thái thành công", null));
+        } catch (IllegalStateException | EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(new ApiResponse<>(false, "Lỗi server: " + e.getMessage(), null));
+        }
     }
 
     @GetMapping("/get-by-registration/{registrationId}")

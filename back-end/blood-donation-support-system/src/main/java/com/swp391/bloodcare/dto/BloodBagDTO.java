@@ -37,8 +37,7 @@ public class BloodBagDTO {
     @NotNull(message = "Nhóm máu không được để trống")
     private String bloodCode;
 
-    @NotNull(message = "afterDonationId không được để trống")
-    private String afterDonationId; // <-- Thay vì nhét entity
+    private String afterDonationId;
 
     @AssertTrue(message = "Hạn sử dụng phải sau hoặc bằng ngày lấy máu")
     public boolean isExpirationAfterCollected() {
@@ -57,7 +56,11 @@ public class BloodBagDTO {
                 .status(bag.getStatus())
                 .bloodCode(bag.getBlood().getBloodCode())
                 .componentId(bag.getComponent() != null ? bag.getComponent().getComponentId() : null)
-                .afterDonationId(bag.getAfterDonationBlood().getIdAfterDonation())
+                .afterDonationId(
+                        bag.getAfterDonationBlood() != null
+                                ? bag.getAfterDonationBlood().getIdAfterDonation()
+                                : null
+                )
                 .build();
     }
 }

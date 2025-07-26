@@ -60,14 +60,12 @@ public class AfterDonationService {
         entity.setIdAfterDonation(generateAfterDonationId());
         entity.setHealthCheck(healthCheck);
 
-        // 🚨 Logic xử lý trạng thái
         if (Boolean.TRUE.equals(dto.getInfectiousDiseasesChecked()) && Boolean.TRUE.equals(dto.getIsBloodUsable())) {
             entity.setStatus(AfterDonationBlood.Status.PASSED);
         } else {
             entity.setStatus(AfterDonationBlood.Status.FAILED);
         }
 
-        // Cập nhật nhóm máu nếu cần
         if (dto.getBloodId() != null) {
             Blood blood = bloodRepo.findByBloodCode(dto.getBloodId())
                     .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy Blood"));
@@ -81,7 +79,6 @@ public class AfterDonationService {
             entity.setBlood(blood);
         }
 
-        // Cập nhật lịch sử hiến máu
         bloodDonationHistoryService.updateFromAfterDonation(entity);
 
         return toDTO(afterRepo.save(entity));
@@ -92,14 +89,13 @@ public class AfterDonationService {
     public Map<String, Object> separateManually(BloodBagCreateRequest request) {
         Map<String, String> result = new HashMap<>();
 
-        // Kiểm tra các đơn máu
-        for (String id : request.getAfterDonationIds()) {
-            AfterDonationBlood after = afterRepo.findAfterDonationBloodByIdAfterDonation(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + id));
+        String afterDonationId = request.getAfterDonationId();
 
-            if (after.getStatus() != AfterDonationBlood.Status.PASSED) {
-                throw new IllegalStateException("Đơn máu " + id + " không hợp lệ hoặc đã được tách trước đó ");
-            }
+        AfterDonationBlood after = afterRepo.findAfterDonationBloodByIdAfterDonation(afterDonationId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + afterDonationId));
+
+        if (after.getStatus() != AfterDonationBlood.Status.PASSED) {
+            throw new IllegalStateException("Đơn máu " + afterDonationId + " không hợp lệ hoặc đã được tách trước đó");
         }
 
         for (BloodBagDTO dto : request.getBloodBags()) {
@@ -112,16 +108,10 @@ public class AfterDonationService {
             }
         }
 
-        // Cập nhật trạng thái các đơn máu
-        for (String id : request.getAfterDonationIds()) {
-            AfterDonationBlood after = afterRepo.findAfterDonationBloodByIdAfterDonation(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + id));
-            after.setStatus(AfterDonationBlood.Status.SEPARATED);
-            afterRepo.save(after);
-            bloodDonationHistoryService.updateFromAfterDonation(after); // cập nhật lịch sử
-
-            result.put(id, "Cập nhật trạng thái: ĐÃ TÁCH");
-        }
+        after.setStatus(AfterDonationBlood.Status.SEPARATED);
+        afterRepo.save(after);
+        bloodDonationHistoryService.updateFromAfterDonation(after);
+        result.put(afterDonationId, "Cập nhật trạng thái: ĐÃ TÁCH");
 
         for (BloodBagDTO dto : request.getBloodBags()) {
             Blood blood = bloodRepo.findById(dto.getBloodCode())
@@ -129,9 +119,6 @@ public class AfterDonationService {
 
             Component component = componentRepository.findById(dto.getComponentId())
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thành phần máu: " + dto.getComponentId()));
-
-            AfterDonationBlood after = afterRepo.findAfterDonationBloodByIdAfterDonation(dto.getAfterDonationId())
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn máu: " + dto.getAfterDonationId()));
 
             if (dto.getCollectedDate() == null) {
                 throw new IllegalArgumentException("Ngày tách máu (collectedDate) không được để trống");
@@ -160,24 +147,14 @@ public class AfterDonationService {
             bloodBagRepo.save(bag);
         }
 
-
-        return Map.of("message", "Đã tách thành công các túi máu thủ công", "after", result);
+        return Map.of("message", "Đã tách thành công túi máu thủ công", "after", result);
     }
-
-
-
-
-
-
 
     private String generateAfterDonationId() {
         String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         int rand = new Random().nextInt(900) + 100;
         return "AD-" + timestamp + "-" + rand;
     }
-
-
-
 
     @Transactional
     public void autoSeparateExpired() {

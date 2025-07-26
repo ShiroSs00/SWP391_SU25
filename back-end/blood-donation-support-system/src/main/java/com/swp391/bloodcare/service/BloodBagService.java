@@ -73,46 +73,106 @@ public class BloodBagService {
         }
     }
 
-    @Transactional
-    public List<BloodBagDTO> importFromExcel(MultipartFile file) {
-        List<BloodBagDTO> importedList = new ArrayList<>();
+    public List<String> validateBloodBagExcel(MultipartFile file) {
+        List<String> errorList = new ArrayList<>();
 
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
-
             for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
                 Row row = sheet.getRow(rowIndex);
                 if (row == null) continue;
 
                 try {
-                    BloodBagDTO dto = parseRowToDTO(row);
-                    BloodBagDTO saved = createBloodBag(dto); // dùng lại logic đã có
-                    importedList.add(saved);
+                    parseRowToDTO(row, rowIndex); // chỉ gọi để validate
                 } catch (Exception ex) {
-                    // Log lỗi từng dòng, hoặc gom lỗi lại nếu muốn
-                    System.err.println("Lỗi tại dòng " + (rowIndex + 1) + ": " + ex.getMessage());
+                    errorList.add("Dòng " + (rowIndex + 1) + ": " + ex.getMessage());
                 }
             }
-
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi khi đọc file Excel: " + e.getMessage());
+            errorList.add("Lỗi khi đọc file Excel: " + e.getMessage());
         }
 
-        return importedList;
+        return errorList;
     }
 
-    private BloodBagDTO parseRowToDTO(Row row) {
+
+    @Transactional
+    public Map<String, Object> importFromExcel(MultipartFile file) {
+        Map<String, Object> result = new HashMap<>();
+
+        // 1. Validate toàn bộ trước
+        List<String> errorList = validateBloodBagExcel(file);
+        if (!errorList.isEmpty()) {
+            result.put("successList", new ArrayList<>()); // không lưu gì cả
+            result.put("errorList", errorList);
+            return result;
+        }
+
+        // 2. Nếu không có lỗi → tiến hành lưu
+        List<BloodBagDTO> successList = new ArrayList<>();
+        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+            for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+                Row row = sheet.getRow(rowIndex);
+                if (row == null) continue;
+
+                BloodBagDTO dto = parseRowToDTO(row, rowIndex);
+                BloodBagDTO saved = createBloodBag(dto);
+                successList.add(saved);
+            }
+        } catch (Exception e) {
+            result.put("successList", new ArrayList<>());
+            result.put("errorList", List.of("❌ Lỗi không mong muốn: " + e.getMessage()));
+            return result;
+        }
+
+        result.put("successList", successList);
+        result.put("errorList", new ArrayList<>());
+        return result;
+    }
+
+
+
+    private BloodBagDTO parseRowToDTO(Row row, int rowIndex) {
         DataFormatter formatter = new DataFormatter();
 
-        String bloodCode = formatter.formatCellValue(row.getCell(0));           // Nhóm máu
-        int volume = Integer.parseInt(formatter.formatCellValue(row.getCell(1))); // 250/350/450
-        String componentId = formatter.formatCellValue(row.getCell(2));         // TP-HC/TP-HH...
-        String collectedStr = formatter.formatCellValue(row.getCell(3));        // yyyy-MM-dd
-        String expirationStr = formatter.formatCellValue(row.getCell(4));
-        String afterDonationId = formatter.formatCellValue(row.getCell(5));     // ID afterDonation
+        String bloodCode = formatter.formatCellValue(row.getCell(0)).trim();
+        String volumeStr = formatter.formatCellValue(row.getCell(1)).trim();
+        String componentId = formatter.formatCellValue(row.getCell(2)).trim();
+        String collectedStr = formatter.formatCellValue(row.getCell(3)).trim();
+        String expirationStr = formatter.formatCellValue(row.getCell(4)).trim();
+        String afterDonationId = formatter.formatCellValue(row.getCell(5)).trim();
 
-        Date collectedDate = java.sql.Date.valueOf(collectedStr);
-        Date expirationDate = java.sql.Date.valueOf(expirationStr);
+        if (bloodCode.isEmpty()) {
+            throw new IllegalArgumentException("Dòng " + (rowIndex + 1) + ": Nhóm máu không được để trống (cột 1)");
+        }
+
+        int volume;
+        try {
+            volume = Integer.parseInt(volumeStr);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Dòng " + (rowIndex + 1) + ": Dung tích không hợp lệ (cột 2): " + volumeStr);
+        }
+
+        if (componentId.isEmpty()) {
+            throw new IllegalArgumentException("Dòng " + (rowIndex + 1) + ": Thành phần không được để trống (cột 3)");
+        }
+
+        Date collectedDate;
+        try {
+            collectedDate = java.sql.Date.valueOf(collectedStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Dòng " + (rowIndex + 1) + ": Ngày thu thập không đúng định dạng yyyy-MM-dd (cột 4): " + collectedStr);
+        }
+
+        Date expirationDate;
+        try {
+            expirationDate = java.sql.Date.valueOf(expirationStr);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Dòng " + (rowIndex + 1) + ": Ngày hết hạn không đúng định dạng yyyy-MM-dd (cột 5): " + expirationStr);
+        }
+
+        String afterDonationIdValue = afterDonationId.isEmpty() ? null : afterDonationId;
 
         return BloodBagDTO.builder()
                 .bloodCode(bloodCode)
@@ -120,12 +180,12 @@ public class BloodBagService {
                 .componentId(componentId)
                 .collectedDate(collectedDate)
                 .expirationDate(expirationDate)
-                .afterDonationId(afterDonationId)
+                .afterDonationId(afterDonationIdValue)
                 .build();
     }
 
 
-    @Scheduled(cron = "0 0 0 * * ?") // Chạy mỗi ngày lúc 0h
+    @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
     public int autoUpdateExpiredStatus() {
 
@@ -161,10 +221,13 @@ public class BloodBagService {
                 .component(component)
                 .blood(bloodRepository.findByBloodCode(dto.getBloodCode())
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy nhóm máu " + dto.getBloodCode())))
-                .afterDonationBlood(afterDonationRepository.findById(dto.getAfterDonationId())
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy AfterDonationBlood với ID: " + dto.getAfterDonationId())))
+                .afterDonationBlood(dto.getAfterDonationId() != null
+                        ? afterDonationRepository.findById(dto.getAfterDonationId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy AfterDonationBlood với ID: " + dto.getAfterDonationId()))
+                        : null)
                 .build();
     }
+
 
 
 
