@@ -37,6 +37,16 @@ public class EventController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Tạo sự kiện thành công", created));
     }
 
+    @PostMapping("/notify/{id}")
+    public ResponseEntity<ApiResponse<String>> notifyOngoingEvent(
+            @PathVariable String id,
+            @RequestBody List<String> emails) {
+
+        eventService.notifyEventOngoing(id, emails);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Đã gửi thông báo sự kiện thành công", null));
+    }
+
+
 
     @PutMapping("/update/{id}")
     public ResponseEntity<ApiResponse<BloodDonationEventDTO>> update(@PathVariable String id,

@@ -28,6 +28,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final AccountRepository accountRepository;
+    private final EmailNotifier emailNotifier;
 
     public BloodDonationEventDTO createEvent(BloodDonationEventDTO dto, String accountId) {
         Account account = accountRepository.findByAccountId(accountId)
@@ -115,6 +116,61 @@ public class EventService {
         eventRepository.saveAll(allEvents);
         return updated;
     }
+
+    public void notifyEventOngoing(String eventId, List<String> recipientEmails) {
+        BloodDonationEvent event = eventRepository.findByEventId(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + eventId));
+
+        if (event.getStatus() != BloodDonationEvent.Status.ONGOING) {
+            throw new IllegalStateException("Sự kiện chưa bắt đầu hoặc đã kết thúc");
+        }
+
+        String subject = "🎉 Sự kiện hiến máu đang diễn ra!";
+
+        String htmlContent = generateEventHtmlCard(event);
+
+        recipientEmails.forEach(email -> {
+            try {
+                emailNotifier.sendHtml(email, subject, htmlContent);
+            } catch (Exception e) {
+                System.err.println("Không thể gửi email tới " + email + ": " + e.getMessage());
+            }
+        });
+    }
+
+    private String generateEventHtmlCard(BloodDonationEvent event) {
+        return """
+    <div style="max-width:600px;margin:auto;padding:20px;border-radius:15px;
+         background: linear-gradient(135deg, #f5f7fa, #c3cfe2); 
+         font-family: Arial,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
+        <h2 style="color:#d62828;text-align:center;">💉 SỰ KIỆN HIẾN MÁU ĐANG DIỄN RA 💉</h2>
+        <p><strong>Tên sự kiện:</strong> %s</p>
+        <p><strong>Thời gian:</strong> %s đến %s</p>
+        <p><strong>Địa điểm:</strong> %s</p>
+        <p><strong>Kỳ vọng:</strong> %d ml máu</p>
+        <p><strong>Kinh phí dự kiến:</strong> %d VNĐ</p>
+        <p style="margin-top:20px;color:#555;">Hãy cùng chung tay cứu người bằng hành động nhỏ nhưng ý nghĩa lớn!</p>
+        <p style="text-align:center;margin-top:30px;">
+            <a href="#" style="background-color:#d62828;color:white;padding:10px 20px;
+               border-radius:5px;text-decoration:none;font-weight:bold;">
+               THAM GIA NGAY
+            </a>
+        </p>
+    </div>
+    """.formatted(
+                event.getNameOfEvent(),
+                formatDate(event.getStartDate()),
+                formatDate(event.getEndDate()),
+                event.getLocation(),
+                event.getExpectedBloodVolume(),
+                event.getExectedCost()
+        );
+    }
+
+    private String formatDate(Date date) {
+        return new java.text.SimpleDateFormat("dd/MM/yyyy").format(date);
+    }
+
 
 
     public void updateEventStatus(BloodDonationEvent event) {
