@@ -10,7 +10,6 @@ import lombok.Data;
 @Data
 public class BloodBagCreateRequest {
 
-    @NotEmpty(message = "Danh sách các đơn máu không được để trống")
     private String afterDonationId;
 
     @NotEmpty(message = "Danh sách túi máu cần tạo không được để trống")

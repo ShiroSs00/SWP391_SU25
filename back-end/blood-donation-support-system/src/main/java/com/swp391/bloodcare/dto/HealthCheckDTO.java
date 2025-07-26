@@ -38,21 +38,12 @@ public class HealthCheckDTO {
     @DecimalMin(value = "7.0", message = "Hemoglobin quá thấp, không hợp lệ")
     private Double hemoglobin;
 
-    @NotNull(message = "Volume không được để trống")
     private Integer volumeToTake;
 
     @NotNull(message = "Chưa xác định được tình trạng đủ điều kiện hiến máu")
     private Boolean isFitToDonate;
 
     private String note;
-
-
-    @AssertTrue(message = "volumeToTake chỉ chấp nhận 0, 250, 350 hoặc 450 nếu đủ điều kiện hiến máu")
-    public boolean isVolumeValid() {
-        return !Boolean.TRUE.equals(isFitToDonate) ||
-                volumeToTake == null ||
-                Arrays.asList(0, 250, 350, 450).contains(volumeToTake);
-    }
 
     public static HealthCheck toEntity(HealthCheckDTO dto) {
         return HealthCheck.builder()
