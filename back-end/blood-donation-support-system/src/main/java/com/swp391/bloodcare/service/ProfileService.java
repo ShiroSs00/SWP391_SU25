@@ -78,10 +78,12 @@ public class ProfileService {
        try{
            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
            String currentAcc = auth.getName();
-           Account acc = accountRepository.findByAccountId(currentAcc);
-           if(acc == null){
+
+           Optional<Account> optionalAcc = accountRepository.findByAccountId(currentAcc);
+           if (optionalAcc.isEmpty()) {
                return new ApiResponse<>(false, "Không tìm thấy tài khoản", null);
            }
+           Account acc = optionalAcc.get();
 
            Profile pro = profileRepository.findByProfileId(acc.getProfile().getProfileId());
            if(dto.getName() != null) pro.setName(dto.getName());
@@ -100,6 +102,7 @@ public class ProfileService {
            }
 
            profileRepository.save(pro);
+           return new ApiResponse<>(true, "Cập nhật tài khoản thành công", null);
 
        }catch(Exception e){
            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
