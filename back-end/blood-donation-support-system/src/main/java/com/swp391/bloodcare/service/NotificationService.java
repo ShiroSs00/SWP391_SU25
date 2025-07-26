@@ -254,7 +254,7 @@ public class NotificationService {
     }
 
     public void sendDonorNotification(BloodBag bag){
-        Account donor = new Account(); // về sau khi merge thì thay
+        Account donor = bag.getAfterDonationBlood().getHealthCheck().getDonationRegistration().getAccount(); // về sau khi merge thì thay
 
         if(donor == null || donor.getEmail() == null){
             return;
