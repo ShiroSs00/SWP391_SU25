@@ -37,14 +37,12 @@ public class EventController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Tạo sự kiện thành công", created));
     }
 
-    @PostMapping("/notify/{id}")
-    public ResponseEntity<ApiResponse<String>> notifyOngoingEvent(
-            @PathVariable String id,
-            @RequestBody List<String> emails) {
-
-        eventService.notifyEventOngoing(id, emails);
-        return ResponseEntity.ok(new ApiResponse<>(true, "Đã gửi thông báo sự kiện thành công", null));
+    @PostMapping("/notify")
+    public ResponseEntity<ApiResponse<String>> notifyOngoingEventToAllMembers(@RequestParam String eventId) {
+        eventService.notifyOngoingEventToAllMembers(eventId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Gửi thiệp sự kiện cho toàn bộ MEMBER thành công", null));
     }
+
 
 
 
@@ -61,6 +59,8 @@ public class EventController {
         BloodDonationEventDTO updated = eventService.updateEvent(id, dto);
         return ResponseEntity.ok(new ApiResponse<>(true, "Cập nhật sự kiện thành công", updated));
     }
+
+
 
     @GetMapping("/getall")
     public ResponseEntity<ApiResponse<List<BloodDonationEventDTO>>> getAll() {

@@ -3,8 +3,10 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.BloodDonationEventDTO;
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.BloodDonationEvent;
+import com.swp391.bloodcare.entity.Role;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.EventRepository;
+import com.swp391.bloodcare.repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +31,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final AccountRepository accountRepository;
     private final EmailNotifier emailNotifier;
+    private final RoleRepository roleRepository;
 
     public BloodDonationEventDTO createEvent(BloodDonationEventDTO dto, String accountId) {
         Account account = accountRepository.findByAccountId(accountId)
@@ -117,7 +120,7 @@ public class EventService {
         return updated;
     }
 
-    public void notifyEventOngoing(String eventId, List<String> recipientEmails) {
+    public void notifyOngoingEventToAllMembers(String eventId) {
         BloodDonationEvent event = eventRepository.findByEventId(eventId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + eventId));
 
@@ -125,45 +128,82 @@ public class EventService {
             throw new IllegalStateException("Sự kiện chưa bắt đầu hoặc đã kết thúc");
         }
 
-        String subject = "🎉 Sự kiện hiến máu đang diễn ra!";
+        // Lấy Role MEMBER
+        Role memberRole = roleRepository.findById("MEMBER")
+                .orElseThrow(() -> new RuntimeException("Role MEMBER không tồn tại"));
 
+        // Lấy danh sách Account có role MEMBER
+        List<Account> members = accountRepository.findByRole(memberRole);
+
+        // Lọc email hợp lệ
+        List<String> emails = members.stream()
+                .map(Account::getEmail)
+                .filter(this::isValidEmail)
+                .distinct()
+                .toList();
+
+        // Tiêu đề và nội dung HTML
+        String subject = "🎉 Sự kiện hiến máu đang diễn ra!";
         String htmlContent = generateEventHtmlCard(event);
 
-        recipientEmails.forEach(email -> {
+        // Gửi mail
+        for (String email : emails) {
             try {
                 emailNotifier.sendHtml(email, subject, htmlContent);
             } catch (Exception e) {
                 System.err.println("Không thể gửi email tới " + email + ": " + e.getMessage());
             }
-        });
+        }
     }
+
+
+
+    private boolean isValidEmail(String email) {
+        return email != null && email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$");
+    }
+
+
 
     private String generateEventHtmlCard(BloodDonationEvent event) {
         return """
-    <div style="max-width:600px;margin:auto;padding:20px;border-radius:15px;
-         background: linear-gradient(135deg, #f5f7fa, #c3cfe2); 
-         font-family: Arial,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.1)">
-        <h2 style="color:#d62828;text-align:center;">💉 SỰ KIỆN HIẾN MÁU ĐANG DIỄN RA 💉</h2>
-        <p><strong>Tên sự kiện:</strong> %s</p>
-        <p><strong>Thời gian:</strong> %s đến %s</p>
-        <p><strong>Địa điểm:</strong> %s</p>
-        <p><strong>Kỳ vọng:</strong> %d ml máu</p>
-        <p><strong>Kinh phí dự kiến:</strong> %d VNĐ</p>
-        <p style="margin-top:20px;color:#555;">Hãy cùng chung tay cứu người bằng hành động nhỏ nhưng ý nghĩa lớn!</p>
-        <p style="text-align:center;margin-top:30px;">
-            <a href="#" style="background-color:#d62828;color:white;padding:10px 20px;
-               border-radius:5px;text-decoration:none;font-weight:bold;">
-               THAM GIA NGAY
-            </a>
+    <div style="max-width:600px;margin:auto;padding:20px;
+        border-radius:15px;border:2px solid #d62828;
+        background-color:#fffaf9;
+        font-family:'Segoe UI',Arial,sans-serif;
+        color:#333;
+        box-shadow:0 4px 8px rgba(214, 40, 40, 0.2)">
+
+        <div style="text-align:center;margin-bottom:20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/252/252035.png" alt="blood-icon" width="60" height="60"/>
+            <h2 style="color:#d62828;margin-top:10px;">SỰ KIỆN HIẾN MÁU 💉</h2>
+        </div>
+
+        <p><strong>🩸 Tên sự kiện:</strong> %s</p>
+        <p><strong>🕒 Thời gian:</strong> %s đến %s</p>
+        <p><strong>📍 Địa điểm:</strong> %s</p>
+
+        <p style="margin-top:20px;font-size:15px;color:#555;">
+            Mỗi giọt máu cho đi – Một cuộc đời ở lại. Hãy tham gia và lan tỏa yêu thương!
         </p>
+
+        <div style="text-align:center;margin-top:30px;">
+            <a href="localhost:5173/" style="
+                background-color:#d62828;
+                color:#fff;
+                padding:12px 24px;
+                border-radius:8px;
+                text-decoration:none;
+                font-weight:bold;
+                transition:background-color 0.3s ease;">
+                THAM GIA NGAY
+            </a>
+        </div>
     </div>
     """.formatted(
                 event.getNameOfEvent(),
                 formatDate(event.getStartDate()),
                 formatDate(event.getEndDate()),
-                event.getLocation(),
-                event.getExpectedBloodVolume(),
-                event.getExectedCost()
+                event.getLocation()
         );
     }
 
