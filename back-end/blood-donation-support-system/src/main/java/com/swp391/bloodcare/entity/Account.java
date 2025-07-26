@@ -23,7 +23,7 @@ public class Account {
 
     @Column(name = "username", unique = true, nullable = false)
     @NotBlank(message = "Tên người dùng không được để trống")
-    @Size(min = 4, max = 50, message = "Tên người dùng phải từ 4 đến 50 ký tự")
+    @Size(min = 4, max = 16, message = "Tên người dùng phải từ 4 đến 16 ký tự")
     private String userName;
 
     @Column(name = "email", unique = true, nullable = false)

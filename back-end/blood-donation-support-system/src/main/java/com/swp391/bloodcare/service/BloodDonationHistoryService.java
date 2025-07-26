@@ -104,6 +104,7 @@ public class BloodDonationHistoryService {
         //Lấy sự kiện
         if (bloodDonationHistory.getDonationRegistration() != null &&
                 bloodDonationHistory.getDonationRegistration().getEvent() != null) {
+            dto.setRegisterId(bloodDonationHistory.getDonationRegistration().getRegistrationId());
 
             dto.setEvent(bloodDonationHistory.getDonationRegistration().getEvent().getNameOfEvent());
 
@@ -120,14 +121,16 @@ public class BloodDonationHistoryService {
         if (healthCheck != null) {
 
             // Gán ID của HealthCheck
-            dto.setHealCheck(healthCheck.getHealthCheckId());
+            dto.setHealthCheck(healthCheck.getHealthCheckId());
 
             // Lấy AfterDonationBlood từ HealthCheck
             AfterDonationBlood after = healthCheck.getAfterDonationBlood();
             if (after != null && after.getBlood() != null) {
                 dto.setBloodCode(after.getBlood().getBloodCode());
-                dto.setAfterDonationBlood(after.getStatus().name());
+                dto.setAfterDonationBlood(after.getIdAfterDonation());
             }
+
+
         }
 
 
