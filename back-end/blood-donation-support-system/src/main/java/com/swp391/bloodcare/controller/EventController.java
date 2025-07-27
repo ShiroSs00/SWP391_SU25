@@ -3,11 +3,13 @@ package com.swp391.bloodcare.controller;
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.BloodDonationEventDTO;
 import com.swp391.bloodcare.entity.Account;
+import com.swp391.bloodcare.service.AccountService;
 import com.swp391.bloodcare.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 public class EventController {
 
     private final EventService eventService;
+    private final AccountService accountService;
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<BloodDonationEventDTO>> create(@Valid @RequestBody BloodDonationEventDTO dto,
@@ -38,16 +41,29 @@ public class EventController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Tạo sự kiện thành công", created));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/notify")
-    public ResponseEntity<ApiResponse<String>> notifyOngoingEventToAccounts(
+    public ResponseEntity<ApiResponse<String>> notifyOngoingEventToNearbyAccounts(
             @RequestParam String eventId,
-            @RequestBody List<Account> accounts) {
-        eventService.notifyOngoingEventToAccounts(eventId, accounts);
-        return ResponseEntity.ok(new ApiResponse<>(true, "Gửi thiệp sự kiện cho danh sách account thành công", null));
+            @RequestParam(defaultValue = "20") double radiusKm,
+            @RequestParam(required = false) List<String> bloodTypes) {
+
+        String accountId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        List<Account> nearbyAccounts = accountService.findNearbyDonors(
+                radiusKm,
+                bloodTypes,
+                accountId
+        );
+
+        eventService.notifyOngoingEventToAccounts(eventId, nearbyAccounts);
+
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Gửi thiệp sự kiện cho các người hiến gần nhất thành công",
+                null
+        ));
     }
-
-
-
 
 
 

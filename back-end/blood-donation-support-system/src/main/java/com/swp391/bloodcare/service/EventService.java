@@ -181,7 +181,8 @@ public class EventService {
         </p>
 
         <div style="text-align:center;margin-top:30px;">
-            <a href="localhost:5173/" style="
+            <a href="https://localhost:5173/" target="_blank" style="
+                display:inline-block;
                 background-color:#d62828;
                 color:#fff;
                 padding:12px 24px;
@@ -200,6 +201,7 @@ public class EventService {
                 event.getLocation()
         );
     }
+
 
     private String formatDate(Date date) {
         return new java.text.SimpleDateFormat("dd/MM/yyyy").format(date);
