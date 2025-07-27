@@ -25,4 +25,12 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, Stri
     @Query("SELECT COUNT(br) > 0 FROM BloodRequest br WHERE br.account.accountId = :accountId AND br.status = 'PENDING'")
     boolean existsPendingRequestByAccountId(@Param("accountId") String accountId);
 
+    @Query("""
+    SELECT br FROM BloodRequest br
+    JOIN br.account acc
+    JOIN acc.profile p
+    ORDER BY p.numberOfBloodDonation DESC
+""")
+    List<BloodRequest> findAllOrderByDonationDesc();
+
 }
