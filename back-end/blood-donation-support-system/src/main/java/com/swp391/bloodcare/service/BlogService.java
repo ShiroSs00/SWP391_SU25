@@ -81,9 +81,8 @@ public class BlogService {
                         : ".jpg";
                 String fileName = UUID.randomUUID() + ext;
 
-                String uploadDir = System.getProperty("java.io.tmpdir") + "/blog-thumbnails/";
+                String uploadDir = System.getProperty("user.dir") + "/uploads/blog-thumbnails/";
                 File uploadPath = new File(uploadDir);
-
                 if (!uploadPath.exists()) {
                     boolean created = uploadPath.mkdirs();
                     if (!created) {
@@ -94,7 +93,6 @@ public class BlogService {
                 File savedFile = new File(uploadPath, fileName);
                 thumbnail.transferTo(savedFile);
 
-                // ❗ Lưu đường dẫn PUBLIC để truy cập được qua controller
                 blog.setImg("/images/blog-thumbnails/" + fileName);
 
             } catch (IOException e) {
@@ -109,6 +107,7 @@ public class BlogService {
 
         return BlogDTO.toDTO(blogRepository.save(blog));
     }
+
 
 
 
