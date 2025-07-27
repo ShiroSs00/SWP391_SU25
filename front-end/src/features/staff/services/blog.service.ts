@@ -12,10 +12,19 @@ import type {
 
 export const blogService = {
     // Tạo blog mới
-    createBlog: async (blogData: CreateBlogRequest): Promise<CreateBlogResponse> => {
+    createBlog: async (blogData: CreateBlogRequest | FormData): Promise<CreateBlogResponse> => {
         try {
             console.log('Sending blog data to API:', blogData);
-            const response = await api.post<ApiResponse<CreateBlogResponse>>('/blog/create', blogData);
+            
+            // Nếu là FormData, gửi với Content-Type: multipart/form-data
+            // Nếu là CreateBlogRequest, gửi với Content-Type: application/json
+            const config = blogData instanceof FormData ? {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            } : {};
+            
+            const response = await api.post<ApiResponse<CreateBlogResponse>>('/blog/create', blogData, config);
             console.log('API response:', response.data);
             return response.data.data;
         } catch (error: unknown) {

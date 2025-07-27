@@ -3,6 +3,7 @@ import { useAfterDonation } from "../hooks/after-donation.hooks";
 import { getAllHealthChecks } from "../../health-checks/services/health-check.services";
 import { getAllDonations } from "../../donation-register/hooks/useBloodDonation";
 import { getAdminProfileByAccountId } from "../../accounts/services/accounts.services";
+import { importBloodBagsExcel } from "../services/after-donation.services";
 import AfterDonationModal from "./after-donation.modal";
 import ManualSeparateModal from "./ManualSeparateModal";
 import type { HealthCheckData } from "../../health-checks/types/health-check.types";
@@ -39,6 +40,7 @@ const AfterDonationManage: React.FC = () => {
     useState<string>("");
   const [isManualSeparateModalOpen, setIsManualSeparateModalOpen] = useState(false);
   const [selectedAfterDonationForSeparate, setSelectedAfterDonationForSeparate] = useState<AfterDonationData | null>(null);
+  const [isImportingExcel, setIsImportingExcel] = useState(false);
 
   // Toast auto-hide
   useEffect(() => {
@@ -253,6 +255,61 @@ const AfterDonationManage: React.FC = () => {
     fetchAfterDonationData(); // Refresh the list
   };
 
+  // Handle Excel import
+  const handleImportExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel'
+    ];
+    
+    if (!validTypes.includes(file.type)) {
+      setToast({ 
+        msg: "Vui lòng chọn file Excel (.xlsx hoặc .xls)", 
+        type: "error" 
+      });
+      return;
+    }
+
+    setIsImportingExcel(true);
+    try {
+      await importBloodBagsExcel(file);
+      setToast({ 
+        msg: "Import dữ liệu từ Excel thành công", 
+        type: "success" 
+      });
+      fetchAfterDonationData(); // Refresh the list
+    } catch (error: unknown) {
+      console.error('Excel import error:', error);
+      
+      let errorMessage = "Import dữ liệu từ Excel thất bại";
+      
+      if (error && typeof error === 'object') {
+        if ('response' in error && error.response && 
+            typeof error.response === 'object' && 'data' in error.response &&
+            error.response.data && typeof error.response.data === 'object' &&
+            'message' in error.response.data) {
+          errorMessage = String(error.response.data.message);
+        } else if ('message' in error) {
+          errorMessage = String(error.message);
+        }
+      }
+      setToast({ 
+        msg: errorMessage, 
+        type: "error" 
+      });
+    } finally {
+      setIsImportingExcel(false);
+      // Reset file input
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
+  };
+
   // Handle delete
   const handleDelete = async (id: string) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa bản ghi này?")) return;
@@ -337,6 +394,65 @@ const AfterDonationManage: React.FC = () => {
           </svg>
           Làm mới
         </button>
+
+        {/* Import Excel Button */}
+        <div className="relative">
+          <input
+            type="file"
+            id="excel-import"
+            accept=".xlsx,.xls"
+            onChange={handleImportExcel}
+            className="hidden"
+          />
+          <label
+            htmlFor="excel-import"
+            className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer ${
+              isImportingExcel ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            {isImportingExcel ? (
+              <>
+                <svg
+                  className="w-4 h-4 mr-2 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Đang xử lý...
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                  />
+                </svg>
+                Import Excel
+              </>
+            )}
+          </label>
+        </div>
       </div>
 
       {/* Stats */}

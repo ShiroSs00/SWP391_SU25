@@ -11,6 +11,7 @@ const staffFeatures = [
   { key: 'bloodtest', title: 'Quản lý kiểm tra máu', icon: '🧪', path: '/staff/bloodtest' },
   { key: 'receive', title: 'Quản lý nhận máu', icon: '💉', path: '/staff/receive' },
   { key: 'health', title: 'Quản lý sức khỏe', icon: '❤️', path: '/staff/health' },
+  { key: 'bloodbags', title: 'Kiểm tra túi máu', icon: '❤️', path: '/staff/bloodbags' },
 ];
 
 const StaffSidebar: React.FC<StaffSidebarProps> = ({ collapsed = false }) => {

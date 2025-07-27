@@ -4,8 +4,10 @@ import type { BloodRequest } from '../types/request-blood.types';
 
 const RequestManage: React.FC = () => {
   const { bloodRequests, loading, error, refetch } = useAllBloodRequests();
-  const { updateRequestStatus, loading: updateLoading, error: updateError, successMessage, clearMessages } = useBloodRequestStatus();
+  const { updateRequestStatus, loading: updateLoading, error: updateError, successMessage } = useBloodRequestStatus();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [dateFilter, setDateFilter] = useState<string>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ 
@@ -16,12 +18,43 @@ const RequestManage: React.FC = () => {
   }>({ isOpen: false, requestId: '', action: 'approve', requestName: '' });
   const itemsPerPage = 10;
 
-  // Filter blood requests based on search term only
+  // Filter blood requests based on search term, status, and date
   const filteredRequests = bloodRequests
     .filter((request: BloodRequest) => {
       const matchesSearch = request.requesterName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            request.bloodType?.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesSearch;
+      
+      const matchesStatus = statusFilter === 'ALL' || request.status === statusFilter;
+      
+      const matchesDate = (() => {
+        if (dateFilter === 'ALL') return true;
+        
+        const requestDate = new Date(request.requestDate);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        
+        const last7Days = new Date(today);
+        last7Days.setDate(today.getDate() - 7);
+        
+        const last30Days = new Date(today);
+        last30Days.setDate(today.getDate() - 30);
+        
+        switch (dateFilter) {
+          case 'TODAY':
+            return requestDate.toDateString() === today.toDateString();
+          case 'YESTERDAY':
+            return requestDate.toDateString() === yesterday.toDateString();
+          case 'LAST_7_DAYS':
+            return requestDate >= last7Days;
+          case 'LAST_30_DAYS':
+            return requestDate >= last30Days;
+          default:
+            return true;
+        }
+      })();
+      
+      return matchesSearch && matchesStatus && matchesDate;
     })
     .sort((a, b) => {
       // Đưa các đơn khẩn cấp lên đầu
@@ -68,7 +101,6 @@ const RequestManage: React.FC = () => {
 
   // Handle status update
   const handleStatusUpdate = async (requestId: string, action: 'approve' | 'reject', requestName: string) => {
-    clearMessages(); // Clear any previous messages
     setConfirmDialog({
       isOpen: true,
       requestId,
@@ -81,25 +113,42 @@ const RequestManage: React.FC = () => {
   const confirmStatusUpdate = async () => {
     try {
       await updateRequestStatus(confirmDialog.requestId, confirmDialog.action);
-      
-      // Use API success message if available, otherwise fallback to generic message
-      const actionText = confirmDialog.action === 'approve' ? 'duyệt' : 'từ chối';
-      const message = successMessage || `Đã ${actionText} đơn yêu cầu của ${confirmDialog.requestName} thành công!`;
-      
-      setToast({ 
-        msg: message, 
-        type: 'success' 
-      });
       refetch(); // Reload data after successful update
       setConfirmDialog({ isOpen: false, requestId: '', action: 'approve', requestName: '' });
-    } catch {
-      // Use API error message if available, otherwise fallback to generic message
-      const actionText = confirmDialog.action === 'approve' ? 'duyệt' : 'từ chối';
-      const errorMsg = updateError || `Có lỗi xảy ra khi ${actionText} đơn yêu cầu`;
-      setToast({ msg: errorMsg, type: 'error' });
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : (error as { response?: { data?: { message?: string } } })?.response?.data?.message 
+          || updateError 
+          || 'Có lỗi xảy ra khi cập nhật trạng thái';
+      
+      setToast({ 
+        msg: errorMessage, 
+        type: 'error' 
+      });
       setConfirmDialog({ isOpen: false, requestId: '', action: 'approve', requestName: '' });
     }
   };
+
+  // Watch for success message changes
+  React.useEffect(() => {
+    if (successMessage) {
+      setToast({ 
+        msg: successMessage, 
+        type: 'success' 
+      });
+    }
+  }, [successMessage]);
+
+  // Watch for error changes
+  React.useEffect(() => {
+    if (updateError) {
+      setToast({ 
+        msg: updateError, 
+        type: 'error' 
+      });
+    }
+  }, [updateError]);
 
   // Cancel confirmation
   const cancelConfirmation = () => {
@@ -223,7 +272,7 @@ const RequestManage: React.FC = () => {
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm</label>
@@ -239,6 +288,38 @@ const RequestManage: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
               </div>
+            </div>
+
+            {/* Status Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Trạng thái</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              >
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="PENDING">Chờ duyệt</option>
+                <option value="APPROVE">Đã duyệt</option>
+                <option value="REJECT">Từ chối</option>
+                <option value="CANCELLED">Đã hủy</option>
+              </select>
+            </div>
+
+            {/* Date Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Thời gian</label>
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              >
+                <option value="ALL">Tất cả thời gian</option>
+                <option value="TODAY">Hôm nay</option>
+                <option value="YESTERDAY">Hôm qua</option>
+                <option value="LAST_7_DAYS">7 ngày qua</option>
+                <option value="LAST_30_DAYS">30 ngày qua</option>
+              </select>
             </div>
           </div>
         </div>
@@ -358,7 +439,7 @@ const RequestManage: React.FC = () => {
                               </button>
                             </>
                           )}
-                          {(request.status === 'REJECT' || request.status === 'CANCELLED' || request.status === 'APPROVE') && (
+                          {request.status !== 'PENDING' && (
                             <span className="text-gray-500 text-sm">Không có thao tác</span>
                           )}
                         </div>
@@ -496,8 +577,7 @@ const RequestManage: React.FC = () => {
                 <p className="text-sm text-gray-600">
                   Bạn có chắc chắn muốn{' '}
                   <span className="font-semibold">
-                    {confirmDialog.action === 'approve' ? 'duyệt' : 
-                     confirmDialog.action === 'reject' ? 'từ chối' : 'hủy'}
+                    {confirmDialog.action === 'approve' ? 'duyệt' : 'từ chối'}
                   </span>{' '}
                   đơn yêu cầu của{' '}
                   <span className="font-semibold">{confirmDialog.requestName}</span>?
@@ -516,9 +596,7 @@ const RequestManage: React.FC = () => {
                   className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 ${
                     confirmDialog.action === 'approve' 
                       ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                      : confirmDialog.action === 'reject'
-                      ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-                      : 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500'
+                      : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
                   }`}
                 >
                   {updateLoading ? 'Đang xử lý...' : 'Xác nhận'}

@@ -97,3 +97,9 @@ export const filterEventsByEndDateRange = async (from: string, to: string): Prom
   const res = await api.get<{ data: AdminEvent[] }>(`/event/by-end-date-range?from=${from}&to=${to}`);
   return res.data.data;
 };
+
+// Thông báo sự kiện
+export const notifyEvent = async (eventId: string): Promise<{ message?: string; success?: boolean }> => {
+  const res = await api.post(`/event/notify?eventId=${eventId}`);
+  return res.data;
+};

@@ -1,6 +1,7 @@
 // Types cho tạo blog mới
 export interface CreateBlogRequest {
     blogId: string | null;
+    title: string; // Thêm field title
     content: string;
     postDate: string;
     tagName: string;

@@ -37,7 +37,7 @@ import { FeedbackWrapper } from "./features/member/components/warpprer/FeedbackW
 import { SettingsWrapper } from "./features/member/components/warpprer/SettingWrapper.tsx";
 import { EventsWrapper } from "./features/member/components/warpprer/EventsWrapper.tsx";
 import { PointsWrapper } from "./features/member/components/warpprer/PointsWrapper.tsx";
-import { UserLayout } from "./layouts/MainLayout/UserLayout.tsx";
+import { SimpleUserLayout } from "./layouts/MainLayout/UserLayout.tsx";
 import { DashboardWarpper } from "./features/member/components/warpprer/DashboardWarpper.tsx";
 import FeedbackPage from "./features/donor-feedback/pages/FeedbackPage.tsx";
 import  EventLists from "./features/event/components/EventList.tsx";
@@ -77,7 +77,7 @@ function App() {
           <Route path="/request-blood" element={<RequestBloodPage />} />
           <Route path="/events" element={<EventLists />} />
         </Route>
-        <Route path="/member" element={<UserLayout />}>
+        <Route path="/member" element={<SimpleUserLayout />}>
           <Route index element={<DashboardWarpper />} />
           <Route path="profile" element={<ProfileWrapper />} />
           <Route path="history" element={<HistoryWrapper />} />

@@ -36,3 +36,22 @@ export const manualseparateAfterDonation = async (bloodBagsData: ManualSeparateR
         throw error;
     }
 }
+
+export const importBloodBagsExcel = async (file: File) => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await api.post('/blood-bags/import-excel', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        
+        console.log('Import excel response:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Import excel service error:', error);
+        throw error;
+    }
+}

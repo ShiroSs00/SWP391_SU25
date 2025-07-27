@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { getAllEvents, createEvent, updateEvent, deleteEvent, deleteMultipleEvents, filterEventsByEndDateRange } from '../hooks/useEvents';
+import { getAllEvents, createEvent, updateEvent, deleteEvent, deleteMultipleEvents, filterEventsByEndDateRange, notifyEvent } from '../hooks/useEvents';
 import type { AdminEvent } from '../types/admin.types';
-import { FaRegEdit, FaTrashAlt, FaPlus, FaCalendarAlt } from 'react-icons/fa';
+import { FaRegEdit, FaTrashAlt, FaPlus, FaCalendarAlt, FaBell } from 'react-icons/fa';
 
 const initialForm: Omit<AdminEvent, 'eventId' | 'creationDate'> = {
   nameOfEvent: '',
@@ -81,6 +81,18 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
         fetchEvents();
       } catch {
         if (showToast) showToast('Xóa sự kiện thất bại', 'error');
+      }
+    }
+  };
+
+  const handleNotifyEvent = async (eventId: string, eventName: string) => {
+    if (window.confirm(`Bạn có chắc chắn muốn gửi thông báo cho sự kiện "${eventName}"?`)) {
+      try {
+        await notifyEvent(eventId);
+        if (showToast) showToast('Gửi thông báo sự kiện thành công', 'success');
+      } catch (error) {
+        console.error('Error notifying event:', error);
+        if (showToast) showToast('Gửi thông báo sự kiện thất bại', 'error');
       }
     }
   };
@@ -471,6 +483,13 @@ const EventTable: React.FC<{ showToast?: (msg: string, type?: 'success' | 'error
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center space-x-2">
+                        <button 
+                          className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-lg hover:bg-blue-200 focus:ring-2 focus:ring-blue-500 transition-colors"
+                          onClick={() => handleNotifyEvent(event.eventId, event.nameOfEvent)}
+                          title="Gửi thông báo sự kiện"
+                        >
+                          <FaBell className="w-3 h-3 mr-1" /> Thông báo
+                        </button>
                         <button 
                           className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-100 border border-yellow-300 rounded-lg hover:bg-yellow-200 focus:ring-2 focus:ring-yellow-500 transition-colors"
                           onClick={() => handleEdit(event)}

@@ -7,6 +7,7 @@ const BlogCreate: React.FC = () => {
     
     const [formData, setFormData] = useState<CreateBlogRequest>({
         blogId: null,
+        title: '', // Thêm field title
         content: '',
         postDate: new Date().toISOString().split('T')[0],
         tagName: '',
@@ -14,6 +15,8 @@ const BlogCreate: React.FC = () => {
         accountId: '', // Sẽ được tự động sinh bởi backend
         thumbnail: ''
     });
+
+    const [thumbnailFile, setThumbnailFile] = useState<File | null>(null); // State cho file upload
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -23,12 +26,22 @@ const BlogCreate: React.FC = () => {
         }));
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setThumbnailFile(e.target.files[0]);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         clearError();
         clearSuccess();
 
         // Validation
+        if (!formData.title.trim()) {
+            alert('Vui lòng nhập tiêu đề');
+            return;
+        }
         if (!formData.content.trim()) {
             alert('Vui lòng nhập nội dung');
             return;
@@ -37,26 +50,29 @@ const BlogCreate: React.FC = () => {
             alert('Vui lòng nhập tag');
             return;
         }
+        if (!thumbnailFile) {
+            alert('Vui lòng chọn file thumbnail');
+            return;
+        }
 
         try {
-            // Tạo request data - chỉ gửi các field cần thiết
-            const requestData = {
-                blogId: null,
-                content: formData.content,
-                postDate: formData.postDate,
-                tagName: formData.tagName,
-                img: formData.img || null,
-                accountId: null, // Backend sẽ tự động lấy từ session
-                thumbnail: formData.thumbnail || null
-            };
+            // Tạo FormData để gửi file
+            const formDataToSend = new FormData();
+            formDataToSend.append('title', formData.title);
+            formDataToSend.append('content', formData.content);
+            formDataToSend.append('tagName', formData.tagName);
+            if (thumbnailFile) {
+                formDataToSend.append('thumbnail', thumbnailFile);
+            }
             
-            console.log('Sending blog data:', requestData);
-            const result = await createBlog(requestData);
+            console.log('Sending blog data as FormData');
+            const result = await createBlog(formDataToSend);
             if (result) {
                 alert('Tạo blog thành công!');
                 // Reset form
                 setFormData({
                     blogId: null,
+                    title: '',
                     content: '',
                     postDate: new Date().toISOString().split('T')[0],
                     tagName: '',
@@ -64,6 +80,10 @@ const BlogCreate: React.FC = () => {
                     accountId: '',
                     thumbnail: ''
                 });
+                setThumbnailFile(null);
+                // Reset file input
+                const fileInput = document.getElementById('thumbnail') as HTMLInputElement;
+                if (fileInput) fileInput.value = '';
             }
         } catch (err) {
             console.error('Error creating blog:', err);
@@ -88,6 +108,23 @@ const BlogCreate: React.FC = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Title */}
+                    <div>
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                            Tiêu đề <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            value={formData.title}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Nhập tiêu đề blog..."
+                            required
+                        />
+                    </div>
+
                     {/* Content */}
                     <div>
                         <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
@@ -101,22 +138,6 @@ const BlogCreate: React.FC = () => {
                             rows={8}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
                             placeholder="Nhập nội dung blog..."
-                            required
-                        />
-                    </div>
-
-                    {/* Post Date */}
-                    <div>
-                        <label htmlFor="postDate" className="block text-sm font-medium text-gray-700 mb-2">
-                            Ngày đăng <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="date"
-                            id="postDate"
-                            name="postDate"
-                            value={formData.postDate}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                         />
                     </div>
@@ -135,6 +156,8 @@ const BlogCreate: React.FC = () => {
                             required
                         >
                             <option value="">Chọn tag</option>
+                            <option value="sức khỏe">sức khỏe</option>
+                            <option value="lifestyle">lifestyle</option>
                             <option value="Câu chuyện">Câu chuyện</option>
                             <option value="Kinh nghiệm">Kinh nghiệm</option>
                             <option value="Y học">Y học</option>
@@ -146,36 +169,25 @@ const BlogCreate: React.FC = () => {
                         </select>
                     </div>
 
-                    {/* Image URL */}
-                    <div>
-                        <label htmlFor="img" className="block text-sm font-medium text-gray-700 mb-2">
-                            URL Hình ảnh
-                        </label>
-                        <input
-                            type="url"
-                            id="img"
-                            name="img"
-                            value={formData.img || ''}
-                            onChange={handleInputChange}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="https://example.com/image.jpg"
-                        />
-                    </div>
-
-                    {/* Thumbnail URL */}
+                    {/* Thumbnail File Upload */}
                     <div>
                         <label htmlFor="thumbnail" className="block text-sm font-medium text-gray-700 mb-2">
-                            URL Thumbnail
+                            Thumbnail <span className="text-red-500">*</span>
                         </label>
                         <input
-                            type="url"
+                            type="file"
                             id="thumbnail"
                             name="thumbnail"
-                            value={formData.thumbnail || ''}
-                            onChange={handleInputChange}
+                            accept="image/*"
+                            onChange={handleFileChange}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="https://example.com/thumbnail.jpg"
+                            required
                         />
+                        {thumbnailFile && (
+                            <p className="mt-2 text-sm text-gray-600">
+                                File đã chọn: {thumbnailFile.name}
+                            </p>
+                        )}
                     </div>
 
                     {/* Submit Button */}
@@ -185,6 +197,7 @@ const BlogCreate: React.FC = () => {
                             onClick={() => {
                                 setFormData({
                                     blogId: null,
+                                    title: '',
                                     content: '',
                                     postDate: new Date().toISOString().split('T')[0],
                                     tagName: '',
@@ -192,6 +205,9 @@ const BlogCreate: React.FC = () => {
                                     accountId: '',
                                     thumbnail: ''
                                 });
+                                setThumbnailFile(null);
+                                const fileInput = document.getElementById('thumbnail') as HTMLInputElement;
+                                if (fileInput) fileInput.value = '';
                                 clearError();
                                 clearSuccess();
                             }}

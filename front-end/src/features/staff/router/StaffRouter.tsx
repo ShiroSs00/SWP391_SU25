@@ -6,6 +6,7 @@ import RequestBloodPage from '../../request-blood/pages/request-blood.page';
 import HealthCheckPage from '../../health-checks/pages/healthcheckPages';
 import AfterDonationPage from '../../after-donation/pages/after-donation.pages';
 import BlogManagePage from '../pages/BlogManagePage';
+import BloodBagManage from '../components/BloodBagManage';
 
 const StaffRouter: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const StaffRouter: React.FC = () => {
       <Route path="health" element={<HealthCheckPage />} />
       <Route path="bloodtest" element={<AfterDonationPage />} />
       <Route path="blog" element={<BlogManagePage />} />
+      <Route path="bloodbags" element={<BloodBagManage />} />
       
       {/* Fallback route cho các page chưa được phát triển */}
       <Route path="*" element={

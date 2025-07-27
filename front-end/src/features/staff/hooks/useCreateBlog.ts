@@ -7,7 +7,7 @@ export const useCreateBlog = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const createBlog = useCallback(async (blogData: CreateBlogRequest): Promise<CreateBlogResponse | null> => {
+    const createBlog = useCallback(async (blogData: CreateBlogRequest | FormData): Promise<CreateBlogResponse | null> => {
         setLoading(true);
         setError(null);
         setSuccess(false);
