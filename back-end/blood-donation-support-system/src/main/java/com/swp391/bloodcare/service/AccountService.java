@@ -109,7 +109,7 @@ public class AccountService {
             profile.setNumberOfBloodDonation(0);
 
             //chưa hoàn thiện -- này là ngày nghỉ ngơi
-            profile.setRestDate(LocalDate.now());
+            profile.setRestDate(null);
 
             profile.setCancelCount(0);
             profile.setCanRequestBlood(true);
