@@ -3,6 +3,8 @@ import { Calendar, Heart, User, Shield, Loader2, CheckCircle, AlertCircle } from
 import { createDonation } from '../hooks/useBloodDonation';
 import type { DonationCreatePayload } from '../types/donations-register.types';
 import api from '../../../services/axios/api';
+import { getProfile } from '../../request-blood/services/user.serviecs';
+import type { UserProfile } from '../../request-blood/types/request-blood.types';
 
 interface Event {
   id: string;
@@ -27,6 +29,9 @@ interface FormErrors {
 }
 
 const BloodDonationForm: React.FC = () => {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     blood_type: '',
     donation_type: '',
@@ -58,14 +63,48 @@ const BloodDonationForm: React.FC = () => {
     { value: 'voluntary', label: 'Tự nguyện' }
   ];
 
+  // Kiểm tra authentication khi component mount
   useEffect(() => {
-    if (formData.donation_type === 'event') {
+    const checkAuthentication = async () => {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        setIsAuthenticated(false);
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      try {
+        // Kiểm tra token hợp lệ bằng cách gọi API profile
+        const profile = await getProfile(token);
+        setUserProfile(profile);
+        setIsAuthenticated(true);
+        
+        setFormData(prev => ({
+          ...prev,
+          patientName: profile.name || ''
+        }));
+      } catch (err) {
+        console.error('Error loading user profile:', err);
+        // Nếu token không hợp lệ, xóa token và chuyển về trạng thái chưa đăng nhập
+        localStorage.removeItem('authToken');
+        setIsAuthenticated(false);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuthentication();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && formData.donation_type === 'event') {
       fetchEvents();
     } else {
       setEvents([]);
       setFormData(prev => ({ ...prev, event_id: '' }));
     }
-  }, [formData.donation_type]);
+  }, [formData.donation_type, isAuthenticated]);
 
   const fetchEvents = async () => {
     setIsLoadingEvents(true);
@@ -129,9 +168,9 @@ const BloodDonationForm: React.FC = () => {
     e.preventDefault();
 
     const token = localStorage.getItem('authToken');
-    if (!token) {
+    if (!token || !isAuthenticated) {
       setSubmitStatus('error');
-      setSubmitMessage('Vui lòng đăng nhập để đăng ký hiến máu');
+      setSubmitMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
       return;
     }
 
@@ -147,10 +186,10 @@ const BloodDonationForm: React.FC = () => {
         donationDate: formData.preferred_date
       };
 
-      console.log('Token:', localStorage.getItem('authToken')); // Debug token
+      console.log('Token:', localStorage.getItem('authToken'));
       console.log('Payload gửi đi:', JSON.stringify(payload, null, 2));
 
-      await createDonation(localStorage.getItem('authToken') || '', formData.donation_type === 'event' ? formData.event_id : null, payload);
+      await createDonation(token, formData.donation_type === 'event' ? formData.event_id : null, payload);
 
       setSubmitStatus('success');
       setSubmitMessage('Đăng ký hiến máu thành công! Chúng tôi sẽ liên hệ với bạn sớm.');
@@ -164,10 +203,18 @@ const BloodDonationForm: React.FC = () => {
       });
     } catch (error: any) {
       console.error('Lỗi chi tiết:', error.response ? error.response.data : error.message);
+      
+      // Kiểm tra nếu lỗi là do unauthorized
+      if (error.response?.status === 401) {
+        localStorage.removeItem('authToken');
+        setIsAuthenticated(false);
+        setSubmitMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      } else {
+        setSubmitMessage(
+          error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký. Vui lòng thử lại sau.'
+        );
+      }
       setSubmitStatus('error');
-      setSubmitMessage(
-        error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký. Vui lòng thử lại sau. Bạn cần đăng nhập để tạo đơn hiến máu. Cảm ơn bạn.'
-      );
     } finally {
       setIsLoading(false);
     }
@@ -178,9 +225,31 @@ const BloodDonationForm: React.FC = () => {
     return today.toISOString().split('T')[0];
   };
 
-  // Kiểm tra token
-  const token = localStorage.getItem('authToken');
-  if (!token) {
+  const handleLogin = () => {
+    window.location.href = '/login';
+  };
+
+  const handleGoHome = () => {
+    window.location.href = '/';
+  };
+
+  // Hiển thị loading khi đang kiểm tra authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border border-red-100">
+          <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Loader2 className="w-10 h-10 text-white animate-spin" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Đang kiểm tra...</h2>
+          <p className="text-gray-600">Vui lòng đợi trong giây lát</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Hiển thị màn hình yêu cầu đăng nhập nếu chưa authenticate
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border border-red-100">
@@ -188,18 +257,27 @@ const BloodDonationForm: React.FC = () => {
             <Shield className="w-10 h-10 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3">Cần đăng nhập</h2>
-          <p className="text-gray-600 mb-6">Bạn cần đăng nhập để tạo yêu cầu hiến máu.</p>
-          <button
-            onClick={() => window.location.href = '/login'}
-            className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
-          >
-            Đăng nhập ngay
-          </button>
+          <p className="text-gray-600 mb-6">Bạn cần đăng nhập để đăng ký hiến máu.</p>
+          <div className="space-y-3">
+            <button 
+              onClick={handleLogin}
+              className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              Đăng nhập ngay
+            </button>
+            <button 
+              onClick={handleGoHome}
+              className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-all duration-300"
+            >
+              Về trang chủ
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Form chính chỉ hiển thị khi đã đăng nhập
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-lg">
       <div className="text-center mb-8">
@@ -210,6 +288,9 @@ const BloodDonationForm: React.FC = () => {
         </div>
         <h2 className="text-3xl font-bold text-gray-900 mb-2">Đăng ký hiến máu</h2>
         <p className="text-gray-600">Hãy cùng chúng tôi cứu sống những sinh mệnh quý giá</p>
+        {userProfile && (
+          <p className="text-sm text-gray-500 mt-2">Chào mừng, {userProfile.name}!</p>
+        )}
       </div>
 
       {submitStatus === 'success' && (
@@ -222,12 +303,22 @@ const BloodDonationForm: React.FC = () => {
       {submitStatus === 'error' && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center">
           <AlertCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0" />
-          <p className="text-red-800">{submitMessage}</p>
+          <div className="flex-1">
+            <p className="text-red-800">{submitMessage}</p>
+            {submitMessage.includes('đăng nhập') && (
+              <button 
+                onClick={handleLogin}
+                className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+              >
+                Đăng nhập ngay
+              </button>
+            )}
+          </div>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* <div>
+        <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             <User className="w-4 h-4 inline mr-2" />
             Nhóm máu *
@@ -246,7 +337,7 @@ const BloodDonationForm: React.FC = () => {
             ))}
           </select>
           {errors.blood_type && <p className="mt-1 text-sm text-red-600">{errors.blood_type}</p>}
-        </div> */}
+        </div>
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -314,21 +405,6 @@ const BloodDonationForm: React.FC = () => {
           />
           {errors.preferred_date && <p className="mt-1 text-sm text-red-600">{errors.preferred_date}</p>}
         </div>
-
-        {/* <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            <FileText className="w-4 h-4 inline mr-2" />
-            Ghi chú
-          </label>
-          <textarea
-            name="note"
-            value={formData.note}
-            onChange={handleInputChange}
-            rows={4}
-            placeholder="Thông tin bổ sung (tình trạng sức khỏe, yêu cầu đặc biệt...)"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors resize-none"
-          />
-        </div> */}
 
         <button
           type="submit"

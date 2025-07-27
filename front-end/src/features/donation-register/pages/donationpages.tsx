@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Shield, Loader2 } from 'lucide-react';
 import { getAllEvents } from '../../event/hooks/useEvents';
+import { getProfile } from '../../request-blood/services/user.serviecs';
 import type { AdminEvent } from '../../admin/types/admin.types';
+import type { UserProfile } from '../../request-blood/types/request-blood.types';
 import DonationCreate from '../components/donation-create';
 
 /**
@@ -19,11 +22,17 @@ const getAccountId = () => {
 /**
  * Component chính quản lý trang đăng ký hiến máu
  * Chức năng:
+ * - Kiểm tra authentication trước khi render
  * - Fetch danh sách events từ API
  * - Quản lý toast notifications
  * - Truyền dữ liệu xuống component con
  */
 const DonationPages: React.FC = () => {
+  // State quản lý authentication
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  
   // State quản lý danh sách sự kiện
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,9 +45,43 @@ const DonationPages: React.FC = () => {
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   /**
-   * useEffect: Fetch danh sách events khi component mount
+   * useEffect: Kiểm tra authentication khi component mount
    */
   useEffect(() => {
+    const checkAuthentication = async () => {
+      const token = localStorage.getItem('authToken');
+      
+      if (!token) {
+        setIsAuthenticated(false);
+        setIsCheckingAuth(false);
+        return;
+      }
+
+      try {
+        // Kiểm tra token hợp lệ bằng cách gọi API profile
+        const profile = await getProfile(token);
+        setUserProfile(profile);
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error('Error loading user profile:', err);
+        // Nếu token không hợp lệ, xóa token và chuyển về trạng thái chưa đăng nhập
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user'); // Xóa cả user info
+        setIsAuthenticated(false);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuthentication();
+  }, []);
+
+  /**
+   * useEffect: Fetch danh sách events khi đã authenticate
+   */
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
     console.log('Fetching events...');
     setLoading(true);
     getAllEvents()
@@ -55,7 +98,7 @@ const DonationPages: React.FC = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [isAuthenticated]);
 
   /**
    * Hàm hiển thị toast notification
@@ -69,6 +112,65 @@ const DonationPages: React.FC = () => {
     setTimeout(() => setShowToastMsg(null), 3000);
   };
 
+  /**
+   * Xử lý đăng nhập
+   */
+  const handleLogin = () => {
+    window.location.href = '/login';
+  };
+
+  /**
+   * Xử lý về trang chủ
+   */
+  const handleGoHome = () => {
+    window.location.href = '/';
+  };
+
+  // Hiển thị loading khi đang kiểm tra authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border border-red-100">
+          <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Loader2 className="w-10 h-10 text-white animate-spin" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Đang kiểm tra...</h2>
+          <p className="text-gray-600">Vui lòng đợi trong giây lát</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Hiển thị màn hình yêu cầu đăng nhập nếu chưa authenticate
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-pink-50 to-rose-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border border-red-100">
+          <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Shield className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Cần đăng nhập</h2>
+          <p className="text-gray-600 mb-6">Bạn cần đăng nhập để đăng ký hiến máu.</p>
+          <div className="space-y-3">
+            <button 
+              onClick={handleLogin}
+              className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            >
+              Đăng nhập ngay
+            </button>
+            <button 
+              onClick={handleGoHome}
+              className="w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-all duration-300"
+            >
+              Về trang chủ
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render trang chính khi đã đăng nhập
   return (
     <div className="min-h-screen">
       {/* Toast Notification */}
@@ -95,7 +197,7 @@ const DonationPages: React.FC = () => {
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Main Content - chỉ render khi đã đăng nhập */}
       <DonationCreate 
         events={events} 
         accountId={accountId} 
