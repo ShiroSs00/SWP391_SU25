@@ -325,8 +325,11 @@ export const getAchievements = async (): Promise<Achievement[]> => {
       dateUnlocked: item.achieved ? item.dateCreated : undefined,
       // Additional fields
       achievementId: item.achievementId,
-      name: item.achievementName,
-      achieved: item.achieved
+      achievementName: item.achievementName,
+      achieved: item.achieved,
+      minValue: item.minValue,
+      maxValue: item.maxValue,
+
     }));
   } catch (error) {
     console.error('Error fetching achievements:', error);

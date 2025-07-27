@@ -160,16 +160,16 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
   };
 
 
-  const handleHealthCheckView = async (registrationId: string) => {
+  const handleHealthCheckView = async (registerId: string) => {
     console.log('=== HANDLE HEALTH CHECK VIEW DEBUG ===');
-    console.log('Received registerId:', registrationId);
-    console.log('Type:', typeof registrationId);
-    console.log('Length:', registrationId?.length);
-    console.log('Is empty?', registrationId === '');
-    console.log('Is undefined?', registrationId === undefined);
-    console.log('Is null?', registrationId === null);
+    console.log('Received registerId:', registerId);
+    console.log('Type:', typeof registerId);
+    console.log('Length:', registerId?.length);
+    console.log('Is empty?', registerId === '');
+    console.log('Is undefined?', registerId === undefined);
+    console.log('Is null?', registerId === null);
 
-    if (!registrationId || registrationId === '' || registrationId === 'undefined') {
+    if (!registerId || registerId === '' || registerId === 'undefined') {
       alert('Không có registerId hợp lệ để tải dữ liệu');
       return;
     }
@@ -185,8 +185,8 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         return;
       }
 
-      console.log('About to call API with registerId:', registrationId);
-      const response = await getHealthCheckByRegisterId(registrationId, token);
+      console.log('About to call API with registerId:', registerId);
+      const response = await getHealthCheckByRegisterId(registerId, token);
 
       if (response.success && response.data) {
         setHealthCheckData(response.data);
@@ -204,7 +204,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
     }
   };
 
-  const handleAfterDonationView = async (registrationId: string) => {
+  const handleAfterDonationView = async (registerId: string) => {
     setModalLoading(true);
     setAfterDonationModalOpen(true);
 
@@ -216,9 +216,9 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         return;
       }
 
-      console.log('Calling getHealthCheckByRegisterId for after donation with:', registrationId);
+      console.log('Calling getHealthCheckByRegisterId for after donation with:', registerId);
       // First get health check to get healthCheckId
-      const healthCheckResponse = await getHealthCheckByRegisterId(registrationId, token);
+      const healthCheckResponse = await getHealthCheckByRegisterId(registerId, token);
 
       if (healthCheckResponse.success && healthCheckResponse.data?.healthCheckId) {
         const afterDonationResponse = await getAfterDonationByHealthCheckId(
