@@ -56,6 +56,7 @@ public class SecurityConfig {
                         //Public GET cần đăng nhập
                         .requestMatchers(HttpMethod.GET, "/api/healthcheck/get-by-registration/").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/after-donation/get-by-healthcheck/").authenticated()
+                        .requestMatchers(HttpMethod.PUT,"/api/accounts/change-password/").authenticated()
 
 
                         // Role-based
@@ -68,6 +69,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/blog/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/auth/set-role/**").hasRole("ADMIN")
                         .requestMatchers("/api/gmail/**").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/accounts/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/blood-requests/{requestId}/approve").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/blood-requests/{requestId}/reject").hasAnyRole("ADMIN", "STAFF")
+
 
                         // Tất cả còn lại yêu cầu login
                         .anyRequest().authenticated()
