@@ -1045,6 +1045,7 @@ const AfterDonationManage: React.FC = () => {
           onClose={handleCloseManualSeparateModal}
           afterDonation={selectedAfterDonationForSeparate}
           onSuccess={handleManualSeparateSuccess}
+          refreshedAfterDonationData={afterDonationData}
         />
       )}
     </div>

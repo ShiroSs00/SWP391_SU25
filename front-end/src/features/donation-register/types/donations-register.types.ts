@@ -31,6 +31,7 @@ export interface DonationCreatePayload {
   dateCreated: string; // ISO date string
   healthCheckId: string | null;
   donorFeedbackId: string | null;
+  volumeToTake: number; // thêm lượng máu hiến (ml)
 }
 
 export interface DonationUpdatePayload {

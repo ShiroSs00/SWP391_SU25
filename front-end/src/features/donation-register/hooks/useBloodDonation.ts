@@ -40,10 +40,18 @@ export const filterDonations = async (params: DonationFilterParams): Promise<Don
 // Tạo mới đăng ký hiến máu
 export const createDonation = async (token: string, eventId: string | null, payload: Partial<DonationCreatePayload>): Promise<void> => {
   const endpoint = eventId ? `/donation/create/${eventId}` : '/donation/create';
-  const res = await api.post(endpoint, {
+  
+  const requestPayload = {
     donationDate: payload.donationDate,
+    volumeToTake: payload.volumeToTake,
     eventId: eventId || '', // Use default event ID if none is provided
-  }, {
+  };
+  
+  console.log('API endpoint:', endpoint);
+  console.log('Request payload:', JSON.stringify(requestPayload, null, 2));
+  console.log('Token:', token ? 'Token có sẵn' : 'Token không có');
+  
+  const res = await api.post(endpoint, requestPayload, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`

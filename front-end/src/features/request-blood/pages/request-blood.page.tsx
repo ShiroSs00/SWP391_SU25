@@ -162,3 +162,4 @@ export const RequestBloodPage: React.FC = () => {
     </div>
   );
 };
+export default RequestBloodPage;

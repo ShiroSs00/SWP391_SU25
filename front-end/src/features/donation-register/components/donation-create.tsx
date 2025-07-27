@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
-import { Calendar, Heart, User, FileText, Loader2, CheckCircle, AlertCircle, MapPin, Clock, Users, Info, HelpCircle, Droplets, Shield, Award } from 'lucide-react';
+import { Calendar, Heart, FileText, Loader2, CheckCircle, AlertCircle, MapPin, Clock, Users, Info, HelpCircle, Droplets, Shield, Award } from 'lucide-react';
 import { createDonation } from '../hooks/useBloodDonation';
 import type { DonationCreatePayload } from '../types/donations-register.types';
 import type { AdminEvent } from '../../admin/types/admin.types';
-
-interface Event {
-  eventId: string;
-  nameOfEvent: string;
-  eventDate: string;
-  location: string;
-}
 
 interface DonationCreateProps {
   events: AdminEvent[];
@@ -24,6 +17,7 @@ interface FormData {
   eventId: string;
   donationDate: string;
   note: string;
+  volumeToTake: string;
 }
 
 interface FormErrors {
@@ -31,20 +25,25 @@ interface FormErrors {
   donationType?: string;
   eventId?: string;
   donationDate?: string;
+  volumeToTake?: string;
 }
 
 const DonationCreate: React.FC<DonationCreateProps> = ({ 
   events, 
-  accountId, 
   showToast, 
   hideStatus = false 
 }) => {
+  // Debug events
+  console.log('Events received in DonationCreate:', events);
+  console.log('Events length:', events?.length || 0);
+  
   const [formData, setFormData] = useState<FormData>({
     bloodType: '',
     donationType: '',
     eventId: '',
     donationDate: '',
-    note: ''
+    note: '',
+    volumeToTake: '350'
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -53,16 +52,6 @@ const DonationCreate: React.FC<DonationCreateProps> = ({
   const [showBloodTypeGuide, setShowBloodTypeGuide] = useState(false);
   const [showBenefitsInfo, setShowBenefitsInfo] = useState(false);
 
-  const bloodTypes = [
-    { value: 'A+', label: 'A+', color: 'bg-red-100 text-red-800 border-red-200 hover:bg-red-200', description: 'Có thể hiến cho A+, AB+', compatibility: 'Tương thích với 34% dân số', rarity: 'Phổ biến' },
-    { value: 'A-', label: 'A-', color: 'bg-red-200 text-red-900 border-red-300 hover:bg-red-300', description: 'Có thể hiến cho A+, A-, AB+, AB-', compatibility: 'Tương thích với 42% dân số', rarity: 'Ít gặp' },
-    { value: 'B+', label: 'B+', color: 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200', description: 'Có thể hiến cho B+, AB+', compatibility: 'Tương thích với 21% dân số', rarity: 'Phổ biến' },
-    { value: 'B-', label: 'B-', color: 'bg-blue-200 text-blue-900 border-blue-300 hover:bg-blue-300', description: 'Có thể hiến cho B+, B-, AB+, AB-', compatibility: 'Tương thích với 23% dân số', rarity: 'Hiếm' },
-    { value: 'AB+', label: 'AB+', color: 'bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200', description: 'Chỉ hiến cho AB+', compatibility: 'Người nhận vạn năng', rarity: 'Hiếm nhất' },
-    { value: 'AB-', label: 'AB-', color: 'bg-purple-200 text-purple-900 border-purple-300 hover:bg-purple-300', description: 'Có thể hiến cho AB+, AB-', compatibility: 'Rất quý hiếm', rarity: 'Cực hiếm' },
-    { value: 'O+', label: 'O+', color: 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200', description: 'Có thể hiến cho tất cả nhóm máu dương', compatibility: 'Hiến cho 85% dân số', rarity: 'Phổ biến nhất' },
-    { value: 'O-', label: 'O-', color: 'bg-green-200 text-green-900 border-green-300 hover:bg-green-300', description: 'Hiến cho tất cả nhóm máu', compatibility: 'Người hiến vạn năng', rarity: 'Quý giá nhất' }
-  ];
 
   const donationTypes = [
     { value: 'event', label: 'Tham gia sự kiện', description: 'Hiến máu tại các sự kiện được tổ chức', benefits: ['Có bác sĩ chuyên khoa', 'Môi trường an toàn', 'Nhiều người tham gia'], icon: Calendar, color: 'border-blue-500 bg-blue-50' },
@@ -92,6 +81,15 @@ const DonationCreate: React.FC<DonationCreateProps> = ({
       today.setHours(0, 0, 0, 0);
       if (selectedDate < today) {
         newErrors.donationDate = 'Ngày hiến máu không thể là ngày trong quá khứ';
+      }
+    }
+
+    if (!formData.volumeToTake) {
+      newErrors.volumeToTake = 'Vui lòng chọn lượng máu hiến';
+    } else {
+      const volume = parseInt(formData.volumeToTake);
+      if (volume < 250 || volume > 500) {
+        newErrors.volumeToTake = 'Lượng máu hiến phải từ 250ml đến 500ml';
       }
     }
 
@@ -132,14 +130,30 @@ const DonationCreate: React.FC<DonationCreateProps> = ({
     setSubmitStatus('idle');
 
     try {
+      // Debug volumeToTake conversion
+      const volumeValue = parseInt(formData.volumeToTake);
+      console.log('Raw volumeToTake:', formData.volumeToTake);
+      console.log('Parsed volumeToTake:', volumeValue);
+      console.log('Is NaN?', isNaN(volumeValue));
+
+      // Validate volumeValue
+      if (isNaN(volumeValue) || volumeValue < 250 || volumeValue > 500) {
+        showToast('❌ Lỗi: Lượng máu hiến không hợp lệ', 'error');
+        setIsLoading(false);
+        return;
+      }
+
       const payload: Partial<DonationCreatePayload> = {
         donationDate: formData.donationDate,
+        volumeToTake: volumeValue,
       };
 
-      console.log('Token:', localStorage.getItem('token')); // Debug token
+      console.log('Token:', localStorage.getItem('authToken')); // Debug token
+      console.log('Event ID:', formData.donationType === 'event' ? formData.eventId : null);
+      console.log('Form data:', JSON.stringify(formData, null, 2));
       console.log('Payload gửi đi:', JSON.stringify(payload, null, 2));
 
-      await createDonation(localStorage.getItem('token') || '', formData.donationType === 'event' ? formData.eventId : null, payload);
+      await createDonation(localStorage.getItem('authToken') || '', formData.donationType === 'event' ? formData.eventId : null, payload);
 
       setSubmitStatus('success');
       showToast('🎉 Đăng ký hiến máu thành công! Chúng tôi sẽ liên hệ với bạn sớm.', 'success');
@@ -149,13 +163,24 @@ const DonationCreate: React.FC<DonationCreateProps> = ({
         donationType: '',
         eventId: '',
         donationDate: '',
-        note: ''
+        note: '',
+        volumeToTake: '350'
       });
-    } catch (error: any) {
-      console.error('Lỗi chi tiết:', error.response ? error.response.data : error.message);
-      setSubmitStatus('error');
-      const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký. Vui lòng thử lại sau.';
-      showToast(`❌ ${errorMessage}`, 'error');
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        console.error(
+          'Lỗi chi tiết:',
+          error.response ? (error.response as { data?: unknown }).data : (typeof (error as unknown) === 'object' && error !== null && 'message' in error ? (error as { message: string }).message : String(error))
+        );
+        setSubmitStatus('error');
+        // @ts-expect-error: error.response is possibly from axios
+        const errorMessage = error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký. Vui lòng thử lại sau.';
+        showToast(`❌ ${errorMessage}`, 'error');
+      } else {
+        console.error('Lỗi chi tiết:', (error as Error).message);
+        setSubmitStatus('error');
+        showToast('❌ Có lỗi xảy ra khi đăng ký. Vui lòng thử lại sau.', 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -361,7 +386,15 @@ const DonationCreate: React.FC<DonationCreateProps> = ({
                     <button
                       key={type.value}
                       type="button"
-                      onClick={() => handleInputChange({ target: { name: 'donationType', value: type.value } } as any)}
+                      onClick={() => {
+                        const event = {
+                          target: {
+                            name: 'donationType',
+                            value: type.value
+                          }
+                        } as React.ChangeEvent<HTMLInputElement>;
+                        handleInputChange(event);
+                      }}
                       className={`p-6 rounded-xl border-2 transition-all duration-300 hover:scale-105 text-left ${
                         formData.donationType === type.value
                           ? `${type.color} shadow-lg scale-105`
@@ -413,7 +446,15 @@ const DonationCreate: React.FC<DonationCreateProps> = ({
                       <button
                         key={event.eventId}
                         type="button"
-                        onClick={() => handleInputChange({ target: { name: 'eventId', value: event.eventId } } as any)}
+                        onClick={() => {
+                          const syntheticEvent = {
+                            target: {
+                              name: 'eventId',
+                              value: event.eventId
+                            }
+                          } as React.ChangeEvent<HTMLInputElement>;
+                          handleInputChange(syntheticEvent);
+                        }}
                         className={`w-full p-6 rounded-xl border-2 transition-all duration-300 hover:scale-105 text-left ${
                           formData.eventId === event.eventId
                             ? 'border-red-500 bg-red-50 shadow-lg scale-105'
@@ -477,6 +518,73 @@ const DonationCreate: React.FC<DonationCreateProps> = ({
                 <p className="text-red-600 text-sm flex items-center">
                   <AlertCircle className="w-4 h-4 mr-2" />
                   {errors.donationDate}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-6">
+              <label className="block text-xl font-bold text-gray-800">
+                <Droplets className="w-6 h-6 inline mr-3 text-red-500" />
+                Lượng máu hiến *
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { value: '250', label: '250ml', description: 'Cơ bản - Phù hợp người mới', recommended: false },
+                  { value: '350', label: '350ml', description: 'Tiêu chuẩn - Được khuyến nghị', recommended: true },
+                  { value: '450', label: '450ml', description: 'Tối đa - Cho người có kinh nghiệm', recommended: false }
+                ].map(option => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      const event = {
+                        target: {
+                          name: 'volumeToTake',
+                          value: option.value
+                        }
+                      } as React.ChangeEvent<HTMLInputElement>;
+                      handleInputChange(event);
+                    }}
+                    className={`p-6 rounded-xl border-2 transition-all duration-300 hover:scale-105 text-center relative ${
+                      formData.volumeToTake === option.value
+                        ? 'border-red-500 bg-red-50 shadow-lg scale-105'
+                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100'
+                    }`}
+                  >
+                    {option.recommended && (
+                      <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-bold">
+                        Khuyến nghị
+                      </div>
+                    )}
+                    <div className="text-3xl font-bold mb-2 text-red-600">{option.label}</div>
+                    <div className="text-sm font-semibold text-gray-700 mb-1">{option.description}</div>
+                    <div className="text-xs text-gray-500">
+                      {option.value === '250' && 'Phù hợp cho lần đầu hiến máu'}
+                      {option.value === '350' && 'Lượng hiến máu chuẩn quốc tế'}
+                      {option.value === '450' && 'Giúp cứu nhiều sinh mệnh hơn'}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <Info className="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <div className="text-blue-800">
+                    <p className="font-semibold">Thông tin về lượng máu hiến:</p>
+                    <p className="text-sm mt-1">
+                      • 1 đơn vị máu (350ml) có thể cứu sống 3 người<br/>
+                      • Cơ thể sẽ tự phục hồi hoàn toàn trong 24-48 giờ<br/>
+                      • Lượng máu được chọn phù hợp với cân nặng và sức khỏe của bạn
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {errors.volumeToTake && (
+                <p className="text-red-600 text-sm flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  {errors.volumeToTake}
                 </p>
               )}
             </div>

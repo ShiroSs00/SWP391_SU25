@@ -15,8 +15,6 @@ import { cn } from "../../lib/utils";
 import { getUserFromLocalStorage, triggerUserStateChange } from "../../lib/userUtils";
 
 export interface HeaderProps {
-    onMenuClick?: () => void
-    showMenuButton?: boolean
     className?: string
 }
 
@@ -41,13 +39,11 @@ function useUserState() {
     return user;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick, showMenuButton = false, className }) => {
+const Header: React.FC<HeaderProps> = ({ className }) => {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const user = useUserState();
-
-
     // Menu items
     const menuItems = [
         { name: 'Trang Chủ', href: '/' },

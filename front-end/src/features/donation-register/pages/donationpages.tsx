@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllEvents } from '../../event/hooks/useEvents';
-import type { AdminEvent } from '../../event/types/admin.types';
+import type { AdminEvent } from '../../admin/types/admin.types';
 import DonationCreate from '../components/donation-create';
 
 /**
@@ -26,6 +26,7 @@ const getAccountId = () => {
 const DonationPages: React.FC = () => {
   // State quản lý danh sách sự kiện
   const [events, setEvents] = useState<AdminEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   
   // Lấy account ID từ localStorage
   const accountId = getAccountId();
@@ -38,11 +39,21 @@ const DonationPages: React.FC = () => {
    * useEffect: Fetch danh sách events khi component mount
    */
   useEffect(() => {
+    console.log('Fetching events...');
+    setLoading(true);
     getAllEvents()
-      .then(setEvents)
+      .then(data => {
+        console.log('Events fetched successfully:', data);
+        console.log('Events count:', data.length);
+        setEvents(data);
+      })
       .catch(error => {
         console.error('Error fetching events:', error);
         setEvents([]); // Set empty array if fetch fails
+        showToast('❌ Không thể tải danh sách sự kiện', 'error');
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, []);
 
