@@ -3,7 +3,8 @@ import { History, Droplet } from 'lucide-react';
 import HistoryTable from '../components/HistoryTable';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
-import type { DonationRecord, DonorFeedback } from '../types/dashboard.type';
+import type { DonationRecord } from '../types/dashboard.type';
+import type { CreateFeedbackRequest } from '../../donor-feedback/types/feedback.types';
 
 interface HistoryPageProps {
   donationHistory: DonationRecord[];
@@ -12,10 +13,10 @@ interface HistoryPageProps {
   loading: boolean;
   error: string | null;
   onTabChange: (tab: 'donation' | 'receiving') => void;
-  onFeedback: (recordId: string, feedbackData?: DonorFeedback) => void; // Cập nhật để khớp với HistoryTable
+  onFeedback: (recordId: string, feedbackData?: CreateFeedbackRequest) => Promise<void>; // Fixed type
   onRetry: () => void;
-  onEditBloodRequest?: (recordId: string) => void; // Thêm prop tùy chọn
-  onRefresh?: () => void; // Thêm prop tùy chọn
+  onEditBloodRequest?: (recordId: string) => void;
+  onRefresh?: () => void;
 }
 
 const HistoryPage: React.FC<HistoryPageProps> = ({
@@ -100,7 +101,7 @@ const HistoryPage: React.FC<HistoryPageProps> = ({
           <HistoryTable
             records={currentRecords}
             type={historyTab}
-            onFeedback={onFeedback}
+            onFeedback={onFeedback} // Now matches the expected type
             onEditBloodRequest={onEditBloodRequest}
             onRefresh={onRefresh}
           />

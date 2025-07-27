@@ -173,12 +173,12 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                                         </DropdownMenuLabel>
                                         <DropdownMenuSeparator />
 
-                                        <DropdownMenuItem asChild className="py-2 px-4 hover:bg-blue-50 focus:bg-blue-50">
+                                        {/* <DropdownMenuItem asChild className="py-2 px-4 hover:bg-blue-50 focus:bg-blue-50">
                                             <Link to="/member/profile" className="cursor-pointer flex items-center">
                                                 <User className="mr-3 h-4 w-4 text-blue-600" />
                                                 <span className="text-sm">Hồ sơ cá nhân</span>
                                             </Link>
-                                        </DropdownMenuItem>
+                                        </DropdownMenuItem> */}
 
                                         <DropdownMenuItem asChild className="py-2 px-4 hover:bg-green-50 focus:bg-green-50">
                                             <Link to="/member/dashboard" className="cursor-pointer flex items-center">
@@ -187,12 +187,12 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
                                             </Link>
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem asChild className="py-2 px-4 hover:bg-purple-50 focus:bg-purple-50">
+                                        {/* <DropdownMenuItem asChild className="py-2 px-4 hover:bg-purple-50 focus:bg-purple-50">
                                             <Link to="/member/settings" className="cursor-pointer flex items-center">
                                                 <Settings className="mr-3 h-4 w-4 text-purple-600" />
                                                 <span className="text-sm">Cài đặt</span>
                                             </Link>
-                                        </DropdownMenuItem>
+                                        </DropdownMenuItem> */}
 
                                         <DropdownMenuSeparator />
 

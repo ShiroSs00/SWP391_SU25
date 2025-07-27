@@ -8,6 +8,9 @@ import AfterDonationModal from './AfterDonationModal';
 import RatingStars from '../../donor-feedback/components/RatingStars';
 import type { CreateFeedbackRequest } from '../../donor-feedback/types/feedback.types';
 import { getHealthCheckByRegisterId, getAfterDonationByHealthCheckId } from '../services/dashboard.service';
+import { getFeedbackByRegistrationId } from '../../donor-feedback/services/feedback.service';
+import { useEffect } from 'react';
+
 
 interface HistoryTableProps {
   records: DonationRecord[];
@@ -35,6 +38,8 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
   const [afterDonationModalOpen, setAfterDonationModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<DonationRecord | null>(null);
 
+  const [feedbackData, setFeedbackData] = useState<{ [key: string]: any }>({});
+  const [loadingFeedback, setLoadingFeedback] = useState<{ [key: string]: boolean }>({});
   // State for modal data
   const [healthCheckData, setHealthCheckData] = useState<any>(null);
   const [afterDonationData, setAfterDonationData] = useState<any>(null);
@@ -144,10 +149,14 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
       record.status?.toUpperCase() === 'PENDING' &&
       onEditBloodRequest;
   };
-
   const canProvideFeedback = (record: DonationRecord) => {
     if (type !== 'donation') return false;
-    const allowedStatuses = ['COMPLETED', 'SUCCESS', 'SEPARATED', 'DONATION_PROCESSING'];
+    const allowedStatuses = ['COMPLETED', 'HEALTH_CHECK_PASSED', 'DONATION_COMPLETED_USABLE', 'DONATION_PROCESSING', 'HEALTH_CHECK_FAILED'];
+    console.log('=== CAN PROVIDE FEEDBACK DEBUG ===');
+    console.log('Record status:', record.status);
+    console.log('Status uppercase:', record.status?.toUpperCase());
+    console.log('Allowed statuses:', allowedStatuses);
+    console.log('Status included?', allowedStatuses.includes(record.status?.toUpperCase() || ''));
     return allowedStatuses.includes(record.status?.toUpperCase() || '');
   };
 
@@ -159,17 +168,95 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
     return type === 'donation' && record.afterDonationBlood;
   };
 
+  const fetchFeedbackForRecord = async (registrationId: string) => {
+    console.log('=== FETCH FEEDBACK DEBUG ===');
+    console.log('1. Input registrationId:', registrationId);
+    console.log('2. Current feedbackData:', feedbackData);
+    console.log('3. Current loadingFeedback:', loadingFeedback);
+    console.log('4. Already has feedback?', !!feedbackData[registrationId]);
+    console.log('5. Already loading?', !!loadingFeedback[registrationId]);
 
-  const handleHealthCheckView = async (registrationId: string) => {
+    if (!registrationId || feedbackData[registrationId] || loadingFeedback[registrationId]) {
+      console.log('6. SKIPPING - reason:', {
+        noId: !registrationId,
+        hasData: !!feedbackData[registrationId],
+        isLoading: !!loadingFeedback[registrationId]
+      });
+      return;
+    }
+
+    console.log('7. Starting fetch...');
+    setLoadingFeedback(prev => ({ ...prev, [registrationId]: true }));
+
+    try {
+      const token = localStorage.getItem('authToken');
+      console.log('8. Token exists?', !!token);
+      if (!token) return;
+
+      console.log('9. Calling getFeedbackByRegistrationId...');
+      const feedback = await getFeedbackByRegistrationId(registrationId);
+      console.log('10. Feedback response:', feedback);
+
+      if (feedback) {
+        const mappedFeedback = {
+          process: feedback.process,
+          bloodTest: feedback.bloodTest,
+          postDonationCare: feedback.postDonationCare,
+          comfortable: feedback.comfortable,
+          description: feedback.description,
+          feedbackId: feedback.id
+        };
+        console.log('11. Mapped feedback:', mappedFeedback);
+
+        setFeedbackData(prev => ({
+          ...prev,
+          [registrationId]: mappedFeedback
+        }));
+        console.log('12. Feedback data updated!');
+      } else {
+        console.log('11. No feedback found');
+      }
+    } catch (error) {
+      console.error('12. Error fetching feedback:', error);
+    } finally {
+      setLoadingFeedback(prev => ({ ...prev, [registrationId]: false }));
+      console.log('13. Loading state cleared');
+    }
+  };
+
+  // 4. Fetch feedback khi component mount
+  useEffect(() => {
+    if (type === 'donation') {
+      console.log('=== USEEFFECT FEEDBACK FETCH ===');
+      console.log('Records:', records);
+
+      records.forEach(record => {
+        console.log('Processing record:', {
+          id: record.id,
+          registerId: record.registerId,
+          status: record.status,
+          canProvideFeedback: canProvideFeedback(record)
+        });
+
+        if (record.registerId && canProvideFeedback(record)) {
+          console.log('Fetching feedback for:', record.registerId);
+          fetchFeedbackForRecord(record.registerId);
+        }
+      });
+    }
+  }, [records, type, feedbackData, loadingFeedback]); // Thêm dependencies
+
+
+  const handleHealthCheckView = async (registerId: string) => {
     console.log('=== HANDLE HEALTH CHECK VIEW DEBUG ===');
-    console.log('Received registerId:', registrationId);
-    console.log('Type:', typeof registrationId);
-    console.log('Length:', registrationId?.length);
-    console.log('Is empty?', registrationId === '');
-    console.log('Is undefined?', registrationId === undefined);
-    console.log('Is null?', registrationId === null);
+    console.log('Received registerId:', registerId);
+    console.log('Type:', typeof registerId);
+    console.log('Length:', registerId?.length);
+    console.log('Is empty?', registerId === '');
+    console.log('Is undefined?', registerId === undefined);
+    console.log('Is null?', registerId === null);
 
-    if (!registrationId || registrationId === '' || registrationId === 'undefined') {
+    if (!registerId || registerId === '' || registerId === 'undefined') {
       alert('Không có registerId hợp lệ để tải dữ liệu');
       return;
     }
@@ -185,8 +272,8 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         return;
       }
 
-      console.log('About to call API with registerId:', registrationId);
-      const response = await getHealthCheckByRegisterId(registrationId, token);
+      console.log('About to call API with registerId:', registerId);
+      const response = await getHealthCheckByRegisterId(registerId, token);
 
       if (response.success && response.data) {
         setHealthCheckData(response.data);
@@ -204,7 +291,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
     }
   };
 
-  const handleAfterDonationView = async (registrationId: string) => {
+  const handleAfterDonationView = async (registerId: string) => {
     setModalLoading(true);
     setAfterDonationModalOpen(true);
 
@@ -216,9 +303,9 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         return;
       }
 
-      console.log('Calling getHealthCheckByRegisterId for after donation with:', registrationId);
+      console.log('Calling getHealthCheckByRegisterId for after donation with:', registerId);
       // First get health check to get healthCheckId
-      const healthCheckResponse = await getHealthCheckByRegisterId(registrationId, token);
+      const healthCheckResponse = await getHealthCheckByRegisterId(registerId, token);
 
       if (healthCheckResponse.success && healthCheckResponse.data?.healthCheckId) {
         const afterDonationResponse = await getAfterDonationByHealthCheckId(
@@ -258,12 +345,40 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
     onRefresh?.();
   };
 
-  const renderFeedbackSection = (feedback: DonorFeedback) => {
+  const renderFeedbackSection = (feedback: DonorFeedback | any) => {
+    console.log('=== RENDER FEEDBACK SECTION DEBUG ===');
+    console.log('Feedback input:', feedback);
+    console.log('Feedback type:', typeof feedback);
+    console.log('Is object?', typeof feedback === 'object' && feedback !== null);
+
+    if (!feedback || typeof feedback !== 'object') {
+      console.log('No valid feedback object - returning null');
+      return null;
+    }
+
+    // Kiểm tra các thuộc tính cần thiết
+    const hasRatings = feedback.process !== undefined ||
+      feedback.bloodTest !== undefined ||
+      feedback.postDonationCare !== undefined ||
+      feedback.comfortable !== undefined;
+
+    if (!hasRatings) {
+      console.log('No rating data found in feedback');
+      return null;
+    }
+
+    console.log('Feedback ratings:', {
+      process: feedback.process,
+      bloodTest: feedback.bloodTest,
+      postDonationCare: feedback.postDonationCare,
+      comfortable: feedback.comfortable
+    });
+
     const averageRating = (
-      feedback.process +
-      feedback.bloodTest +
-      feedback.postDonationCare +
-      feedback.comfortable
+      (feedback.process || 0) +
+      (feedback.bloodTest || 0) +
+      (feedback.postDonationCare || 0) +
+      (feedback.comfortable || 0)
     ) / 4;
 
     return (
@@ -285,19 +400,19 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
             <div className="grid grid-cols-2 gap-3 mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">Quy trình:</span>
-                <RatingStars rating={feedback.process} readonly size="sm" />
+                <RatingStars rating={feedback.process || 0} readonly size="sm" />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">Xét nghiệm:</span>
-                <RatingStars rating={feedback.bloodTest} readonly size="sm" />
+                <RatingStars rating={feedback.bloodTest || 0} readonly size="sm" />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">Chăm sóc sau:</span>
-                <RatingStars rating={feedback.postDonationCare} readonly size="sm" />
+                <RatingStars rating={feedback.postDonationCare || 0} readonly size="sm" />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-600">Thoải mái:</span>
-                <RatingStars rating={feedback.comfortable} readonly size="sm" />
+                <RatingStars rating={feedback.comfortable || 0} readonly size="sm" />
               </div>
             </div>
             {feedback.description && (
@@ -566,7 +681,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
               )}
 
               {/* Feedback Section */}
-              {record.donorFeedbackId && renderFeedbackSection(record.donorFeedbackId)}
+              {feedbackData[record.registerId!] && renderFeedbackSection(feedbackData[record.registerId!])}
             </div>
 
             {/* Action Buttons */}
@@ -611,7 +726,11 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
                   className="flex items-center space-x-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm border border-blue-200"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  <span>{record.donorFeedbackId ? 'Sửa phản hồi' : 'Phản hồi'}</span>
+                  <span>
+                    {feedbackData[record.registerId!] ? 'Sửa phản hồi' :
+                      loadingFeedback[record.registerId!] ? 'Đang tải...' :
+                        'Phản hồi'}
+                  </span>
                 </button>
               )}
             </div>
