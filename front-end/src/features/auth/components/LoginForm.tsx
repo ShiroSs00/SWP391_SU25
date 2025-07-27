@@ -70,7 +70,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, showToast, isLoading }) 
 
   return (
     <form className="bg-white rounded-lg shadow-xl px-6 py-8 w-full max-w-sm flex flex-col gap-4 font-sans animate-in fade-in-0 zoom-in-95 duration-700" onSubmit={handleSubmit} style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}>
-      <h2 className="text-3xl font-extrabold text-[#e53935] text-center mb-4 tracking-wide" style={{ fontFamily: 'Montserrat, Arial, sans-serif', letterSpacing: '1px' }}>Đăng nhập Bloodcare</h2>
+      <h2 className="text-3xl font-extrabold text-[#e53935] text-center mb-4 tracking-wide" style={{ fontFamily: 'Montserrat, Arial, sans-serif', letterSpacing: '1px' }}>
+        Login Bloodcare
+      </h2>
       <input
         id="username"
         name="username"
@@ -99,7 +101,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, showToast, isLoading }) 
       />
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 animate-fade-in">
-          <p className="text-red-600 text-sm">{error}</p>
+          <p className="text-red-600 text-sm" style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}>{error}</p>
         </div>
       )}
       <button
@@ -111,13 +113,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, showToast, isLoading }) 
         {isLoading ? (
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-            Đang đăng nhập...
+            <span style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}>Đang đăng nhập...</span>
           </div>
         ) : (
           'Đăng nhập'
         )}
       </button>
-      <a href="#" className="text-[#e53935] text-center text-sm font-medium hover:underline mb-2" style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}>Quên mật khẩu?</a>
       <div className="border-t border-gray-300 my-2"></div>
       <button
         type="button"

@@ -1,14 +1,17 @@
   import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { RegisterFormData, AuthResponse } from '../types/auth.types';
 import { HCM_DISTRICTS_AND_WARDS } from '../types/hcm-districts-wards';
 
 interface RegisterFormProps {
   onRegister: (data: RegisterFormData) => Promise<AuthResponse>;
+  onGoogleLogin?: () => Promise<AuthResponse>;
   showToast: (message: string, type: 'success' | 'error') => void;
   isLoading: boolean;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, showToast, isLoading }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<RegisterFormData>({
     username: '',
     email: '',
@@ -92,6 +95,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, showToast, isLo
         },
       });
       setConfirmPassword('');
+      
+      // Chuyển hướng về trang login sau 1.5 giây
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
     } else {
       showToast(response.message, 'error');
       setError(response.message);
@@ -101,7 +109,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, showToast, isLo
   return (
     <form className="bg-white rounded-lg shadow-xl px-6 py-8 w-full max-w-md flex flex-col gap-4 font-sans animate-in fade-in-0 zoom-in-95 duration-700" onSubmit={handleSubmit} style={{ fontFamily: 'Montserrat, Arial, sans-serif' }}>
       <h2 className="text-3xl font-extrabold text-[#e53935] text-center mb-1 tracking-wide">Tạo tài khoản mới</h2>
-      <p className="text-center text-gray-600 mb-3">Nhaqnh chóng và dễ dàng.</p>
+      <p className="text-center text-gray-600 mb-3">Nhanh chóng và dễ dàng.</p>
       <div className="mb-2">
         <input
           id="name"
