@@ -63,4 +63,6 @@ public interface BloodDonationHistoryRepository extends JpaRepository<BloodDonat
             "WHERE h.account.accountId = :accountId " +
             "ORDER BY h.donationRegistration.dateCreated DESC")
     List<BloodDonationHistory> findRecentByAccountId(@Param("accountId") String accountId);
+
+    List<BloodDonationHistory> findByAccount_AccountId(String accountAccountId);
 }

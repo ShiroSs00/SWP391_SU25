@@ -202,7 +202,6 @@ public class BloodRequestService {
     private void notifyRequesterWithConfirmedDonors(BloodRequest request, Set<String> profileIds) {
         List<Long> longIds = profileIds.stream().map(Long::parseLong).toList();
         List<Profile> donors = profileRepository.findAllById(longIds);
-
         String donorListHtml = donors.stream()
                 .map(d -> String.format("""
                                 <li><b>%s</b> - %s - %s<br/>Nhóm máu: %s (%s)<br/>Địa chỉ: %s</li>

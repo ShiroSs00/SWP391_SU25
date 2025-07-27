@@ -93,10 +93,11 @@ public class BloodDonationHistoryService {
     }
 
     //Lấy lịch sử theo account
-    public List<BloodDonationHistoryDTO> getAllHistoryByAccount(Account account){
-        List<BloodDonationHistory> histories = repository.findByAccount(account);
+    public List<BloodDonationHistoryDTO> getAllHistoryByAccount(String accountId){
+        List<BloodDonationHistory> histories = repository.findByAccount_AccountId(accountId);
         return toDTOList(histories);
     }
+
 
     //tìm kiếm theo nhiều tiêu chí
     public List<BloodDonationHistoryDTO> searchHistoryByAccountId(String accountId, LocalDate startDate, LocalDate endDate, String event, String status){
@@ -110,8 +111,12 @@ public class BloodDonationHistoryService {
         dto.setId(bloodDonationHistory.getHistoryId());
         //lấy tên người hiến
         if(bloodDonationHistory.getAccount() != null) {
-            dto.setName(bloodDonationHistory.getAccount().getProfile().getName());
+            Profile profile = bloodDonationHistory.getAccount().getProfile();
+            if (profile != null) {
+                dto.setName(profile.getName());
+            }
         }
+
 
         //Lấy sự kiện
         if (bloodDonationHistory.getDonationRegistration() != null &&
