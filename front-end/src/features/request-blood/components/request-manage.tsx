@@ -4,14 +4,14 @@ import type { BloodRequest } from '../types/request-blood.types';
 
 const RequestManage: React.FC = () => {
   const { bloodRequests, loading, error, refetch } = useAllBloodRequests();
-  const { updateRequestStatus, loading: updateLoading, error: updateError } = useBloodRequestStatus();
+  const { updateRequestStatus, loading: updateLoading, error: updateError, successMessage, clearMessages } = useBloodRequestStatus();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ 
     isOpen: boolean; 
     requestId: string; 
-    action: 'approve' | 'reject' | 'cancel';
+    action: 'approve' | 'reject';
     requestName: string;
   }>({ isOpen: false, requestId: '', action: 'approve', requestName: '' });
   const itemsPerPage = 10;
@@ -67,7 +67,8 @@ const RequestManage: React.FC = () => {
   };
 
   // Handle status update
-  const handleStatusUpdate = async (requestId: string, action: 'approve' | 'reject' | 'cancel', requestName: string) => {
+  const handleStatusUpdate = async (requestId: string, action: 'approve' | 'reject', requestName: string) => {
+    clearMessages(); // Clear any previous messages
     setConfirmDialog({
       isOpen: true,
       requestId,
@@ -80,14 +81,22 @@ const RequestManage: React.FC = () => {
   const confirmStatusUpdate = async () => {
     try {
       await updateRequestStatus(confirmDialog.requestId, confirmDialog.action);
+      
+      // Use API success message if available, otherwise fallback to generic message
+      const actionText = confirmDialog.action === 'approve' ? 'duyệt' : 'từ chối';
+      const message = successMessage || `Đã ${actionText} đơn yêu cầu của ${confirmDialog.requestName} thành công!`;
+      
       setToast({ 
-        msg: `Đã ${confirmDialog.action === 'approve' ? 'duyệt' : confirmDialog.action === 'reject' ? 'từ chối' : 'hủy'} đơn yêu cầu thành công!`, 
+        msg: message, 
         type: 'success' 
       });
       refetch(); // Reload data after successful update
       setConfirmDialog({ isOpen: false, requestId: '', action: 'approve', requestName: '' });
     } catch {
-      setToast({ msg: updateError || 'Có lỗi xảy ra khi cập nhật trạng thái', type: 'error' });
+      // Use API error message if available, otherwise fallback to generic message
+      const actionText = confirmDialog.action === 'approve' ? 'duyệt' : 'từ chối';
+      const errorMsg = updateError || `Có lỗi xảy ra khi ${actionText} đơn yêu cầu`;
+      setToast({ msg: errorMsg, type: 'error' });
       setConfirmDialog({ isOpen: false, requestId: '', action: 'approve', requestName: '' });
     }
   };
@@ -349,20 +358,7 @@ const RequestManage: React.FC = () => {
                               </button>
                             </>
                           )}
-                          {(request.status === 'PENDING' || request.status === 'APPROVE') && (
-                            <button
-                              onClick={() => handleStatusUpdate(request.idBloodRequest, 'cancel', request.requesterName)}
-                              disabled={updateLoading}
-                              className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
-                              title="Hủy đơn"
-                            >
-                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                              </svg>
-                              Hủy
-                            </button>
-                          )}
-                          {(request.status === 'REJECT' || request.status === 'CANCELLED') && (
+                          {(request.status === 'REJECT' || request.status === 'CANCELLED' || request.status === 'APPROVE') && (
                             <span className="text-gray-500 text-sm">Không có thao tác</span>
                           )}
                         </div>

@@ -80,3 +80,9 @@ export const deleteMultipleHealthChecks = async (ids: string[]) => {
   });
   return response.data.data;
 };
+
+// Cập nhật trạng thái health check (đã hiến máu)
+export const updateHealthCheckStatus = async (healthCheckId: string) => {
+  const response = await api.put(`/healthcheck/status/${healthCheckId}`);
+  return response.data;
+};

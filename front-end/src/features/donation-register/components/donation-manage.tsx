@@ -11,6 +11,7 @@ import type { ProfileData } from '../../accounts/types/accounts.types';
 import type {
   DonationRegistrationDTO,
   DonationFilterParams,
+  DonationStatus,
 } from '../types/donations-register.types';
 import HealthCheckModal from '../../health-checks/components/HealthCheckModal';
 
@@ -22,7 +23,7 @@ const DonationManage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState<DonationFilterParams>({ eventId: '' });
-  const [statusFilter, setStatusFilter] = useState<string>(''); // Thêm filter theo status
+  const [statusFilter, setStatusFilter] = useState<DonationStatus | ''>(''); // Thêm filter theo status
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
   const [role, setRole] = useState<string>('');
@@ -179,11 +180,13 @@ const DonationManage: React.FC = () => {
   };
 
   // Lấy màu sắc cho trạng thái
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: DonationStatus) => {
     switch (status) {
       case 'PENDING':
         return 'bg-yellow-500 text-white';
-      case 'PASSED':
+      case 'CHECKING':
+        return 'bg-blue-500 text-white';
+      case 'COMPLETED':
         return 'bg-emerald-500 text-white';
       case 'CANCELLED':
         return 'bg-gray-500 text-white';
@@ -224,11 +227,12 @@ const DonationManage: React.FC = () => {
   // Additional statistics
   const totalDonations = donations.length;
   const pendingDonations = donations.filter(d => d.status === 'PENDING').length;
-  const passedDonations = donations.filter(d => d.status === 'PASSED').length;
+  const checkingDonations = donations.filter(d => d.status === 'CHECKING').length;
+  const completedDonations = donations.filter(d => d.status === 'COMPLETED').length;
   const cancelledDonations = donations.filter(d => d.status === 'CANCELLED').length;
 
   // Hàm xử lý click vào card để filter theo status
-  const handleStatusCardClick = (status: string) => {
+  const handleStatusCardClick = (status: DonationStatus | '') => {
     if (statusFilter === status) {
       setStatusFilter(''); // Bỏ filter nếu click vào card đang active
     } else {
@@ -260,7 +264,7 @@ const DonationManage: React.FC = () => {
       <h2 className="text-2xl font-extrabold mb-6 text-[#b71c1c] tracking-tight animate-fade-in-down">Quản lý đơn hiến máu</h2>
       
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <div 
           className={`rounded-xl shadow-sm border p-6 cursor-pointer transition-all duration-200 hover:shadow-lg ${
             statusFilter === '' 
@@ -305,11 +309,32 @@ const DonationManage: React.FC = () => {
 
         <div 
           className={`rounded-xl shadow-sm border p-6 cursor-pointer transition-all duration-200 hover:shadow-lg ${
-            statusFilter === 'PASSED' 
+            statusFilter === 'CHECKING' 
+              ? 'bg-gradient-to-r from-blue-100 to-indigo-100 border-blue-300 ring-2 ring-blue-300' 
+              : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:border-blue-300'
+          }`}
+          onClick={() => handleStatusCardClick('CHECKING')}
+        >
+          <div className="flex items-center">
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Checking</p>
+              <p className="text-2xl font-bold text-gray-900">{checkingDonations}</p>
+            </div>
+          </div>
+        </div>
+
+        <div 
+          className={`rounded-xl shadow-sm border p-6 cursor-pointer transition-all duration-200 hover:shadow-lg ${
+            statusFilter === 'COMPLETED' 
               ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-green-300 ring-2 ring-green-300' 
               : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:border-green-300'
           }`}
-          onClick={() => handleStatusCardClick('PASSED')}
+          onClick={() => handleStatusCardClick('COMPLETED')}
         >
           <div className="flex items-center">
             <div className="p-3 bg-green-100 rounded-lg">
@@ -318,8 +343,8 @@ const DonationManage: React.FC = () => {
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Passed</p>
-              <p className="text-2xl font-bold text-gray-900">{passedDonations}</p>
+              <p className="text-sm font-medium text-gray-600">Completed</p>
+              <p className="text-2xl font-bold text-gray-900">{completedDonations}</p>
             </div>
           </div>
         </div>
@@ -395,12 +420,14 @@ const DonationManage: React.FC = () => {
           <span className="text-sm text-gray-600">Đang lọc theo:</span>
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${
             statusFilter === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-            statusFilter === 'PASSED' ? 'bg-green-100 text-green-800' :
+            statusFilter === 'CHECKING' ? 'bg-blue-100 text-blue-800' :
+            statusFilter === 'COMPLETED' ? 'bg-green-100 text-green-800' :
             statusFilter === 'CANCELLED' ? 'bg-gray-100 text-gray-800' :
             'bg-blue-100 text-blue-800'
           }`}>
             {statusFilter === 'PENDING' ? 'Pending' :
-             statusFilter === 'PASSED' ? 'Passed' :
+             statusFilter === 'CHECKING' ? 'Checking' :
+             statusFilter === 'COMPLETED' ? 'Completed' :
              statusFilter === 'CANCELLED' ? 'Cancelled' : statusFilter}
           </span>
           <button
@@ -502,7 +529,8 @@ const DonationManage: React.FC = () => {
                         <h4 className="text-sm font-bold text-gray-900 truncate">{getUserName(d.accountId) || 'Unknown User'}</h4>
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(d.status)}`}>
                           {d.status === 'PENDING' ? '⏳ Pending' : 
-                           d.status === 'PASSED' ? '✓ Passed' : 
+                           d.status === 'CHECKING' ? '🔍 Checking' :
+                           d.status === 'COMPLETED' ? '✓ Completed' : 
                            d.status === 'CANCELLED' ? '✗ Cancelled' : d.status}
                         </span>
                       </div>

@@ -4,6 +4,13 @@ import { getAdminProfileByAccountId } from '../../accounts/services/accounts.ser
 import type { HealthCheckData } from '../types/health-check.types';
 import type { DonationRegistrationDTO } from '../../donation-register/types/donations-register.types';
 
+// Interface for API error response
+interface ApiErrorResponse {
+  message?: string;
+  error?: string;
+  errors?: Array<{ message?: string } | string>;
+}
+
 interface HealthCheckModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -56,6 +63,27 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
           });
         } catch (err) {
           console.error(`Error fetching profile for ${donation.accountId}:`, err);
+          
+          // Extract error message from API response for logging
+          let errorMessage = 'Unknown error';
+          if (
+            err &&
+            typeof err === 'object' &&
+            'response' in err &&
+            err.response &&
+            typeof err.response === 'object' &&
+            'data' in err.response &&
+            err.response.data &&
+            typeof err.response.data === 'object'
+          ) {
+            const responseData = err.response.data as ApiErrorResponse;
+            errorMessage = responseData.message || responseData.error || errorMessage;
+          } else if (err instanceof Error) {
+            errorMessage = err.message;
+          }
+          
+          console.error('Profile fetch error details:', errorMessage);
+          
           setUserProfile({
             fullName: `Người hiến máu ${donation.accountId.slice(-3)}`,
             username: donation.accountId
@@ -116,10 +144,39 @@ const HealthCheckModal: React.FC<HealthCheckModalProps> = ({ isOpen, onClose, do
         isFitToDonate: false,
         note: '',
       });
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Có lỗi xảy ra khi tạo kiểm tra sức khỏe';
+    } catch (err: unknown) {
+      // Extract error message from API response
+      let errorMessage = 'Có lỗi xảy ra khi tạo kiểm tra sức khỏe';
+      
+      if (
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object'
+      ) {
+        const responseData = err.response.data as ApiErrorResponse;
+        
+        // Try to extract message from different possible response structures
+        if (responseData.message) {
+          errorMessage = responseData.message;
+        } else if (responseData.error) {
+          errorMessage = responseData.error;
+        } else if (responseData.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+          const firstError = responseData.errors[0];
+          errorMessage = typeof firstError === 'object' ? firstError.message || 'Validation error' : firstError;
+        } else if (typeof responseData === 'string') {
+          errorMessage = responseData;
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
-      console.error('Error creating health check:', errorMessage);
+      console.error('Error creating health check:', err);
     } finally {
       setLoading(false);
     }

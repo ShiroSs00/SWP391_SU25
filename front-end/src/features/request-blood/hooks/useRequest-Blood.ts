@@ -63,7 +63,22 @@ export const useAllBloodRequests = () => {
       }
     } catch (err) {
       console.error('Error fetching blood requests:', err);
-      setError((err as Error).message || 'Có lỗi xảy ra khi tải danh sách đơn hiến máu');
+      // Extract error message from API response if available
+      if (
+        err &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data &&
+        typeof err.response.data === 'object' &&
+        'message' in err.response.data
+      ) {
+        setError((err as { response: { data: { message: string } } }).response.data.message);
+      } else {
+        setError((err as Error).message || 'Có lỗi xảy ra khi tải danh sách đơn yêu cầu máu');
+      }
     } finally {
       setLoading(false);
     }
@@ -80,28 +95,41 @@ export const useAllBloodRequests = () => {
 export const useBloodRequestStatus = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const updateRequestStatus = async (requestId: string, action: 'approve' | 'reject' | 'cancel') => {
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
         throw new Error('Token not found');
       }
 
+      let response;
       switch (action) {
         case 'approve':
-          await approveBloodRequest(requestId, token);
+          response = await approveBloodRequest(requestId, token);
           break;
         case 'reject':
-          await rejectBloodRequest(requestId, token);
+          response = await rejectBloodRequest(requestId, token);
           break;
         case 'cancel':
-          await cancelBloodRequest(requestId, token);
+          response = await cancelBloodRequest(requestId, token);
           break;
         default:
           throw new Error('Invalid action');
+      }
+      
+      // Try to extract success message from response
+      if (response && typeof response === 'object' && 'message' in response) {
+        setSuccessMessage((response as { message: string }).message);
+      } else if (response && typeof response === 'object' && 'data' in response && 
+                 typeof (response as { data: unknown }).data === 'object' && 
+                 (response as { data: unknown }).data !== null &&
+                 'message' in ((response as { data: unknown }).data as object)) {
+        setSuccessMessage(((response as { data: { message: string } }).data as { message: string }).message);
       }
     } catch (err: unknown) {
       if (
@@ -127,13 +155,24 @@ export const useBloodRequestStatus = () => {
   const updateRequest = async (requestId: string, payload: Partial<BloodRequestPayload>) => {
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
         throw new Error('Token not found');
       }
 
-      await updateBloodRequest(requestId, payload, token);
+      const response = await updateBloodRequest(requestId, payload, token);
+      
+      // Try to extract success message from response
+      if (response && typeof response === 'object' && 'message' in response) {
+        setSuccessMessage((response as { message: string }).message);
+      } else if (response && typeof response === 'object' && 'data' in response && 
+                 typeof (response as { data: unknown }).data === 'object' && 
+                 (response as { data: unknown }).data !== null &&
+                 'message' in ((response as { data: unknown }).data as object)) {
+        setSuccessMessage(((response as { data: { message: string } }).data as { message: string }).message);
+      }
     } catch (err: unknown) {
       if (
         err &&
@@ -155,5 +194,10 @@ export const useBloodRequestStatus = () => {
     }
   };
 
-  return { updateRequestStatus, updateRequest, loading, error };
+  const clearMessages = () => {
+    setError(null);
+    setSuccessMessage(null);
+  };
+
+  return { updateRequestStatus, updateRequest, loading, error, successMessage, clearMessages };
 };

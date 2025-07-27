@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   getAllHealthChecks,
   deleteHealthCheck,
+  updateHealthCheckStatus,
 } from '../services/health-check.services';
 import { getAllDonations } from '../../donation-register/hooks/useBloodDonation';
 import { getAdminProfileByAccountId } from '../../accounts/services/accounts.services';
@@ -236,6 +237,22 @@ const HealthCheckManage: React.FC = () => {
     } catch (err) {
       setError((err as Error).message || 'An error occurred while deleting the health check.');
       setToast({ msg: 'Xóa kiểm tra sức khỏe thất bại', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDonationCompleted = async (healthCheckId: string) => {
+    if (!window.confirm('Bạn có chắc chắn người dùng này đã hiến máu?')) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await updateHealthCheckStatus(healthCheckId);
+      setToast({ msg: 'Cập nhật trạng thái đã hiến máu thành công', type: 'success' });
+      fetchHealthChecks(); // Refresh the list
+    } catch (err) {
+      setError((err as Error).message || 'Có lỗi xảy ra khi cập nhật trạng thái.');
+      setToast({ msg: 'Cập nhật trạng thái thất bại', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -507,6 +524,20 @@ const HealthCheckManage: React.FC = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
                         <span className="hidden lg:inline">Phân tích máu</span>
+                      </button>
+                    )}
+                    
+                    {/* Nút Đã hiến máu - chỉ hiển thị cho những đạt điều kiện */}
+                    {check.isFitToDonate && (
+                      <button
+                        onClick={() => handleDonationCompleted(check.healthCheckId!)}
+                        disabled={loading}
+                        className="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <svg className="w-4 h-4 lg:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        <span className="hidden lg:inline">Đã hiến máu</span>
                       </button>
                     )}
                     

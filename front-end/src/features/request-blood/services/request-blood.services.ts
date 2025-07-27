@@ -35,36 +35,40 @@ export const getAllBloodRequests = async (token: string) => {
 };
 
 // Update status functions
-export const approveBloodRequest = async (requestId: string, token: string): Promise<void> => {
-  await api.put(`/blood-requests/${requestId}/approve`, {}, {
+export const approveBloodRequest = async (requestId: string, token: string) => {
+  const response = await api.put(`/blood-requests/${requestId}/approve`, {}, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
 };
 
-export const rejectBloodRequest = async (requestId: string, token: string): Promise<void> => {
-  await api.put(`/blood-requests/${requestId}/reject`, {}, {
+export const rejectBloodRequest = async (requestId: string, token: string) => {
+  const response = await api.put(`/blood-requests/${requestId}/reject`, {}, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
 };
 
-export const cancelBloodRequest = async (requestId: string, token: string): Promise<void> => {
-  await api.put(`/blood-requests/${requestId}/cancel`, {}, {
+export const cancelBloodRequest = async (requestId: string, token: string) => {
+  const response = await api.put(`/blood-requests/${requestId}/cancel`, {}, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
 };
 
-export const updateBloodRequest = async (requestId: string, payload: Partial<BloodRequestPayload>, token: string): Promise<void> => {
-  await api.put(`/blood-requests/update/${requestId}`, payload, {
+export const updateBloodRequest = async (requestId: string, payload: Partial<BloodRequestPayload>, token: string) => {
+  const response = await api.put(`/blood-requests/update/${requestId}`, payload, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response.data;
 };
 
 

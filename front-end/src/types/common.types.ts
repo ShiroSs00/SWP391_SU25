@@ -13,7 +13,6 @@ import{
     HealthCheckStatus,
     FeedbackType,
     RequestStatus,
-    DonationType,
 } from "../utils/enums";
 
 // Base types

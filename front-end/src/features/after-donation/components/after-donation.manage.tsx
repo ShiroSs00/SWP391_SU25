@@ -311,8 +311,10 @@ const AfterDonationManage: React.FC = () => {
             Quản lý và theo dõi kết quả phân tích máu
           </p>
         </div>
+      </div>
 
-        <button
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
           onClick={() => {
             fetchAfterDonationData();
             fetchHealthChecks();
@@ -386,7 +388,7 @@ const AfterDonationManage: React.FC = () => {
             }
             
             switch (status.toLowerCase()) {
-              case 'PASSED':
+              case 'passed':
                 return {
                   label: 'Đã Qua',
                   color: 'from-green-50 to-emerald-50',
@@ -402,7 +404,7 @@ const AfterDonationManage: React.FC = () => {
                     />
                   )
                 };
-              case 'FAILED':
+              case 'failed':
                 return {
                   label: 'Thất Bại',
                   color: 'from-red-50 to-pink-50',
@@ -418,7 +420,7 @@ const AfterDonationManage: React.FC = () => {
                     />
                   )
                 };
-              case 'SEPARATED':
+              case 'separated':
                 return {
                   label: 'Đã Tách',
                   color: 'from-purple-50 to-pink-50',
@@ -1050,6 +1052,6 @@ const AfterDonationManage: React.FC = () => {
       )}
     </div>
   );
-};
+}
 
 export default AfterDonationManage;

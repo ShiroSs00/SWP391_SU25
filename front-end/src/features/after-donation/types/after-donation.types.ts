@@ -25,12 +25,12 @@ export interface ManualSeparateData {
 }
 
 export interface ManualSeparateRequest {
-  afterDonationIds: string[];
+  afterDonationId: string;
   bloodBags: {
     bloodCode: string;
     componentId: string;
     volume: number;
-    quantity: number;
     collectedDate: string;
+    expirationDate: string;
   }[];
 }
