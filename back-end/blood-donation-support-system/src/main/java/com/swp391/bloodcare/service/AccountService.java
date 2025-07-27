@@ -449,25 +449,16 @@ public class AccountService {
 
     }
 
-    public List<Account> findNearbyDonors(
-            double radiusKm,
-            List<String> bloodTypes,
-            String excludedAccountId
-    ) {
+    public List<Account> findNearbyDonors(double radiusKm, List<String> bloodTypes, String excludedAccountId) {
         if (bloodTypes == null || bloodTypes.isEmpty()) {
-            bloodTypes = null;
-            return accountRepository.findNearbyCompatibleDonorsWithoutBlood(
-                    HOSPITAL_LAT, HOSPITAL_LNG, radiusKm, excludedAccountId
+            return accountRepository.findNearbyCompatibleDonors(
+                    HOSPITAL_LAT, HOSPITAL_LNG, radiusKm, null, excludedAccountId
+            );
+        } else {
+            return accountRepository.findNearbyCompatibleDonors(
+                    HOSPITAL_LAT, HOSPITAL_LNG, radiusKm, bloodTypes, excludedAccountId
             );
         }
-
-        return accountRepository.findNearbyCompatibleDonorsByLatLng(
-                HOSPITAL_LAT,
-                HOSPITAL_LNG,
-                radiusKm,
-                bloodTypes,
-                excludedAccountId
-        );
     }
 
     public List<AccountSearchDTO> mapToAccountSearchDTOList(List<Account> accounts) {

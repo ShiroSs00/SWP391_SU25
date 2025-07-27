@@ -540,7 +540,7 @@ public class BloodRequestService {
         double searchRadiusKm = 20.0;
 
         // Tìm các account có nhóm máu tương thích và gần khu vực
-        List<Account> potentialDonors = accountRepository.findNearbyCompatibleDonorsByLatLng(
+        List<Account> potentialDonors = accountRepository.findNearbyCompatibleDonors(
                 lat, lng, searchRadiusKm, compatibleBloodTypes, request.getAccount().getAccountId()
         );
         System.out.println("Số người hiến phù hợp tìm thấy: " + potentialDonors.size());
