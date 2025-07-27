@@ -537,7 +537,7 @@ public class BloodRequestService {
         if (lat == null || lng == null) {
             throw new IllegalStateException("Không có thông tin tọa độ người nhận máu.");
         }
-        double searchRadiusKm = 100.0;
+        double searchRadiusKm = 20.0;
 
         // Tìm các account có nhóm máu tương thích và gần khu vực
         List<Account> potentialDonors = accountRepository.findNearbyCompatibleDonorsByLatLng(
