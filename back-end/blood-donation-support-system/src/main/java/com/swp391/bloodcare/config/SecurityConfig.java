@@ -56,8 +56,8 @@ public class SecurityConfig {
 
 
                         //Public GET cần đăng nhập
-                        .requestMatchers(HttpMethod.GET, "/api/healthcheck/get-by-registration/").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/after-donation/get-by-healthcheck/").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/healthcheck/get-by-registration/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/after-donation/get-by-healthcheck/**").authenticated()
                         .requestMatchers(HttpMethod.PUT,"/api/accounts/change-password/").authenticated()
 
 
