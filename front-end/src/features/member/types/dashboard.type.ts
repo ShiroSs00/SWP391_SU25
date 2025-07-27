@@ -47,8 +47,9 @@ export interface DonationRecord {
   donorFeedbackId?: DonorFeedback;
   date: string;
   location: string;
-  registrationId: string;
+  registerId: string;
   volume?: number; // For blood requests
+  feedback?: DonorFeedback;
 
   // Blood request specific fields
   requesterName?: string;
@@ -111,7 +112,7 @@ export interface EventParticipation {
   location: string;
   role: 'Donor' | 'Volunteer';
   banner?: string;
-  status: 'Completed' | 'Upcoming' | 'Cancelled';
+  status: 'Completed' | 'UPCOMING' | 'Cancelled';
   // Real API fields
   eventId?: string;
   name?: string;
@@ -172,6 +173,7 @@ export interface BloodDonationHistory {
   volumeToTake: string;
   healthCheck: string;
   afterDonationBlood: string;
+  registerId: string;
   status: string;
   donationDate?: string;
   dateCreated: string;
@@ -217,4 +219,55 @@ export interface OptimizedDonor {
   isActive: boolean;
   distance?: number;
   lastDonation?: string;
+}
+
+export interface HealthCheckData {
+  healthCheckId: string;
+  weight: number;
+  temperature: number;
+  bloodPressure: string;
+  pulse: number;
+  hemoglobin: number;
+  volumeToTake: number;
+  isFitToDonate: boolean;
+  note: string;
+}
+
+export interface HealthCheckResponse {
+  success: boolean;
+  message: string;
+  data: HealthCheckData;
+  errors: {
+    additionalProp1: string;
+    additionalProp2: string;
+    additionalProp3: string;
+  };
+}
+
+// After Donation interfaces
+export interface AfterDonationData {
+  idAfterDonation: string;
+  infectiousDiseasesChecked: boolean;
+  isBloodUsable: boolean;
+  status: string;
+  note: string;
+  healthCheckId: string;
+  bloodId: string;
+}
+
+export interface AfterDonationResponse {
+  success: boolean;
+  message: string;
+  data: AfterDonationData;
+  errors: {
+    additionalProp1: string;
+    additionalProp2: string;
+    additionalProp3: string;
+  };
+}
+
+// Combined response for both health check and after donation
+export interface HealthCheckAndAfterDonationResponse {
+  healthCheck: HealthCheckResponse;
+  afterDonation: AfterDonationResponse | null;
 }

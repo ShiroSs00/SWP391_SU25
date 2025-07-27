@@ -34,7 +34,9 @@ const EventsPage: React.FC<EventsPageProps> = ({
     );
   }
 
-  const upcomingEvents = events.filter(e => e.status === 'Upcoming');
+  
+
+  const upcomingEvents = events.filter(e => e.status === 'UPCOMING');
   const completedEvents = events.filter(e => e.status === 'Completed');
   const cancelledEvents = events.filter(e => e.status === 'Cancelled');
 

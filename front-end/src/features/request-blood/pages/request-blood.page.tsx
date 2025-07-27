@@ -111,7 +111,7 @@ export const RequestBloodPage: React.FC = () => {
             <div className="flex items-center space-x-3">
               <Heart className="w-6 h-6 text-white" />
               <div>
-                <h1 className="text-xl font-bold text-white">Đăng Ký Yêu Cầu Hiến Máu</h1>
+                <h1 className="text-xl font-bold text-white">Đăng Ký Yêu Cầu Nhận Máu</h1>
                 <p className="text-red-100 text-sm mt-1">Vui lòng điền đầy đủ thông tin bên dưới</p>
               </div>
             </div>

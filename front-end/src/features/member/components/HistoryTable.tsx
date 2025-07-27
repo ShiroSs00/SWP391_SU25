@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
-import { Calendar, MapPin, Droplet, MessageSquare, Star, Clock, RefreshCw, AlertCircle, Phone, Mail, Edit } from 'lucide-react';
+import { Calendar, MapPin, Droplet, MessageSquare, Star, Clock, RefreshCw, AlertCircle, Phone, Mail, Edit, FileText, Heart } from 'lucide-react';
 import type { DonationRecord, DonorFeedback } from '../types/dashboard.type';
 import FeedbackForm from '../../donor-feedback/components/FeedbackForm';
 import FeedbackModal from './FeedbackModal';
+import HealthCheckModal from './HealthCheckModal';
+import AfterDonationModal from './AfterDonationModal';
 import RatingStars from '../../donor-feedback/components/RatingStars';
 import type { CreateFeedbackRequest } from '../../donor-feedback/types/feedback.types';
-
-// Định nghĩa giao diện FeedbackFormProps
-interface FeedbackFormProps {
-  registrationId: string;
-  initialData?: DonorFeedback | undefined;
-  onSubmitSuccess: () => void;
-}
+import { getHealthCheckByRegisterId, getAfterDonationByHealthCheckId } from '../services/dashboard.service';
 
 interface HistoryTableProps {
   records: DonationRecord[];
   type: 'donation' | 'receiving';
-  onFeedback: (recordId: string, feedbackData?: DonorFeedback) => void;
+  onFeedback: (recordId: string, feedbackData?: CreateFeedbackRequest) => Promise<void>;
   onEditBloodRequest?: (recordId: string) => void;
+  onViewHealthCheck?: (recordId: string) => void;
+  onViewAfterDonation?: (recordId: string) => void;
   loading?: boolean;
   onRefresh?: () => void;
 }
@@ -27,45 +25,109 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
   type,
   onFeedback,
   onEditBloodRequest,
+  onViewHealthCheck,
+  onViewAfterDonation,
   loading = false,
   onRefresh
 }) => {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [healthCheckModalOpen, setHealthCheckModalOpen] = useState(false);
+  const [afterDonationModalOpen, setAfterDonationModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<DonationRecord | null>(null);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PASSED':
+  // State for modal data
+  const [healthCheckData, setHealthCheckData] = useState<any>(null);
+  const [afterDonationData, setAfterDonationData] = useState<any>(null);
+  const [modalLoading, setModalLoading] = useState(false);
+
+  // Status mapping cho donation history
+  const getDonationStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'COMPLETED':
+      case 'SUCCESS':
       case 'SEPARATED':
         return 'bg-green-100 text-green-800';
-      case 'Pending':
+      case 'PROCESSING':
+      case 'DONATION_PROCESSING':
+      case 'PENDING':
         return 'bg-yellow-100 text-yellow-800';
-      case 'Cancelled':
-      case 'Rejected':
+      case 'CANCELLED':
+      case 'REJECTED':
+      case 'FAILED':
         return 'bg-red-100 text-red-800';
+      case 'REGISTERED':
+        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'PASSED':
+  const getDonationStatusText = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'COMPLETED':
+      case 'SUCCESS':
         return 'Hoàn thành';
       case 'SEPARATED':
         return 'Đã tách máu';
-      case 'Pending':
+      case 'PROCESSING':
+      case 'DONATION_PROCESSING':
+        return 'Đang xử lý';
+      case 'PENDING':
         return 'Đang chờ';
-      case 'Cancelled':
+      case 'REGISTERED':
+        return 'Đã đăng ký';
+      case 'CANCELLED':
         return 'Đã hủy';
-      case 'Rejected':
+      case 'REJECTED':
         return 'Bị từ chối';
+      case 'FAILED':
+        return 'Thất bại';
       default:
-        return status;
+        return status || 'Không xác định';
     }
   };
 
-  const formatDate = (dateString: string) => {
+  // Status mapping cho blood request
+  const getBloodRequestStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'APPROVED':
+        return 'bg-green-100 text-green-800';
+      case 'PENDING':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'REJECTED':
+        return 'bg-red-100 text-red-800';
+      case 'CANCELLED':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getBloodRequestStatusText = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'APPROVED':
+        return 'Đã duyệt';
+      case 'PENDING':
+        return 'Đang chờ duyệt';
+      case 'REJECTED':
+        return 'Bị từ chối';
+      case 'CANCELLED':
+        return 'Đã hủy';
+      default:
+        return status || 'Không xác định';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    return type === 'donation' ? getDonationStatusColor(status) : getBloodRequestStatusColor(status);
+  };
+
+  const getStatusText = (status: string) => {
+    return type === 'donation' ? getDonationStatusText(status) : getBloodRequestStatusText(status);
+  };
+
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return 'Không có thông tin ngày';
     try {
       return new Date(dateString).toLocaleDateString('vi-VN', {
         year: 'numeric',
@@ -78,17 +140,121 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
   };
 
   const canEditBloodRequest = (record: DonationRecord) => {
-    return type === 'receiving' && record.status === 'PENDING' && onEditBloodRequest;
+    return type === 'receiving' &&
+      record.status?.toUpperCase() === 'PENDING' &&
+      onEditBloodRequest;
+  };
+
+  const canProvideFeedback = (record: DonationRecord) => {
+    if (type !== 'donation') return false;
+    const allowedStatuses = ['COMPLETED', 'SUCCESS', 'SEPARATED', 'DONATION_PROCESSING'];
+    return allowedStatuses.includes(record.status?.toUpperCase() || '');
+  };
+
+  const hasHealthCheckData = (record: DonationRecord) => {
+    return type === 'donation' && record.healthCheck;
+  };
+
+  const hasAfterDonationData = (record: DonationRecord) => {
+    return type === 'donation' && record.afterDonationBlood;
+  };
+
+
+  const handleHealthCheckView = async (registrationId: string) => {
+    console.log('=== HANDLE HEALTH CHECK VIEW DEBUG ===');
+    console.log('Received registerId:', registrationId);
+    console.log('Type:', typeof registrationId);
+    console.log('Length:', registrationId?.length);
+    console.log('Is empty?', registrationId === '');
+    console.log('Is undefined?', registrationId === undefined);
+    console.log('Is null?', registrationId === null);
+
+    if (!registrationId || registrationId === '' || registrationId === 'undefined') {
+      alert('Không có registerId hợp lệ để tải dữ liệu');
+      return;
+    }
+
+    setModalLoading(true);
+    setHealthCheckModalOpen(true);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error('No auth token found');
+        setHealthCheckData(null);
+        return;
+      }
+
+      console.log('About to call API with registerId:', registrationId);
+      const response = await getHealthCheckByRegisterId(registrationId, token);
+
+      if (response.success && response.data) {
+        setHealthCheckData(response.data);
+      } else {
+        setHealthCheckData(null);
+        console.error('Failed to fetch health check data:', response.message);
+        alert(`Không thể tải dữ liệu: ${response.message}`);
+      }
+    } catch (error) {
+      console.error('Error fetching health check:', error);
+      setHealthCheckData(null);
+      alert('Có lỗi xảy ra khi tải dữ liệu');
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const handleAfterDonationView = async (registrationId: string) => {
+    setModalLoading(true);
+    setAfterDonationModalOpen(true);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.error('No auth token found');
+        setAfterDonationData(null);
+        return;
+      }
+
+      console.log('Calling getHealthCheckByRegisterId for after donation with:', registrationId);
+      // First get health check to get healthCheckId
+      const healthCheckResponse = await getHealthCheckByRegisterId(registrationId, token);
+
+      if (healthCheckResponse.success && healthCheckResponse.data?.healthCheckId) {
+        const afterDonationResponse = await getAfterDonationByHealthCheckId(
+          healthCheckResponse.data.healthCheckId,
+          token
+        );
+
+        if (afterDonationResponse.success && afterDonationResponse.data) {
+          setAfterDonationData(afterDonationResponse.data);
+        } else {
+          setAfterDonationData(null);
+          console.error('Failed to fetch after donation data:', afterDonationResponse.message);
+          alert(`Không thể tải dữ liệu theo dõi sau hiến: ${afterDonationResponse.message}`);
+        }
+      } else {
+        setAfterDonationData(null);
+        console.error('Failed to fetch health check data for after donation:', healthCheckResponse.message);
+        alert(`Không thể tải dữ liệu khám sức khỏe: ${healthCheckResponse.message}`);
+      }
+    } catch (error) {
+      console.error('Error fetching after donation:', error);
+      setAfterDonationData(null);
+      alert('Có lỗi xảy ra khi tải dữ liệu theo dõi sau hiến');
+    } finally {
+      setModalLoading(false);
+    }
   };
 
   const handleFeedbackClick = (record: DonationRecord) => {
     setSelectedRecord(record);
     setFeedbackModalOpen(true);
-    onFeedback(record.registrationId || record.id, record.donorFeedbackId);
   };
 
   const handleFeedbackSubmitSuccess = () => {
     setFeedbackModalOpen(false);
+    setSelectedRecord(null);
     onRefresh?.();
   };
 
@@ -200,134 +366,249 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <div className="flex items-center space-x-4 mb-3">
+              {/* Header Section */}
+              <div className="flex items-center space-x-4 mb-3 flex-wrap">
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(record.status)}`}>
                   {getStatusText(record.status)}
                 </span>
-                <span className="text-sm text-gray-500">#{record.registrationId || record.id}</span>
+
+                {/* Record ID */}
+                <span className="text-sm text-gray-500">
+                  #{type === 'donation' ? record.registerId : record.id}
+                </span>
+
+                {/* Emergency badge for blood requests */}
                 {type === 'receiving' && record.emergency && (
                   <span className="flex items-center space-x-1 px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
                     <AlertCircle className="w-3 h-3" />
                     <span>Khẩn cấp</span>
                   </span>
                 )}
+
+                {/* Editable badge */}
                 {canEditBloodRequest(record) && (
                   <span className="flex items-center space-x-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                     <Edit className="w-3 h-3" />
                     <span>Có thể chỉnh sửa</span>
                   </span>
                 )}
-                {record.event && (
-                  <span className="text-sm text-blue-600">Sự kiện: {record.event}</span>
+
+                {/* Event name for donations */}
+                {type === 'donation' && record.event && (
+                  <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                    Sự kiện: {record.event}
+                  </span>
                 )}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+
+              {/* Basic Info Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                {/* Donor Name */}
+                <div className="flex items-center space-x-2">
+                  <span className="w-4 h-4 text-gray-400 font-medium">👤</span>
+                  <span className="text-sm text-gray-700 font-medium">
+                    {record.name}
+                  </span>
+                </div>
+
+                {/* Date */}
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4 text-gray-400" />
                   <span className="text-sm text-gray-700">
-                    {record.date ? formatDate(record.date) : 'Không có thông tin ngày'}
+                    {formatDate(type === 'receiving' ? record.requestDate : record.date)}
                   </span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-700">{record.location || 'Không có thông tin địa điểm'}</span>
-                </div>
+
+                {/* Blood Code & Volume */}
                 <div className="flex items-center space-x-2">
                   <Droplet className="w-4 h-4 text-red-400" />
                   <span className="text-sm text-gray-700">
-                    {type === 'receiving' && record.bloodType ? `${record.bloodType} - ` : ''}
-                    {record.volumeToTake || record.volume}ml
+                    {record.bloodCode ? `${record.bloodCode} - ` : ''}
+                    {record.volume || record.volumeToTake}
                     {type === 'receiving' && record.component ? ` (${record.component})` : ''}
                   </span>
                 </div>
+
+                {/* Location for blood requests */}
+                {type === 'receiving' && record.location && (
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-700">{record.location}</span>
+                  </div>
+                )}
               </div>
+
+              {/* Blood Request Specific Info */}
               {type === 'receiving' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <h4 className="font-medium text-blue-900 mb-3">Thông tin yêu cầu</h4>
+
+                  {/* Requester Info */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-blue-800">Người yêu cầu:</span>
+                      <span className="text-sm text-blue-700">{record.requesterName || record.name}</span>
+                    </div>
                     <div className="flex items-center space-x-2">
                       <Phone className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm text-blue-800">
-                        {record.requesterPhone || 'Không có SĐT'}
+                      <span className="text-sm text-blue-700">
+                        {record.requesterPhone || record.contactPhone || 'Không có SĐT'}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Mail className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm text-blue-800">
-                        {record.requesterEmail || 'Không có email'}
+                      <span className="text-sm text-blue-700">
+                        {record.requesterEmail || record.contactEmail || 'Không có email'}
                       </span>
                     </div>
+                    {record.requesterAddress && (
+                      <div className="flex items-center space-x-2">
+                        <MapPin className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm text-blue-700">{record.requesterAddress}</span>
+                      </div>
+                    )}
                   </div>
-                  {record.requestCreationDate && (
-                    <div className="mt-2 text-xs text-blue-600">
-                      Ngày tạo yêu cầu: {formatDate(record.requestCreationDate)}
-                    </div>
-                  )}
+
+                  {/* Processing Info */}
                   {record.processedBy && (
-                    <div className="mt-2 text-xs text-blue-600">
-                      Xử lý bởi: {record.processedBy}
-                      {record.processedDate && ` - ${formatDate(record.processedDate)}`}
+                    <div className="bg-white p-3 rounded border border-blue-200 mb-3">
+                      <div className="text-sm">
+                        <span className="font-medium text-blue-800">Xử lý bởi:</span>
+                        <span className="text-blue-700 ml-2">{record.processedBy}</span>
+                        {record.processedDate && (
+                          <span className="text-blue-600 ml-2">- {formatDate(record.processedDate)}</span>
+                        )}
+                      </div>
                     </div>
                   )}
+
+                  {/* Rejection Reason */}
                   {record.rejectionReason && (
-                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-800">
-                      Lý do từ chối: {record.rejectionReason}
+                    <div className="bg-red-50 border border-red-200 rounded p-3 mb-3">
+                      <div className="text-sm">
+                        <span className="font-medium text-red-800">Lý do từ chối:</span>
+                        <p className="text-red-700 mt-1">{record.rejectionReason}</p>
+                      </div>
                     </div>
                   )}
-                  {record.requestDate && (
-                    <div className="mt-2 text-xs text-blue-600">
-                      Ngày mong muốn nhận máu: {formatDate(record.requestDate)}
-                    </div>
-                  )}
-                </div>
-              )}
-              {(record.bloodCode || record.bloodBagId) && (
-                <div className="flex items-center space-x-2 mb-3">
-                  <span className="text-xs text-gray-500">
-                    {type === 'receiving' ? 'Mã túi máu:' : 'Mã máu:'}
-                  </span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {record.bloodCode || record.bloodBagId}
-                  </span>
-                </div>
-              )}
-              {record.healthCheck && type === 'donation' && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
-                  <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                    <div>
-                      <p className="text-sm font-medium text-green-800">Kiểm tra sức khỏe:</p>
-                      <p className="text-sm text-green-700">{record.healthCheck}</p>
-                    </div>
+
+                  {/* Dates */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-blue-600">
+                    {record.requestCreationDate && (
+                      <div>Ngày tạo: {formatDate(record.requestCreationDate)}</div>
+                    )}
+                    {record.requestDate && (
+                      <div>Ngày mong muốn: {formatDate(record.requestDate)}</div>
+                    )}
                   </div>
                 </div>
               )}
-              {record.afterDonationBlood && type === 'donation' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                  <div className="flex items-start space-x-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                    <div>
-                      <p className="text-sm font-medium text-blue-800">Sau hiến máu:</p>
-                      <p className="text-sm text-blue-700">{record.afterDonationBlood}</p>
-                    </div>
+
+              {/* Donation Details for Donation History */}
+              {type === 'donation' && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                  <h4 className="font-medium text-green-900 mb-3">Chi tiết hiến máu</h4>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Registration ID */}
+                    {record.registerId && (
+                      <div className="flex items-center justify-between p-2 bg-white rounded border">
+                        <span className="text-sm font-medium text-gray-600">Mã đăng ký:</span>
+                        <span className="text-sm font-mono text-green-700 bg-green-100 px-2 py-1 rounded">
+                          {record.registerId}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Blood Code */}
+                    {record.bloodCode && (
+                      <div className="flex items-center justify-between p-2 bg-white rounded border">
+                        <span className="text-sm font-medium text-gray-600">Mã máu:</span>
+                        <span className="text-sm font-mono text-red-700 bg-red-100 px-2 py-1 rounded">
+                          {record.bloodCode}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Health Check ID */}
+                    {record.healthCheck && (
+                      <div className="flex items-center justify-between p-2 bg-white rounded border">
+                        <span className="text-sm font-medium text-gray-600">Mã khám sức khỏe:</span>
+                        <span className="text-sm font-mono text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                          {record.healthCheck}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* After Donation ID */}
+                    {record.afterDonationBlood && (
+                      <div className="flex items-center justify-between p-2 bg-white rounded border">
+                        <span className="text-sm font-medium text-gray-600">Mã theo dõi sau hiến:</span>
+                        <span className="text-sm font-mono text-purple-700 bg-purple-100 px-2 py-1 rounded">
+                          {record.afterDonationBlood}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
+
+              {/* Blood Code/Bag ID for Blood Requests */}
+              {type === 'receiving' && (record.bloodCode || record.bloodBagId) && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-gray-600">Mã túi máu:</span>
+                    <span className="text-sm font-mono text-gray-800 bg-white px-2 py-1 rounded border">
+                      {record.bloodCode || record.bloodBagId}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Feedback Section */}
               {record.donorFeedbackId && renderFeedbackSection(record.donorFeedbackId)}
             </div>
-            <div className="flex flex-col space-y-2">
+
+            {/* Action Buttons */}
+            <div className="flex flex-col space-y-2 ml-4">
+              {/* Edit Blood Request */}
               {canEditBloodRequest(record) && (
                 <button
-                  onClick={() => onEditBloodRequest!(record.registrationId || record.id)}
+                  onClick={() => onEditBloodRequest!(record.id)}
                   className="flex items-center space-x-2 px-3 py-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors text-sm border border-orange-200"
                 >
                   <Edit className="w-4 h-4" />
                   <span>Chỉnh sửa</span>
                 </button>
               )}
-              {(record.status === 'DONATION_PROCESSING' || record.status === 'SEPARATED') && (
+
+              {/* View Health Check */}
+              {hasHealthCheckData(record) && (
+                <button
+                  onClick={() => handleHealthCheckView(record.registerId!)}
+                  className="flex items-center space-x-2 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors text-sm border border-green-200"
+                >
+                  <Heart className="w-4 h-4" />
+                  <span>Sức khỏe</span>
+                </button>
+              )}
+
+              {/* View After Donation */}
+              {hasAfterDonationData(record) && (
+                <button
+                  onClick={() => handleAfterDonationView(record.registerId!)}
+                  className="flex items-center space-x-2 px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors text-sm border border-purple-200"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Sau hiến</span>
+                </button>
+              )}
+
+              {/* Feedback */}
+              {canProvideFeedback(record) && (
                 <button
                   onClick={() => handleFeedbackClick(record)}
-                  className="flex items-center space-x-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm"
+                  className="flex items-center space-x-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm border border-blue-200"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span>{record.donorFeedbackId ? 'Sửa phản hồi' : 'Phản hồi'}</span>
@@ -337,28 +618,53 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
           </div>
         </div>
       ))}
-<FeedbackModal
-  isOpen={feedbackModalOpen}
-  onClose={() => setFeedbackModalOpen(false)}
->
-  {selectedRecord && (
-    <FeedbackForm
-      registrationId={selectedRecord.registrationId || selectedRecord.id}
-      initialData={selectedRecord.donorFeedbackId}
-      onSubmitSuccess={handleFeedbackSubmitSuccess}
-      onSubmit={async (data: CreateFeedbackRequest) => {
-        // Gọi API submit feedback
-        try {
-          await onFeedback(selectedRecord.registrationId || selectedRecord.id);
-          handleFeedbackSubmitSuccess();
-        } catch (error) {
-          console.error('Error submitting feedback:', error);
-          throw error; // Re-throw để FeedbackForm xử lý
-        }
-      }}
-    />
-  )}
-</FeedbackModal>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => {
+          setFeedbackModalOpen(false);
+          setSelectedRecord(null);
+        }}
+      >
+        {selectedRecord && (
+          <FeedbackForm
+            registrationId={selectedRecord.registerId!}
+            onSubmitSuccess={handleFeedbackSubmitSuccess}
+            onSubmit={async (data: CreateFeedbackRequest) => {
+              try {
+                await onFeedback(selectedRecord.registerId!, data);
+                console.log("Feedback submitted successfully", data);
+              } catch (error) {
+                console.error('Error submitting feedback:', error);
+                throw error;
+              }
+            }}
+          />
+        )}
+      </FeedbackModal>
+
+      {/* Health Check Modal */}
+      <HealthCheckModal
+        isOpen={healthCheckModalOpen}
+        onClose={() => {
+          setHealthCheckModalOpen(false);
+          setHealthCheckData(null);
+        }}
+        healthCheckData={healthCheckData}
+        loading={modalLoading}
+      />
+
+      {/* After Donation Modal */}
+      <AfterDonationModal
+        isOpen={afterDonationModalOpen}
+        onClose={() => {
+          setAfterDonationModalOpen(false);
+          setAfterDonationData(null);
+        }}
+        afterDonationData={afterDonationData}
+        loading={modalLoading}
+      />
     </div>
   );
 };

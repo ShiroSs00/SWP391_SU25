@@ -1,25 +1,33 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import  Sidebar  from '../../features/accounts/components/Sidebar'
-import  Header  from '../../features/member/components/Header';
-import  LoadingSpinner  from '../../features/accounts/components/LoadingSpinner';
-import ErrorMessage from '../../features/accounts/components/ErrorMessage';
-import { useDashboard } from '../../features/accounts/hooks/useDashboard';
+"use client"
 
-export const UserLayout: React.FC = () => {
-  const {
-    profile,
-    loading,
-    error,
-    loadInitialData,
-  } = useDashboard();
+import type React from "react"
+import { Outlet } from "react-router-dom"
+import Sidebar from "../../features/member/components/Sidebar"
+import { SimpleHeader } from "../SimpleHeader"
+import LoadingSpinner from "../../features/accounts/components/LoadingSpinner"
+import ErrorMessage from "../../features/accounts/components/ErrorMessage"
+import { useDashboard } from "../../features/accounts/hooks/useDashboard"
+
+export const SimpleUserLayout: React.FC = () => {
+  const { profile, loading, error, loadInitialData } = useDashboard()
+
+  const handleLogout = () => {
+    // Clear auth token
+    localStorage.removeItem("authToken")
+
+    // Redirect to login page
+    window.location.href = "/login"
+
+    // Or if using React Router:
+    // navigate('/login')
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <LoadingSpinner />
       </div>
-    );
+    )
   }
 
   if (error && !profile) {
@@ -27,26 +35,27 @@ export const UserLayout: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <ErrorMessage message={error} onRetry={loadInitialData} />
       </div>
-    );
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar 
-        activeTab="dashboard" 
-        onTabChange={() => {}} 
+      {/* Sidebar */}
+      <Sidebar activeTab="dashboard" onTabChange={() => {}} />
+
+      {/* Simple Header with Notification Bell */}
+      <SimpleHeader
+        userName={profile?.name || "Người dùng"}
+        accountId={profile?.accountId || ""}
+        onLogout={handleLogout}
       />
-      <Header 
-        userName={profile?.name || 'Người dùng'} 
-        userAvatar={profile?.avatar} 
-      />
-      
+
+      {/* Main Content */}
       <main className="ml-64 pt-20 p-6">
         <div className="max-w-7xl mx-auto">
-          {/* Outlet sẽ render component tương ứng với route */}
           <Outlet />
         </div>
       </main>
     </div>
-  );
-};
+  )
+}

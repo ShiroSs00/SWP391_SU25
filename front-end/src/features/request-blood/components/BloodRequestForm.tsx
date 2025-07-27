@@ -306,7 +306,7 @@ const getVolumeOptions = (): VolumeOptionType[] => {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3">Gửi yêu cầu thành công!</h2>
           <p className="text-gray-600 mb-6">
-            Yêu cầu hiến máu của bạn đã được gửi. Hệ thống sẽ kiểm tra kho máu và thông báo kết quả sớm nhất.
+            Yêu cầu nhận máu của bạn đã được gửi. Hệ thống sẽ kiểm tra kho máu và thông báo kết quả sớm nhất.
           </p>
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
             <Clock className="w-4 h-4 animate-spin" />
@@ -360,7 +360,7 @@ const getVolumeOptions = (): VolumeOptionType[] => {
                   <Heart className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white">Đăng Ký Yêu Cầu Hiến Máu</h1>
+                  <h1 className="text-2xl font-bold text-white">Đăng Ký Yêu Cầu Nhận Máu</h1>
                   <p className="text-red-100 text-sm mt-1">Vui lòng điền đầy đủ thông tin bên dưới</p>
                 </div>
               </div>
