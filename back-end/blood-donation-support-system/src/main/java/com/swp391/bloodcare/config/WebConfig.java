@@ -8,10 +8,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadPath = System.getProperty("user.dir") + "/uploads/";
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:" + uploadPath)
+                .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/")
                 .setCachePeriod(3600);
     }
 }
+
+
+
 

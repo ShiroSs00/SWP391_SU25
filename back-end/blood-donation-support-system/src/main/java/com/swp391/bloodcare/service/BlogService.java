@@ -81,6 +81,7 @@ public class BlogService {
                         : ".jpg";
                 String fileName = UUID.randomUUID() + ext;
 
+                // Upload folder ngoài target, không bị xoá khi build lại
                 String uploadDir = System.getProperty("user.dir") + "/uploads/blog-thumbnails/";
                 File uploadPath = new File(uploadDir);
                 if (!uploadPath.exists()) {
@@ -93,7 +94,8 @@ public class BlogService {
                 File savedFile = new File(uploadPath, fileName);
                 thumbnail.transferTo(savedFile);
 
-                blog.setImg("/images/blog-thumbnails/" + fileName);
+                String fullImageUrl = "https://swp391-su25.onrender.com/images/blog-thumbnails/" + fileName;
+                blog.setImg(fullImageUrl);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -107,6 +109,7 @@ public class BlogService {
 
         return BlogDTO.toDTO(blogRepository.save(blog));
     }
+
 
 
 

@@ -52,6 +52,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/blog/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/event/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/achievements/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
+
 
                         //Public GET cần đăng nhập
                         .requestMatchers(HttpMethod.GET, "/api/healthcheck/get-by-registration/").authenticated()
