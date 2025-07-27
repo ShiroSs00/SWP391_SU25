@@ -10,11 +10,11 @@ export const MainLayout: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
+        <div className="min-h-screen flex flex-col bg-rose-50">
             {/* Navbar cố định */}
             <Header />
 
-            <div className="flex flex-1">
+            <div className="flex flex-1 bg-rose-50">
                 {/* Main content */}
                 <main className={cn("flex-1 min-h-0")}>
                     <div className="p-6">

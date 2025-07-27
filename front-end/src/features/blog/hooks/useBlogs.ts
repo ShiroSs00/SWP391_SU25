@@ -57,14 +57,17 @@ export const useBlog = () => {
         }));
     };
 
+    const token = localStorage.getItem('authToken') || '';
+
     // Fetch all blogs using axios
     const fetchBlogs = useCallback(async () => {
         setLoading(true);
         setError(null);
 
         try {
-            const blogs = await blogService.getAllBlogs();
+            const blogs = await blogService.getAllBlogs(token);
             let filteredBlogs = [...blogs];
+
 
             // Apply filters
             if (state.filters.search) {
@@ -177,7 +180,7 @@ export const useBlog = () => {
             toast.success('Cập nhật bài viết thành công!');
 
             // Update current blog if it's the one being edited
-            if (state.currentBlog?.id === id) {
+            if (state.currentBlog?.blogId === id) {
                 setCurrentBlog(updatedBlog);
             }
 
@@ -193,7 +196,7 @@ export const useBlog = () => {
         } finally {
             setLoading(false);
         }
-    }, [state.currentBlog?.id, fetchBlogs]);
+    }, [state.currentBlog?.blogId, fetchBlogs]);
 
     // Delete blog using axios
     const deleteBlog = useCallback(async (id: string): Promise<boolean> => {
@@ -205,10 +208,10 @@ export const useBlog = () => {
             toast.success('Xóa bài viết thành công!');
 
             // Remove from blogs list
-            setBlogs(state.blogs.filter(blog => blog.id !== id));
+            setBlogs(state.blogs.filter(blog => blog.blogId !== id));
 
             // Clear current blog if it's the one being deleted
-            if (state.currentBlog?.id === id) {
+            if (state.currentBlog?.blogId === id) {
                 setCurrentBlog(null);
             }
 
@@ -221,7 +224,7 @@ export const useBlog = () => {
         } finally {
             setLoading(false);
         }
-    }, [state.blogs, state.currentBlog?.id]);
+    }, [state.blogs, state.currentBlog?.blogId]);
 
     // Get paginated blogs
     const getPaginatedBlogs = useCallback(() => {

@@ -38,13 +38,17 @@ export const filterDonations = async (params: DonationFilterParams): Promise<Don
 };
 
 // Tạo mới đăng ký hiến máu
-export const createDonation = async (eventId: string | null, payload: DonationCreatePayload): Promise<DonationRegistrationDTO> => {
+export const createDonation = async (token: string, eventId: string | null, payload: Partial<DonationCreatePayload>): Promise<void> => {
   const endpoint = eventId ? `/donation/create/${eventId}` : '/donation/create';
-  const res = await api.post<{data: DonationRegistrationDTO}>(endpoint, {
-    ...payload,
+  const res = await api.post(endpoint, {
+    donationDate: payload.donationDate,
     eventId: eventId || '', // Use default event ID if none is provided
-  });
-  return res.data.data;
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+  }});
+  return res.data;
 };
 
 // Cập nhật trạng thái đăng ký hiến máu

@@ -5,12 +5,16 @@ import type { BloodRequestPayload, BloodRequest } from '../types/request-blood.t
 export const useRequestBlood = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+
 
   const createRequest = async (payload: BloodRequestPayload) => {
     setLoading(true);
     setError(null);
+    setSuccess(false);
     try {
       await createBloodRequest(payload);
+      setSuccess(true);
     } catch (err: unknown) {
       if (
         err &&
@@ -32,7 +36,13 @@ export const useRequestBlood = () => {
     }
   };
 
-  return { createRequest, loading, error };
+  const clearMessages = () => {
+    setError(null);
+    setSuccess(false);
+  };
+  
+
+  return { createRequest, loading, error, clearMessages, success };
 };
 
 export const useAllBloodRequests = () => {
@@ -47,11 +57,12 @@ export const useAllBloodRequests = () => {
       const token = localStorage.getItem('authToken');
       if (token) {
         const response = await getAllBloodRequests(token);
-        setBloodRequests(response.data || []);
+        setBloodRequests(response.data);
       } else {
         throw new Error('Token not found');
       }
     } catch (err) {
+      console.error('Error fetching blood requests:', err);
       setError((err as Error).message || 'Có lỗi xảy ra khi tải danh sách đơn hiến máu');
     } finally {
       setLoading(false);

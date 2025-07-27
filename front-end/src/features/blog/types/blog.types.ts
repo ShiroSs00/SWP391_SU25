@@ -31,71 +31,41 @@ export interface CreateBlogRequest {
     thumbnail: string;
 }
 
-export type UpdateBlogRequest = Partial<CreateBlogRequest>
+export interface UpdateBlogRequest extends CreateBlogRequest {
+  blogId: string
+}
 
 export interface BlogListResponse {
-    blogs: BlogPost[];
-    total: number;
-    page: number;
-    limit: number;
+  blogs: BlogPost[]
+  total: number
+  page: number
+  limit: number
 }
 
-export interface BlogComment {
-    id: string;
-    blogId: string;
-    userId: string;
-    userName: string;
-    userAvatar?: string;
-    content: string;
-    createdAt: string;
-    parentId?: string;
-    replies?: BlogComment[];
-}
-
-export interface BlogLike {
-    id: string;
-    blogId: string;
-    userId: string;
-    createdAt: string;
-}
-
-export interface BlogInteraction {
-    blogId: string;
-    likes: BlogLike[];
-    comments: BlogComment[];
-    likeCount: number;
-    commentCount: number;
-}
-
-export type UserRole =  'MEMBER' | 'STAFF' | 'ADMIN';
+export type UserRole = "MEMBER" | "STAFF" | "ADMIN"
 
 export interface User {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string;
-    role: UserRole;
+  id: string
+  name: string
+  email: string
+  avatar?: string
+  role: UserRole
 }
 
 export interface BlogFilters {
-    search?: string;
-    tags?: string[];
-    author?: string;
-    sortBy?: 'createdAt' | 'viewCount' | 'title';
-    sortOrder?: 'asc' | 'desc';
+  search?: string
+  tags?: string[]
+  sortBy?: "postDate" | "content"
+  sortOrder?: "asc" | "desc"
 }
 
 export const BLOG_TAGS = [
-    'Câu chuyện',
-    'Kinh nghiệm',
-    'Y học',
-    'Tin tức',
-    'Hướng dẫn',
-    'Sự kiện',
-    'Thống kê',
-    'Nghiên cứu'
-] as const;
+  { name: "Kinh nghiệm hiến máu", color: "bg-blue-100 text-blue-800" },
+  { name: "Thông tin khoa học", color: "bg-green-100 text-green-800" },
+  { name: "Câu chuyện cảm động", color: "bg-purple-100 text-purple-800" },
+  { name: "Hướng dẫn", color: "bg-yellow-100 text-yellow-800" },
+  { name: "Sự kiện", color: "bg-pink-100 text-pink-800" },
+  { name: "Tin tức", color: "bg-red-100 text-red-800" },
+] as const
 
-
-
-export type BlogTag = typeof BLOG_TAGS[number];
+export type BlogTag = (typeof BLOG_TAGS)[number]["name"]

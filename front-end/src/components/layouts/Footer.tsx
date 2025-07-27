@@ -28,7 +28,7 @@ const Footer = () => {
                                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full animate-ping"></div>
                             </div>
                             <span className="text-2xl font-bold bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">
-                BloodHope
+                BloodCare
               </span>
                         </div>
                         <p className="text-gray-300 leading-relaxed text-sm lg:text-base">
@@ -130,7 +130,7 @@ const Footer = () => {
                 <div className="border-t border-gray-700/50 mt-12 pt-8">
                     <div className="flex flex-col md:flex-row justify-between items-center">
                         <p className="text-gray-400 text-center md:text-left mb-4 md:mb-0">
-                            &copy; {currentYear} BloodHope. Tất cả quyền được bảo lưu.
+                            &copy; {currentYear} BloodCare. Tất cả quyền được bảo lưu.
                         </p>
                         <div className="flex items-center text-gray-400">
                             <span>Được phát triển với </span>

@@ -1,133 +1,117 @@
 import { Button } from '../ui/Button';
 import {
-    Heart as HeartIcon,
-    Users as UserGroupIcon,
-    Clock as ClockIcon,
-    ArrowRight as ArrowRightIcon
+  Heart as HeartIcon,
+  Users as UserGroupIcon,
+  Clock as ClockIcon,
+  ArrowRight as ArrowRightIcon
 } from 'lucide-react';
 import { Heart as HeartSolidIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AlertCircle as AlertCircleIcon } from 'lucide-react';
 
 export function HeroSection() {
-    const stats = [
-        { value: '50,000+', label: 'Người hiến máu', icon: UserGroupIcon },
-        { value: '125,000+', label: 'Đơn vị máu', icon: HeartSolidIcon },
-        { value: '200,000+', label: 'Sinh mạng được cứu', icon: HeartIcon },
-    ];
+  // Hook để điều hướng giữa các trang
+  const navigate = useNavigate()
 
-    return (
-        <section className="relative min-h-screen flex items-center bg-gradient-to-br from-dark-900 via-dark-800 to-blood-900 overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-hero-pattern opacity-10"></div>
+  // Thông tin trạng thái hệ thống - hiển thị minh bạch không có số liệu giả
+  const systemStatus = {
+    isActive: true,
+    responseTime: "< 30 phút",
+    availability: "24/7",
+  }
 
-            {/* Animated Background Elements */}
-            <div className="absolute top-20 left-10 w-32 h-32 bg-blood-500/20 rounded-full blur-xl animate-pulse-slow"></div>
-            <div className="absolute bottom-20 right-10 w-48 h-48 bg-blood-400/10 rounded-full blur-2xl animate-bounce-slow"></div>
-            <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-life-500/20 rounded-full blur-lg animate-pulse"></div>
+  // Hàm xử lý khi nhấn nút "Đăng ký hiến máu"
+  const handleDonateClick = () => {
+    navigate("/donation")
+  }
 
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    {/* Content */}
-                    <div className="text-center lg:text-left animate-slide-up">
-                        <div className="mb-6">
-                            <span className="inline-flex items-center px-4 py-2 rounded-full bg-blood-500/20 text-blood-600 text-sm font-medium backdrop-blur-sm border border-blood-500/30">
-                                <HeartSolidIcon className="w-4 h-4 mr-2 animate-heartbeat text-blood-600" />
-                                Cứu sống - Kết nối - Hy vọng
-                            </span>
-                        </div>
+  // Hàm xử lý khi nhấn nút "Yêu cầu máu khẩn cấp"
+  const handleEmergencyClick = () => {
+    navigate("/emergency")
+  }
 
-                        <h1 className="text-5xl lg:text-7xl font-display font-bold mb-6 text-[#222222]">
-                            <span className="text-white">Kết nối</span>
-                            <br />
-                            <span className="bg-gradient-to-r from-blood-400 to-blood-600 bg-clip-text text-transparent">
-                                Sự sống
-                            </span>
-                        </h1>
-
-                        <p className="text-xl lg:text-2xl text-[#222222] mb-8 leading-relaxed max-w-2xl">
-                            Hệ thống hiến máu thông minh, kết nối người hiến máu và người cần máu một cách
-                            <span className="text-blood-400 font-semibold"> nhanh chóng, an toàn và hiệu quả</span>.
-                        </p>
-
-                        {/* CTA Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                            <Button
-                                variant="default"
-                                size="xl"
-                                leftIcon={<HeartSolidIcon className="w-6 h-6" />}
-                                rightIcon={<ArrowRightIcon className="w-5 h-5" />}
-                                className="group"
-                            >
-                                <span className="group-hover:mr-1 transition-all">Đăng ký hiến máu</span>
-                            </Button>
-
-                            <Button
-                                variant="destructive"
-                                size="xl"
-                                leftIcon={<ClockIcon className="w-6 h-6" />}
-                                className="relative overflow-hidden"
-                            >
-                                <span className="relative z-10">Yêu cầu máu khẩn cấp</span>
-                                <div className="absolute inset-0 bg-gradient-to-r from-emergency-600 to-emergency-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            </Button>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            {stats.map((stat, index) => (
-                                <div
-                                    key={index}
-                                    className="text-center p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-[#222222]/10 hover:bg-[#222222]/5 transition-all duration-300 group"
-                                >
-                                    <stat.icon className="w-8 h-8 mx-auto mb-2 text-[#222222] group-hover:scale-110 transition-transform" />
-                                    <div className="text-2xl font-bold text-[#222222] mb-1">{stat.value}</div>
-                                    <div className="text-sm text-[#222222]">{stat.label}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Visual */}
-                    <div className="relative animate-scale-in">
-                        <div className="relative">
-                            {/* Main Card */}
-                            <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/20 transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                                <div className="text-center">
-                                    <div className="w-20 h-20 bg-blood-gradient rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow">
-                                        <HeartSolidIcon className="w-10 h-10 text-white animate-heartbeat" />
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-[#222222] mb-2">BloodConnect</h3>
-                                    <p className="text-[#222222]">Hệ thống hiến máu thông minh</p>
-                                </div>
-                            </div>
-
-                            {/* Floating Cards */}
-                            <div className="absolute -top-4 -right-4 bg-[#222222] text-white p-4 rounded-2xl shadow-xl animate-bounce-slow">
-                                <UserGroupIcon className="w-6 h-6 mb-1" />
-                                <div className="text-sm font-semibold text-white">24/7</div>
-                                <div className="text-xs text-white">Sẵn sàng</div>
-                            </div>
-
-                            <div className="absolute -bottom-4 -left-4 bg-[#222222] text-white p-4 rounded-2xl shadow-xl animate-pulse">
-                                <ClockIcon className="w-6 h-6 mb-1" />
-                                <div className="text-sm font-semibold text-white">&lt; 30 phút</div>
-                                <div className="text-xs text-white">Phản hồi</div>
-                            </div>
-
-                            {/* Background Decoration */}
-                            <div className="absolute inset-0 bg-blood-gradient rounded-3xl transform rotate-6 scale-105 -z-10 opacity-20 blur-sm"></div>
-                        </div>
-                    </div>
-                </div>
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* ĐÃ XÓA: Background Pattern và Animated Background Elements */}
+      {/* Background Image with better contrast */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+        style={{
+          backgroundImage: `url('https://providencemedicalassociates.org/wp-content/uploads/2025/02/give-blood.jpg')`
+        }}
+      />
+      {/* Gradient Overlay for better readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Content - Nội dung chính bên trái */}
+          <div className="text-center lg:text-left">
+            {/* Badge thông báo */}
+            <div className="mb-6">
+              <span className="inline-flex items-center px-4 py-2 rounded-full bg-red-500/20 text-red-400 text-sm font-medium backdrop-blur-sm border border-red-500/30">
+                <HeartIcon className="w-4 h-4 mr-2 animate-pulse text-red-400" />
+                Cứu sống - Kết nối - Hy vọng
+              </span>
             </div>
 
-            {/* Bottom Wave */}
-            <div className="absolute bottom-0 left-0 right-0">
-                <svg viewBox="0 0 1440 120" className="w-full h-20 fill-white">
-                    <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
-                </svg>
+            {/* Tiêu đề chính */}
+            <h1 className="text-5xl lg:text-7xl font-bold mb-6 text-black">
+              <span>Kết nối</span>
+              <br />
+              <span>Sự sống</span>
+            </h1>
+
+            {/* Mô tả chi tiết */}
+            <p className="text-xl lg:text-2xl text-gray-700 mb-8 leading-relaxed max-w-2xl">
+              Hệ thống hiến máu thông minh, kết nối người hiến máu và người cần máu một cách
+              <span className="font-semibold"> nhanh chóng, an toàn và hiệu quả</span>.
+            </p>
+
+            {/* Thông báo minh bạch về dữ liệu */}
+            <div className="mb-8 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center text-blue-300 text-sm">
+                <AlertCircleIcon className="w-4 h-4 mr-2" />
+                <span>
+                  Hệ thống đang trong giai đoạn phát triển. Dữ liệu thống kê sẽ được cập nhật khi có người dùng thực tế.
+                </span>
+              </div>
             </div>
-        </section>
-    );
+
+            {/* CTA Buttons - Các nút hành động */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-12">
+              {/* Nút đăng ký hiến máu */}
+              <Button
+                variant="default"
+                size="xl"
+                leftIcon={<HeartIcon className="w-6 h-6" />}
+                rightIcon={<ArrowRightIcon className="w-5 h-5" />}
+                className="group"
+                onClick={handleDonateClick}
+              >
+                <span className="group-hover:mr-1 transition-all">Đăng ký hiến máu</span>
+              </Button>
+
+              {/* Nút yêu cầu máu khẩn cấp */}
+              <Button
+                variant="destructive"
+                size="xl"
+                leftIcon={<HeartIcon className="w-6 h-6" />}
+                className="relative overflow-hidden"
+                onClick={handleEmergencyClick}
+              >
+                <span className="relative z-10">Yêu cầu máu khẩn cấp</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Visual - Phần hiển thị bên phải */}
+
+        </div>
+      </div>
+
+      {/* ĐÃ XÓA: Bottom Wave - Phần sóng ở cuối trang đã được loại bỏ */}
+    </section>
+  )
 }
 
-export default HeroSection;
+export default HeroSection
