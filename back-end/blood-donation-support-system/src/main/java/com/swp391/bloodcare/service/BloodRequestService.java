@@ -323,7 +323,7 @@ public class BloodRequestService {
 
 
     public List<BloodRequestResponseDTO> getAllBloodRequests() {
-        return bloodRequestRepository.findAll().stream()
+        return bloodRequestRepository.findAllOrderByDonationDesc().stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }

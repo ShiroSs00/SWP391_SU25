@@ -49,8 +49,6 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     );
 
 
-
-
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Account a WHERE LOWER(a.userName) = LOWER(:username)")
     boolean existsByUserNameIgnoreCase(@Param("username") String username);
     @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Account a WHERE LOWER(a.email) = LOWER(:email)")
