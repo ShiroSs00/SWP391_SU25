@@ -12,8 +12,8 @@ public class BloodDonationHistoryDTO {
     private String name;
     private String event;
     private String bloodCode;
-    private long volumeToTake;
-    private String healCheck;
+    private String registerId;
+    private String healthCheck;
     private String afterDonationBlood;
     private String status;
 }

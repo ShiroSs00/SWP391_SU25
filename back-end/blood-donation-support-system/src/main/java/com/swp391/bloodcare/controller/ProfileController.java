@@ -2,9 +2,11 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.PageResponse;
+import com.swp391.bloodcare.dto.account.AccountRegistrationDTO;
 import com.swp391.bloodcare.dto.account.AccountSearchDTO;
 import com.swp391.bloodcare.dto.profile.ProfileResponseDTO;
 import com.swp391.bloodcare.service.ProfileService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,12 @@ public class ProfileController {
         return response.isSuccess() ?
                 ResponseEntity.ok(response):
                 ResponseEntity.badRequest().body(response);
+    }
+
+    @PutMapping("/profile/update")
+    public ResponseEntity<ApiResponse<String>> updateProfile(@Valid @RequestBody AccountRegistrationDTO dto){
+        ApiResponse<String> response = profileService.updateProfile(dto);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/search/donors/optimized")

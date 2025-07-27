@@ -1,5 +1,6 @@
 package com.swp391.bloodcare.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -13,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder // để dùng Account.builder() khi tạo object
+@ToString(exclude = {"bloodDonationHistory", "donationRegistrations", "profile"})
 public class Account {
 
     @Id
@@ -21,7 +23,7 @@ public class Account {
 
     @Column(name = "username", unique = true, nullable = false)
     @NotBlank(message = "Tên người dùng không được để trống")
-    @Size(min = 4, max = 50, message = "Tên người dùng phải từ 4 đến 50 ký tự")
+    @Size(min = 4, max = 16, message = "Tên người dùng phải từ 4 đến 16 ký tự")
     private String userName;
 
     @Column(name = "email", unique = true, nullable = false)
@@ -58,9 +60,11 @@ public class Account {
     private List<Blog> blogs;
 
     @OneToMany(mappedBy = "account")
+    @JsonIgnore
     private List<DonationRegistration> donationRegistrations;
 
     @OneToOne
+    @JsonIgnore
     private BloodDonationHistory bloodDonationHistory;
 
     @OneToMany(mappedBy = "account")

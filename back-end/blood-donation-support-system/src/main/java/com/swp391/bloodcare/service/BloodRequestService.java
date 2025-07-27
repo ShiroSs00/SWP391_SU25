@@ -357,7 +357,7 @@ public class BloodRequestService {
             bloodBagRepository.save(bag);
 
             sendApprovalNotification(request);
-
+            sendDonorNotification(bag);
             BloodRequest savedRequest = bloodRequestRepository.save(request);
             return convertToResponseDTO(savedRequest);
         } else {
@@ -427,9 +427,10 @@ public class BloodRequestService {
     public BloodRequestResponseDTO updateBloodRequest(String id, @Valid BloodRequestDTO dto) {
         BloodRequest exit = bloodRequestRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy đơn xin máu với ID: " + id));
 
-        if (!exit.getStatus().equals(BloodRequest.statusBloodRequest.PENDING.name())) {
+        if (!exit.getStatus().equals(BloodRequest.statusBloodRequest.PENDING)) {
             throw new IllegalStateException("Chỉ có thể chỉnh sửa đơn khi trạng thái là PENDING.");
         }
+
 
         // Nếu có requestDate mới
         if (dto.getRequestDate() != null) {
@@ -509,6 +510,10 @@ public class BloodRequestService {
      */
     private void sendApprovalNotification(BloodRequest request) {
         notificationService.sendApprovalNotification(request);
+    }
+
+    public void sendDonorNotification(BloodBag bag){
+        notificationService.sendDonorNotification(bag);
     }
 
     /**

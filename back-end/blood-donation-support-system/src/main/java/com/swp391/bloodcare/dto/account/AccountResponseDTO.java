@@ -17,4 +17,5 @@ public class AccountResponseDTO {
     private String role;
     private String profileId;
     private LocalDate creationDate;
+    private boolean isActive;
 }
