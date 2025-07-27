@@ -34,9 +34,9 @@ const EventsPage: React.FC<EventsPageProps> = ({
     );
   }
 
-  const upcomingEvents = events.filter(e => e.status === 'Upcoming');
-  const completedEvents = events.filter(e => e.status === 'Completed');
-  const cancelledEvents = events.filter(e => e.status === 'Cancelled');
+  const upcomingEvents = events.filter(e => e.status === 'UPCOMING');
+  const completedEvents = events.filter(e => e.status === 'COMPLETED');
+  const onGoingEvents = events.filter(e => e.status === 'ONGOING');
 
   return (
     <div className="space-y-6">
@@ -124,14 +124,14 @@ const EventsPage: React.FC<EventsPageProps> = ({
           )}
 
           {/* Cancelled Events */}
-          {cancelledEvents.length > 0 && (
+          {onGoingEvents.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                 <Calendar className="w-5 h-5 mr-2 text-red-500" />
-                Sự kiện đã hủy ({cancelledEvents.length})
+                Sự kiện đã hủy ({onGoingEvents.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {cancelledEvents.map((event) => (
+                {onGoingEvents.map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
               </div>

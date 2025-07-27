@@ -135,7 +135,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
           <div className="w-full bg-blue-200 rounded-full h-2 mb-2">
             <div className="bg-blue-500 h-2 rounded-full w-4/5 transition-all duration-500"></div>
           </div>
-          <p className="text-xs text-blue-600">Sức khỏe tốt - 80%</p>
         </div>
 
         {/* Encouragement Message */}
@@ -153,16 +152,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
         </div>
 
         {/* Quick Stats */}
-        <div className="mx-1 mt-4 grid grid-cols-2 gap-2">
-          <div className="bg-green-50 p-3 rounded-lg border border-green-100">
-            <div className="text-lg font-bold text-green-600">12</div>
-            <div className="text-xs text-green-500">Lần hiến</div>
-          </div>
-          <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
-            <div className="text-lg font-bold text-purple-600">8</div>
-            <div className="text-xs text-purple-500">Thành tích</div>
-          </div>
-        </div>
       </nav>
     </div>
   );

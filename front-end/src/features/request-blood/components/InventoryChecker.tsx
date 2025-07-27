@@ -56,7 +56,7 @@ export const InventoryChecker: React.FC<InventoryCheckerProps> = ({
       bag.bloodCode === requiredBloodCode &&
       bag.componentId === requiredComponentId &&
       bag.status === 'available' &&
-      new Date(bag.expiryDate) > new Date()
+      new Date(bag.expirationDate) > new Date()
     );
 
     // Tìm túi máu sắp hết hạn (trong vòng 7 ngày)
@@ -64,7 +64,7 @@ export const InventoryChecker: React.FC<InventoryCheckerProps> = ({
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
     
     const expiringBags = compatibleBags.filter(bag =>
-      new Date(bag.expiryDate) <= sevenDaysFromNow
+      new Date(bag.expirationDate) <= sevenDaysFromNow
     );
 
     // Tính tổng volume có sẵn
@@ -90,7 +90,7 @@ export const InventoryChecker: React.FC<InventoryCheckerProps> = ({
     bag.bloodCode === requiredBloodCode &&
     bag.componentId === requiredComponentId &&
     bag.status === 'available' &&
-    new Date(bag.expiryDate) > new Date()
+    new Date(bag.expirationDate) > new Date()
   );
 
   const availableVolume = compatibleBags.reduce((total, bag) => total + bag.volume, 0);
@@ -174,10 +174,10 @@ export const InventoryChecker: React.FC<InventoryCheckerProps> = ({
           
           <div className="space-y-2 max-h-40 overflow-y-auto">
             {compatibleBags.slice(0, 5).map((bag) => {
-              const isExpiringSoon = new Date(bag.expiryDate) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+              const isExpiringSoon = new Date(bag.expirationDate) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
               
               return (
-                <div key={bag.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={bag.bagId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     <div>
@@ -185,7 +185,7 @@ export const InventoryChecker: React.FC<InventoryCheckerProps> = ({
                         {bag.bloodCode} - {bag.componentId}
                       </p>
                       <p className="text-xs text-gray-600">
-                        ID: {bag.id.slice(-8)}
+                        ID: {bag.bagId.slice(-8)}
                       </p>
                     </div>
                   </div>
@@ -201,7 +201,7 @@ export const InventoryChecker: React.FC<InventoryCheckerProps> = ({
                       <p className={`text-xs ${
                         isExpiringSoon ? 'text-orange-600' : 'text-gray-600'
                       }`}>
-                        HSD: {new Date(bag.expiryDate).toLocaleDateString('vi-VN')}
+                        HSD: {new Date(bag.expirationDate).toLocaleDateString('vi-VN')}
                       </p>
                     </div>
                   </div>

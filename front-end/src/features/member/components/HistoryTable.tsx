@@ -82,14 +82,30 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
   };
 
   const handleFeedbackClick = (record: DonationRecord) => {
+    console.log('Opening feedback modal for record:', record); // Debug log
     setSelectedRecord(record);
     setFeedbackModalOpen(true);
-    onFeedback(record.registrationId || record.id, record.donorFeedbackId);
   };
 
   const handleFeedbackSubmitSuccess = () => {
+    console.log('Feedback submitted successfully'); // Debug log
     setFeedbackModalOpen(false);
+    setSelectedRecord(null);
     onRefresh?.();
+  };
+
+  const handleFeedbackSubmit = async (data: CreateFeedbackRequest) => {
+    if (!selectedRecord) return;
+    
+    try {
+      console.log('Submitting feedback:', data); // Debug log
+      // Gọi callback onFeedback từ parent component
+      await onFeedback(selectedRecord.registerId || selectedRecord.id, data as any);
+      handleFeedbackSubmitSuccess();
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      throw error; // Re-throw để FeedbackForm xử lý
+    }
   };
 
   const renderFeedbackSection = (feedback: DonorFeedback) => {
@@ -204,7 +220,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(record.status)}`}>
                   {getStatusText(record.status)}
                 </span>
-                <span className="text-sm text-gray-500">#{record.registrationId || record.id}</span>
+                <span className="text-sm text-gray-500">#{ record.id}</span>
                 {type === 'receiving' && record.emergency && (
                   <span className="flex items-center space-x-1 px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
                     <AlertCircle className="w-3 h-3" />
@@ -278,15 +294,16 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
                       Ngày mong muốn nhận máu: {formatDate(record.requestDate)}
                     </div>
                   )}
+
                 </div>
               )}
-              {(record.bloodCode || record.bloodBagId) && (
+              {(record.bloodCode ) && (
                 <div className="flex items-center space-x-2 mb-3">
                   <span className="text-xs text-gray-500">
                     {type === 'receiving' ? 'Mã túi máu:' : 'Mã máu:'}
                   </span>
                   <span className="text-sm font-medium text-gray-700">
-                    {record.bloodCode || record.bloodBagId}
+                    {record.bloodCode}
                   </span>
                 </div>
               )}
@@ -317,14 +334,14 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
             <div className="flex flex-col space-y-2">
               {canEditBloodRequest(record) && (
                 <button
-                  onClick={() => onEditBloodRequest!(record.registrationId || record.id)}
+                  onClick={() => onEditBloodRequest!(record.registerId || record.id)}
                   className="flex items-center space-x-2 px-3 py-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors text-sm border border-orange-200"
                 >
                   <Edit className="w-4 h-4" />
                   <span>Chỉnh sửa</span>
                 </button>
               )}
-              {(record.status === 'DONATION_PROCESSING' || record.status === 'SEPARATED') && (
+              {(record.status === 'PASSED' || record.status === 'DONATION_COMPLETED_USABLE') && (
                 <button
                   onClick={() => handleFeedbackClick(record)}
                   className="flex items-center space-x-2 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm"
@@ -337,28 +354,25 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
           </div>
         </div>
       ))}
-<FeedbackModal
-  isOpen={feedbackModalOpen}
-  onClose={() => setFeedbackModalOpen(false)}
->
-  {selectedRecord && (
-    <FeedbackForm
-      registrationId={selectedRecord.registrationId || selectedRecord.id}
-      initialData={selectedRecord.donorFeedbackId}
-      onSubmitSuccess={handleFeedbackSubmitSuccess}
-      onSubmit={async (data: CreateFeedbackRequest) => {
-        // Gọi API submit feedback
-        try {
-          await onFeedback(selectedRecord.registrationId || selectedRecord.id);
-          handleFeedbackSubmitSuccess();
-        } catch (error) {
-          console.error('Error submitting feedback:', error);
-          throw error; // Re-throw để FeedbackForm xử lý
-        }
-      }}
-    />
-  )}
-</FeedbackModal>
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => {
+          console.log('Closing feedback modal'); // Debug log
+          setFeedbackModalOpen(false);
+          setSelectedRecord(null);
+        }}
+      >
+        {selectedRecord && (
+          <FeedbackForm
+            registrationId={selectedRecord.registerId}
+            initialData={selectedRecord.donorFeedbackId}
+            onSubmitSuccess={handleFeedbackSubmitSuccess}
+            onSubmit={handleFeedbackSubmit}
+          />
+        )}
+      </FeedbackModal>
     </div>
   );
 };

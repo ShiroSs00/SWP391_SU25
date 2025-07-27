@@ -14,7 +14,7 @@ export interface ProfileData {
     state?: string;
   };
   numberOfBloodDonation?: number;
-  bloodType?: string;
+  bloodType: string;
   achievementName?: string;
   restDate?: string; // date
   creationDate?: string; // date

@@ -77,7 +77,7 @@ export const getDonationHistory = async (): Promise<DonationRecord[]> => {
       feedback: item.feedback,
       date: item.donationDate || item.dateCreated || new Date().toISOString(),
       location: item.location || 'Không có thông tin địa điểm',
-      registrationId: item.registrationId || item.id,
+      registerId: item.registerId || item.registrationId,
     }));
   } catch (error) {
     console.error('Error fetching donation history:', error);

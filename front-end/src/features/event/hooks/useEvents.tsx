@@ -115,7 +115,7 @@ export const updateEvent = async (
 ): Promise<AdminEvent> => {
   const res = await api.put<AdminEvent>(`/event/update/${id}`, event);
   return res.data;
-};
+};   
 
 /**
  * API FUNCTION: XÓA SỰ KIỆN
