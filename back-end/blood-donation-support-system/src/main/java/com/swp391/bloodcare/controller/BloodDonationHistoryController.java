@@ -39,12 +39,8 @@ public class BloodDonationHistoryController {
     @GetMapping("/{accountId}")
     public ResponseEntity<ApiResponse<List<BloodDonationHistoryDTO>>> getBloodDonationHistoryByAccountId(@PathVariable String accountId) {
         try{
-            Account account = accountRepository.findById(accountId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
 
-            System.out.println(account);
-
-            List<BloodDonationHistoryDTO> list = bloodDonationHistoryService.getAllHistoryByAccount(account);
+            List<BloodDonationHistoryDTO> list = bloodDonationHistoryService.getAllHistoryByAccount(accountId);
             return ResponseEntity.ok(new ApiResponse<>(true, "Danh sách lịch sử làm đơn hiến máu theo tài khoản", list));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
