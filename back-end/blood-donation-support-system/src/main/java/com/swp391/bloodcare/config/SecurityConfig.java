@@ -53,6 +53,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/event/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/achievements/**").permitAll()
 
+                        //Public GET cần đăng nhập
+                        .requestMatchers(HttpMethod.GET, "/api/healthcheck/get-by-registration/").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/after-donation/get-by-healthcheck/").authenticated()
+
 
                         // Role-based
                         .requestMatchers("/api/role/**").hasRole("ADMIN")
