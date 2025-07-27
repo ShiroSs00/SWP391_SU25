@@ -42,7 +42,6 @@ public class DonationRegistration {
 
     @Column(name = "donation_date", nullable = false)
     @NotNull(message = "Ngày hiến máu không được để trống")
-    @FutureOrPresent(message = "Ngày hiến máu phải là hôm nay hoặc tương lai")
     private LocalDate donationDate;
 
     @ManyToOne(fetch = FetchType.LAZY)

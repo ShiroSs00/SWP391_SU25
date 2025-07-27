@@ -6,6 +6,7 @@ import com.swp391.bloodcare.dto.request.BloodBagCreateRequest;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.*;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +52,10 @@ public class AfterDonationService {
     public AfterDonationBloodDTO create(AfterDonationBloodDTO dto) {
         HealthCheck healthCheck = healthCheckRepo.findByHealthCheckId(dto.getHealthCheckId())
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy HealthCheck"));
+        if(!healthCheck.getDonationRegistration().getStatus().name().equals("PASS")){
+            throw new IllegalStateException("Đơn này chưa xác nhận đã hiến máu");
 
+        }
         if (afterRepo.findByHealthCheck_HealthCheckId(dto.getHealthCheckId()).isPresent()) {
             throw new IllegalStateException("Đã tồn tại dữ liệu sau hiến cho HealthCheck này");
         }
@@ -156,6 +160,7 @@ public class AfterDonationService {
         return "AD-" + timestamp + "-" + rand;
     }
 
+    @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void autoSeparateExpired() {
         List<AfterDonationBlood> afterList = afterRepo.findAll();

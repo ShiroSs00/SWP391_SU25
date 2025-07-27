@@ -45,10 +45,6 @@ public class AfterDonationBloodController {
     }
 
 
-    @Scheduled(cron = "0 * * * * *")
-    public void autoSeparateExpired() {
-        afterDonationService.autoSeparateExpired();
-    }
 
     @PutMapping("/update/{idAfterDonation}")
     public ResponseEntity<ApiResponse<AfterDonationBloodDTO>> update(

@@ -10,5 +10,5 @@ public interface HealthCheckRepository extends JpaRepository<HealthCheck, Long> 
 
     Optional<HealthCheck> findByHealthCheckId(String healthCheckId);
 
-    boolean existsByHealthCheckId(String healthCheckId);
+
 }

@@ -6,6 +6,7 @@ import com.swp391.bloodcare.entity.HealthCheck;
 import com.swp391.bloodcare.entity.Profile;
 import com.swp391.bloodcare.repository.DonationRegistrationRepository;
 import com.swp391.bloodcare.repository.HealthCheckRepository;
+import com.swp391.bloodcare.repository.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class HealthCheckService {
     private final DonationRegistrationRepository donationRegistrationRepository;
     private final BloodDonationHistoryService bloodDonationHistoryService;
     private final ProfileService profileService;
+    private final ProfileRepository profileRepository;
 
 
     @Transactional
@@ -57,8 +59,8 @@ public class HealthCheckService {
 
         donationRegistrationRepository.save(reg);
         healthCheckRepository.save(healthCheck);
-
         bloodDonationHistoryService.updateFromHealthCheck(healthCheck);
+
         return toDTO(healthCheck);
     }
 
@@ -82,12 +84,17 @@ public class HealthCheckService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy bản ghi HealthCheck với ID: " + healthCheckId));
 
         DonationRegistration reg = existing.getDonationRegistration();
+        if (reg == null) {
+            throw new IllegalStateException("HealthCheck không liên kết với đơn đăng ký nào");
+        }
+
         if (reg.getStatus() == DonationRegistration.Status.COMPLETED) {
             throw new IllegalStateException("Không thể cập nhật vì đơn đã hoàn thành");
         }
 
         validateVolumeToTake(dto);
 
+        // Update fields
         existing.setWeight(dto.getWeight());
         existing.setTemperature(dto.getTemperature());
         existing.setBloodPressure(dto.getBloodPressure());
@@ -96,20 +103,26 @@ public class HealthCheckService {
         existing.setNote(dto.getNote());
         existing.setIsFitToDonate(dto.getIsFitToDonate());
 
+        // Xử lý volume và status
         if (Boolean.TRUE.equals(dto.getIsFitToDonate())) {
             reg.setStatus(DonationRegistration.Status.CHECKING);
             reg.setVolumeToTake(DonationRegistration.Volume.fromInt(dto.getVolumeToTake()));
         } else {
             reg.setStatus(DonationRegistration.Status.CANCELLED);
-            reg.setVolumeToTake(DonationRegistration.Volume.fromInt(0));
+            reg.setVolumeToTake(DonationRegistration.Volume.ML_0);
         }
+
+        // Đảm bảo liên kết đúng hai chiều
+        existing.setDonationRegistration(reg);
+        reg.setHealthCheck(existing);
 
         donationRegistrationRepository.save(reg);
         healthCheckRepository.save(existing);
-
         bloodDonationHistoryService.updateFromHealthCheck(existing);
+
         return toDTO(existing);
     }
+
 
 
     @Transactional
@@ -118,30 +131,47 @@ public class HealthCheckService {
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy HealthCheck với ID: " + healthCheckId));
 
         DonationRegistration reg = healthCheck.getDonationRegistration();
+        if (reg == null) {
+            throw new IllegalStateException("HealthCheck không liên kết với đơn đăng ký");
+        }
+
         Profile profile = reg.getAccount().getProfile();
+        if (profile == null) {
+            throw new IllegalStateException("Tài khoản chưa có Profile");
+        }
 
-        String accountId = profile.getAccount().getAccountId();
-        DonationRegistration.Status status = reg.getStatus();
+        String accountId = reg.getAccount().getAccountId();
+        DonationRegistration.Status currentStatus = reg.getStatus();
 
-        switch (status) {
+        switch (currentStatus) {
             case CANCELLED:
             case CHECKING:
                 reg.setStatus(DonationRegistration.Status.COMPLETED);
                 profileService.increaseBloodDonationCount(accountId);
                 profile.setRestDate(LocalDate.now().plusDays(84));
                 break;
+
             case COMPLETED:
                 reg.setStatus(DonationRegistration.Status.CANCELLED);
                 profileService.decreaseBloodDonationCount(accountId);
                 profile.setRestDate(null);
                 break;
+
             default:
-                throw new IllegalStateException("Không thể cập nhật trạng thái cho trạng thái hiện tại: " + status);
+                throw new IllegalStateException("Không thể cập nhật trạng thái cho trạng thái hiện tại: " + currentStatus);
         }
 
+        // Đảm bảo 2 chiều
+        reg.setHealthCheck(healthCheck);
+        healthCheck.setDonationRegistration(reg);
+
         donationRegistrationRepository.save(reg);
+        profileRepository.save(profile);
+        healthCheckRepository.save(healthCheck);
         bloodDonationHistoryService.updateFromHealthCheck(healthCheck);
     }
+
+
 
 
     @Transactional
