@@ -3,8 +3,8 @@ import { Calendar, MapPin, Droplet, MessageSquare, Star, Clock, RefreshCw, Alert
 import type { DonationRecord, DonorFeedback } from '../types/dashboard.type';
 import FeedbackForm from '../../donor-feedback/components/FeedbackForm';
 import FeedbackModal from './FeedbackModal';
-import HealthCheckModal from './HealthCheckModal';
-import AfterDonationModal from './AfterDonationModal';
+// import HealthCheckModal from './HealthCheckModal';
+// import AfterDonationModal from './AfterDonationModal';
 import RatingStars from '../../donor-feedback/components/RatingStars';
 import type { CreateFeedbackRequest } from '../../donor-feedback/types/feedback.types';
 import { getHealthCheckByRegisterId, getAfterDonationByHealthCheckId } from '../services/dashboard.service';
@@ -583,7 +583,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
               )}
 
               {/* View Health Check */}
-              {hasHealthCheckData(record) && (
+              {/* {hasHealthCheckData(record) && (
                 <button
                   onClick={() => handleHealthCheckView(record.registerId!)}
                   className="flex items-center space-x-2 px-3 py-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors text-sm border border-green-200"
@@ -591,10 +591,10 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
                   <Heart className="w-4 h-4" />
                   <span>Sức khỏe</span>
                 </button>
-              )}
+              )} */}
 
               {/* View After Donation */}
-              {hasAfterDonationData(record) && (
+              {/* {hasAfterDonationData(record) && (
                 <button
                   onClick={() => handleAfterDonationView(record.registerId!)}
                   className="flex items-center space-x-2 px-3 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors text-sm border border-purple-200"
@@ -602,7 +602,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
                   <FileText className="w-4 h-4" />
                   <span>Sau hiến</span>
                 </button>
-              )}
+              )} */}
 
               {/* Feedback */}
               {canProvideFeedback(record) && (
@@ -645,7 +645,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
       </FeedbackModal>
 
       {/* Health Check Modal */}
-      <HealthCheckModal
+      {/* <HealthCheckModal
         isOpen={healthCheckModalOpen}
         onClose={() => {
           setHealthCheckModalOpen(false);
@@ -653,10 +653,10 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         }}
         healthCheckData={healthCheckData}
         loading={modalLoading}
-      />
+      /> */}
 
       {/* After Donation Modal */}
-      <AfterDonationModal
+      {/* <AfterDonationModal
         isOpen={afterDonationModalOpen}
         onClose={() => {
           setAfterDonationModalOpen(false);
@@ -664,7 +664,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({
         }}
         afterDonationData={afterDonationData}
         loading={modalLoading}
-      />
+      /> */}
     </div>
   );
 };

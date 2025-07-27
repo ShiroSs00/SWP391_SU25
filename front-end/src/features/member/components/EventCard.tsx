@@ -173,7 +173,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           )}
 
           {/* Countdown for Upcoming Events */}
-          {event.status === 'Upcoming' && daysUntil > 0 && (
+          {event.status === 'UPCOMING' && daysUntil > 0 && (
             <div className="flex items-center space-x-3 text-blue-600 bg-blue-50 p-3 rounded-lg">
               <Clock className="w-5 h-5" />
               <span className="font-medium">
@@ -193,7 +193,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
         {/* Action Button */}
         <div className="mt-6">
-          {event.status === 'Upcoming' ? (
+          {event.status === 'UPCOMING' ? (
             <button className="w-full py-3 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium flex items-center justify-center space-x-2">
               <Info className="w-4 h-4" />
               <span>Xem chi tiết sự kiện</span>
