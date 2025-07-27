@@ -53,8 +53,11 @@ public class BloodDonationHistoryService {
             case CANCELLED:
                 history.setStatus("HEALTH_CHECK_FAILED");
                 break;
+            case PENDING:
+                history.setStatus("HEALTH_CHECK_PENDING");
+                break;
             default:
-                history.setStatus("");
+                history.setStatus("HEALTH_CHECK_CHECKING");
                 break;
         }
 
