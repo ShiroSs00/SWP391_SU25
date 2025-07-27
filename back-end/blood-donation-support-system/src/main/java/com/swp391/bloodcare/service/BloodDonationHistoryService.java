@@ -177,7 +177,7 @@ public class BloodDonationHistoryService {
             case FAILED:
                 return "DONATION_REJECTED";
             case SEPARATED:
-                return "DONATION_PROCESSING";
+                return "BLOOD_HAS_BEEN_SEPARATED";
             default:
                 return "DONATION_UNDER_REVIEW";
         }
