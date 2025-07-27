@@ -26,6 +26,7 @@ const HealthCheckManage: React.FC = () => {
   const [isAfterDonationModalOpen, setIsAfterDonationModalOpen] = useState(false);
   const [selectedHealthCheckForAnalysis, setSelectedHealthCheckForAnalysis] = useState<HealthCheckData | null>(null);
   const [afterDonationData, setAfterDonationData] = useState<AfterDonationData[]>([]);
+  const [donationMap, setDonationMap] = useState<Map<string, DonationRegistrationDTO>>(new Map());
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,6 +35,25 @@ const HealthCheckManage: React.FC = () => {
   // Check if health check already has after donation record
   const hasAfterDonationRecord = (healthCheckId: string) => {
     return afterDonationData.some((ad) => ad.healthCheckId === healthCheckId);
+  };
+
+  // Get donation status for a health check
+  const getDonationStatus = (healthCheckId: string) => {
+    const donation = donationMap.get(healthCheckId);
+    return donation?.status || null;
+  };
+
+  // Check if donation is completed (allow after-donation creation)
+  const isDonationCompleted = (healthCheckId: string) => {
+    const status = getDonationStatus(healthCheckId);
+    return status === 'COMPLETED';
+  };
+
+  // Check if should show "Đã hiến máu" button (only for fit to donate and not completed)
+  const shouldShowDonationCompletedButton = (healthCheck: HealthCheckData) => {
+    if (!healthCheck.isFitToDonate || !healthCheck.healthCheckId) return false;
+    const status = getDonationStatus(healthCheck.healthCheckId);
+    return status !== 'COMPLETED';
   };
 
   const fetchHealthChecks = async () => {
@@ -50,12 +70,15 @@ const HealthCheckManage: React.FC = () => {
       setAfterDonationData(afterDonationList);
 
       // Create a map of healthCheckId to donation for quick lookup
-      const donationMap = new Map<string, DonationRegistrationDTO>();
+      const donationLookupMap = new Map<string, DonationRegistrationDTO>();
       donationData.forEach((donation: DonationRegistrationDTO) => {
         if (donation.healthCheckId) {
-          donationMap.set(donation.healthCheckId, donation);
+          donationLookupMap.set(donation.healthCheckId, donation);
         }
       });
+
+      // Store donation map in state
+      setDonationMap(donationLookupMap);
 
       // Fetch user profiles for each health check
       const profileMap = new Map<string, ProfileData>();
@@ -70,7 +93,7 @@ const HealthCheckManage: React.FC = () => {
             }
 
             // Find donation by healthCheckId
-            const donation = donationMap.get(healthCheck.healthCheckId);
+            const donation = donationLookupMap.get(healthCheck.healthCheckId);
             
             if (donation?.accountId) {
               // Fetch user profile from donation
@@ -514,8 +537,8 @@ const HealthCheckManage: React.FC = () => {
                       <span className="hidden lg:inline">Chỉnh Sửa</span>
                     </button>
                     
-                    {/* Nút Phân tích máu - chỉ hiển thị cho những đạt điều kiện và chưa có after-donation */}
-                    {check.isFitToDonate && !hasAfterDonationRecord(check.healthCheckId!) && (
+                    {/* Nút Phân tích máu - chỉ hiển thị cho những đạt điều kiện, chưa có after-donation và đã completed */}
+                    {check.isFitToDonate && !hasAfterDonationRecord(check.healthCheckId!) && isDonationCompleted(check.healthCheckId!) && (
                       <button
                         onClick={() => handleBloodAnalysis(check)}
                         className="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -527,8 +550,8 @@ const HealthCheckManage: React.FC = () => {
                       </button>
                     )}
                     
-                    {/* Nút Đã hiến máu - chỉ hiển thị cho những đạt điều kiện */}
-                    {check.isFitToDonate && (
+                    {/* Nút Đã hiến máu - chỉ hiển thị cho những đạt điều kiện và chưa completed */}
+                    {shouldShowDonationCompletedButton(check) && (
                       <button
                         onClick={() => handleDonationCompleted(check.healthCheckId!)}
                         disabled={loading}
@@ -539,6 +562,22 @@ const HealthCheckManage: React.FC = () => {
                         </svg>
                         <span className="hidden lg:inline">Đã hiến máu</span>
                       </button>
+                    )}
+                    
+                    {/* Hiển thị trạng thái donation nếu có */}
+                    {check.isFitToDonate && check.healthCheckId && (
+                      <div className="mt-2 text-sm">
+                        {getDonationStatus(check.healthCheckId) && (
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            getDonationStatus(check.healthCheckId) === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                            getDonationStatus(check.healthCheckId) === 'CHECKING' ? 'bg-blue-100 text-blue-800' :
+                            getDonationStatus(check.healthCheckId) === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            Đơn hiến: {getDonationStatus(check.healthCheckId)}
+                          </span>
+                        )}
+                      </div>
                     )}
                     
                     <button

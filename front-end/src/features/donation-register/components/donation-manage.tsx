@@ -30,6 +30,10 @@ const DonationManage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   
+  // Search and Sort states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  
   // Health Check Modal states
   const [isHealthCheckModalOpen, setIsHealthCheckModalOpen] = useState(false);
   const [selectedDonationForHealthCheck, setSelectedDonationForHealthCheck] = useState<DonationRegistrationDTO | null>(null);
@@ -59,7 +63,7 @@ const DonationManage: React.FC = () => {
   // Reset pagination when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, filter.eventId]);
+  }, [statusFilter, filter.eventId, searchQuery, sortOrder]);
 
   // Lấy tất cả đơn hiến máu
   const fetchAll = async () => {
@@ -211,9 +215,38 @@ const DonationManage: React.FC = () => {
     }
   };
 
-  // Lọc donations hiển thị theo statusFilter
+  // Lọc donations hiển thị theo statusFilter, search và sort
   const getDisplayedDonations = () => {
-    return statusFilter ? donations.filter(d => d.status === statusFilter) : donations;
+    let filtered = donations;
+    
+    // Filter by status
+    if (statusFilter) {
+      filtered = filtered.filter(d => d.status === statusFilter);
+    }
+    
+    // Filter by search query (search in user name, registration ID, event name)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(d => {
+        const userName = getUserName(d.accountId).toLowerCase();
+        const registrationId = d.registrationId.toLowerCase();
+        const eventName = getEventName(d.eventId).toLowerCase();
+        
+        return userName.includes(query) || 
+               registrationId.includes(query) || 
+               eventName.includes(query);
+      });
+    }
+    
+    // Sort by date
+    filtered = [...filtered].sort((a, b) => {
+      const dateA = new Date(a.dateCreated).getTime();
+      const dateB = new Date(b.dateCreated).getTime();
+      
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+    
+    return filtered;
   };
 
   const filteredDonations = getDisplayedDonations();
@@ -377,65 +410,146 @@ const DonationManage: React.FC = () => {
       )}
       {/* Filter */}
       <form
-        className="flex flex-col md:flex-row gap-4 mb-6 items-end"
+        className="flex flex-col gap-4 mb-6"
         onSubmit={e => {
           e.preventDefault();
           handleFilter(filter);
         }}
       >
-        <select
-          className="border p-2 rounded w-full md:w-64"
-          value={filter.eventId || ''}
-          onChange={e => setFilter(f => ({ ...f, eventId: e.target.value }))}
-        >
-          <option value="">Tất cả sự kiện</option>
-          {Array.isArray(events) && events.map(event => (
-            <option key={event.eventId} value={event.eventId}>
-              {event.nameOfEvent}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="px-5 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-all duration-200"
-        >
-          Lọc
-        </button>
-        <button
-          type="button"
-          className="px-5 py-2 bg-gray-600 text-white rounded-full font-medium hover:bg-gray-700 transition-all duration-200"
-          onClick={() => {
-            setFilter({ eventId: '' });
-            setStatusFilter(''); // Reset status filter too
-            fetchAll();
-          }}
-        >
-          Làm mới
-        </button>
+        {/* First Row - Event Filter and Action Buttons */}
+        <div className="flex flex-col md:flex-row gap-4 items-end">
+          <select
+            className="border p-2 rounded w-full md:w-64"
+            value={filter.eventId || ''}
+            onChange={e => setFilter(f => ({ ...f, eventId: e.target.value }))}
+          >
+            <option value="">Tất cả sự kiện</option>
+            {Array.isArray(events) && events.map(event => (
+              <option key={event.eventId} value={event.eventId}>
+                {event.nameOfEvent}
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            className="px-5 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-all duration-200"
+          >
+            Lọc
+          </button>
+          <button
+            type="button"
+            className="px-5 py-2 bg-gray-600 text-white rounded-full font-medium hover:bg-gray-700 transition-all duration-200"
+            onClick={() => {
+              setFilter({ eventId: '' });
+              setStatusFilter(''); // Reset status filter too
+              setSearchQuery(''); // Reset search
+              setSortOrder('newest'); // Reset sort
+              fetchAll();
+            }}
+          >
+            Làm mới
+          </button>
+        </div>
+
+        {/* Second Row - Search and Sort */}
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex-1 max-w-md">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo tên, ID đơn, tên sự kiện..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <svg 
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Sắp xếp:</label>
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value as 'newest' | 'oldest')}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+            </select>
+          </div>
+        </div>
       </form>
 
-      {/* Active Status Filter Indicator */}
-      {statusFilter && (
-        <div className="mb-4 flex items-center gap-2">
-          <span className="text-sm text-gray-600">Đang lọc theo:</span>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            statusFilter === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-            statusFilter === 'CHECKING' ? 'bg-blue-100 text-blue-800' :
-            statusFilter === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-            statusFilter === 'CANCELLED' ? 'bg-gray-100 text-gray-800' :
-            'bg-blue-100 text-blue-800'
-          }`}>
-            {statusFilter === 'PENDING' ? 'Pending' :
-             statusFilter === 'CHECKING' ? 'Checking' :
-             statusFilter === 'COMPLETED' ? 'Completed' :
-             statusFilter === 'CANCELLED' ? 'Cancelled' : statusFilter}
-          </span>
+      {/* Active Filters Indicator */}
+      {(statusFilter || searchQuery || sortOrder !== 'newest') && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-600">Bộ lọc hiện tại:</span>
+          
+          {statusFilter && (
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+              statusFilter === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+              statusFilter === 'CHECKING' ? 'bg-blue-100 text-blue-800' :
+              statusFilter === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+              statusFilter === 'CANCELLED' ? 'bg-gray-100 text-gray-800' :
+              'bg-blue-100 text-blue-800'
+            }`}>
+              Trạng thái: {statusFilter === 'PENDING' ? 'Pending' :
+                          statusFilter === 'CHECKING' ? 'Checking' :
+                          statusFilter === 'COMPLETED' ? 'Completed' :
+                          statusFilter === 'CANCELLED' ? 'Cancelled' : statusFilter}
+              <button
+                onClick={() => setStatusFilter('')}
+                className="ml-2 text-current hover:text-gray-600"
+                title="Xóa bộ lọc trạng thái"
+              >
+                ✕
+              </button>
+            </span>
+          )}
+          
+          {searchQuery && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+              Tìm kiếm: "{searchQuery}"
+              <button
+                onClick={() => setSearchQuery('')}
+                className="ml-2 text-current hover:text-gray-600"
+                title="Xóa từ khóa tìm kiếm"
+              >
+                ✕
+              </button>
+            </span>
+          )}
+          
+          {sortOrder !== 'newest' && (
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+              Sắp xếp: {sortOrder === 'oldest' ? 'Cũ nhất' : 'Mới nhất'}
+              <button
+                onClick={() => setSortOrder('newest')}
+                className="ml-2 text-current hover:text-gray-600"
+                title="Đặt lại sắp xếp"
+              >
+                ✕
+              </button>
+            </span>
+          )}
+          
           <button
-            onClick={() => setStatusFilter('')}
-            className="text-gray-400 hover:text-gray-600 ml-1"
-            title="Xóa bộ lọc"
+            onClick={() => {
+              setStatusFilter('');
+              setSearchQuery('');
+              setSortOrder('newest');
+            }}
+            className="inline-flex items-center px-2 py-1 text-xs text-gray-500 hover:text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
+            title="Xóa tất cả bộ lọc"
           >
-            ✕
+            Xóa tất cả
           </button>
         </div>
       )}
@@ -481,7 +595,20 @@ const DonationManage: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                 </svg>
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Danh Sách Đơn Hiến Máu ({filteredDonations.length} đơn - Trang {currentPage}/{totalPages})
+                  Danh Sách Đơn Hiến Máu 
+                  {searchQuery && (
+                    <span className="text-sm font-normal text-gray-600">
+                      {' '}(Tìm kiếm: "{searchQuery}")
+                    </span>
+                  )}
+                  <div className="text-sm font-normal text-gray-600 mt-1">
+                    {filteredDonations.length} đơn - Trang {currentPage}/{totalPages} 
+                    {sortOrder && (
+                      <span className="ml-2">
+                        (Sắp xếp: {sortOrder === 'newest' ? 'Mới nhất' : 'Cũ nhất'})
+                      </span>
+                    )}
+                  </div>
                 </h3>
               </div>
               <div className="flex items-center space-x-2">
@@ -575,8 +702,8 @@ const DonationManage: React.FC = () => {
 
                   {/* Right Section - Actions */}
                   <div className="flex justify-center lg:flex-shrink-0">
-                    {/* Health Check Button */}
-                    {(d.status === 'PENDING' || d.status === 'CANCELLED') && (role === 'ADMIN' || role === 'STAFF') && (
+                    {/* Health Check Button - chỉ hiển thị cho đơn PENDING */}
+                    {d.status === 'PENDING' && (role === 'ADMIN' || role === 'STAFF') && (
                       <button
                         onClick={() => handleOpenHealthCheckModal(d)}
                         className="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"

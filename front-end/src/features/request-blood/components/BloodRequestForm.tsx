@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, AlertTriangle, Droplets, Calendar, User, Phone, CheckCircle, Clock, Package, ArrowRight, Shield, Activity } from 'lucide-react';
+import { Heart, AlertTriangle, Droplets, CheckCircle, Clock, Package, ArrowRight, Shield, Activity } from 'lucide-react';
 import { useRequestBlood } from '../hooks/useRequest-Blood';
 import { useBloodComponents, useBloodCodes } from '../hooks/useBloodData';
-import { useInventoryCheck } from '../hooks/useBloodInventory';
 import { getProfile } from '../services/user.serviecs';
-import type { BloodRequestPayload, VolumeOption, UserProfile, BloodRequest, BloodComponent } from '../types/request-blood.types';
+import type { BloodRequestPayload,  UserProfile,  BloodComponent } from '../types/request-blood.types';
 import { createBloodRequest } from '../services/blood-request.services';
 
 /**
