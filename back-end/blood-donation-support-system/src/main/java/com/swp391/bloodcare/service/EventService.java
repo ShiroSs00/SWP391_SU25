@@ -3,10 +3,8 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.BloodDonationEventDTO;
 import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.entity.BloodDonationEvent;
-import com.swp391.bloodcare.entity.Role;
 import com.swp391.bloodcare.repository.AccountRepository;
 import com.swp391.bloodcare.repository.EventRepository;
-import com.swp391.bloodcare.repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,7 +29,6 @@ public class EventService {
     private final EventRepository eventRepository;
     private final AccountRepository accountRepository;
     private final EmailNotifier emailNotifier;
-    private final RoleRepository roleRepository;
 
     public BloodDonationEventDTO createEvent(BloodDonationEventDTO dto, String accountId) {
         Account account = accountRepository.findByAccountId(accountId)
@@ -120,7 +117,7 @@ public class EventService {
         return updated;
     }
 
-    public void notifyOngoingEventToAllMembers(String eventId) {
+    public void notifyOngoingEventToAccounts(String eventId, List<Account> accounts) {
         BloodDonationEvent event = eventRepository.findByEventId(eventId)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy sự kiện với ID: " + eventId));
 
@@ -128,26 +125,22 @@ public class EventService {
             throw new IllegalStateException("Sự kiện chưa bắt đầu hoặc đã kết thúc");
         }
 
-        // Lấy Role MEMBER
-        Role memberRole = roleRepository.findById("MEMBER")
-                .orElseThrow(() -> new RuntimeException("Role MEMBER không tồn tại"));
-
-        // Lấy danh sách Account có role MEMBER
-        List<Account> members = accountRepository.findByRole(memberRole);
-
-        // Lọc email hợp lệ
-        List<String> emails = members.stream()
+        List<String> validEmails = accounts.stream()
                 .map(Account::getEmail)
                 .filter(this::isValidEmail)
+                .map(email -> accountRepository.findByEmail(email)
+                        .filter(Account::getIsActive)
+                        .map(Account::getEmail)
+                        .orElse(null)
+                )
+                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
 
-        // Tiêu đề và nội dung HTML
         String subject = "🎉 Sự kiện hiến máu đang diễn ra!";
         String htmlContent = generateEventHtmlCard(event);
 
-        // Gửi mail
-        for (String email : emails) {
+        for (String email : validEmails) {
             try {
                 emailNotifier.sendHtml(email, subject, htmlContent);
             } catch (Exception e) {
@@ -155,6 +148,7 @@ public class EventService {
             }
         }
     }
+
 
 
 

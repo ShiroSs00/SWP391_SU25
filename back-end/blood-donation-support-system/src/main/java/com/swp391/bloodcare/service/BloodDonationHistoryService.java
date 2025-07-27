@@ -6,6 +6,7 @@ import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.BloodDonationHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -36,23 +37,31 @@ public class BloodDonationHistoryService {
         return repository.save(history);
     }
 
-    //update from healthCheck
+    @Transactional
     public BloodDonationHistory updateFromHealthCheck(HealthCheck healthCheck) {
         DonationRegistration registration = healthCheck.getDonationRegistration();
 
-        BloodDonationHistory history = repository
-                .findByDonationRegistration(registration)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đăng kí: " + registration.getRegistrationId()));
+        BloodDonationHistory history = repository.findByDonationRegistration(registration)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Không tồn tại lịch sử hiến máu cho đơn đăng ký: " + registration.getRegistrationId()
+                ));
 
-        // Chỉ cập nhật status
-        if (healthCheck.getIsFitToDonate()) {
-            history.setStatus("HEALTH_CHECK_PASSED");
-        } else {
-            history.setStatus("HEALTH_CHECK_FAILED");
+        switch (registration.getStatus()) {
+            case COMPLETED:
+                history.setStatus("HEALTH_CHECK_PASSED");
+                break;
+            case CANCELLED:
+                history.setStatus("HEALTH_CHECK_FAILED");
+                break;
+            default:
+                history.setStatus("");
+                break;
         }
 
         return repository.save(history);
     }
+
+
 
     //update from after
     public BloodDonationHistory updateFromAfterDonation(AfterDonationBlood afterDonationBlood) {

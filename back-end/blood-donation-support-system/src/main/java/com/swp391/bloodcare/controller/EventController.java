@@ -2,6 +2,7 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.BloodDonationEventDTO;
+import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.service.EventService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +39,14 @@ public class EventController {
     }
 
     @PostMapping("/notify")
-    public ResponseEntity<ApiResponse<String>> notifyOngoingEventToAllMembers(@RequestParam String eventId) {
-        eventService.notifyOngoingEventToAllMembers(eventId);
-        return ResponseEntity.ok(new ApiResponse<>(true, "Gửi thiệp sự kiện cho toàn bộ MEMBER thành công", null));
+    public ResponseEntity<ApiResponse<String>> notifyOngoingEventToAccounts(
+            @RequestParam String eventId,
+            @RequestBody List<Account> accounts) {
+        eventService.notifyOngoingEventToAccounts(eventId, accounts);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Gửi thiệp sự kiện cho danh sách account thành công", null));
     }
+
+
 
 
 
