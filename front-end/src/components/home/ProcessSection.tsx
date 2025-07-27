@@ -106,7 +106,7 @@ export function ProcessSection() {
   }
 
   const handleStartDonationClick = () => {
-    navigate("/register")
+    navigate("/donation")
   }
 
   return (

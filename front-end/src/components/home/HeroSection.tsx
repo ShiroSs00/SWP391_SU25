@@ -27,7 +27,7 @@ export function HeroSection() {
 
   // Hàm xử lý khi nhấn nút "Yêu cầu máu khẩn cấp"
   const handleEmergencyClick = () => {
-    navigate("/emergency")
+    navigate("/request-blood")
   }
 
   return (

@@ -80,7 +80,7 @@ export function TestimonialsSection() {
 
                     <p className="text-xl text-[#222222] max-w-3xl mx-auto leading-relaxed">
                         Những chia sẻ chân thực từ người hiến máu, bệnh nhân và đội ngũ y tế
-                        về trải nghiệm với BloodConnect
+                        về trải nghiệm với BloodCare
                     </p>
                 </div>
 
@@ -183,30 +183,6 @@ export function TestimonialsSection() {
 
                 {/* CTA Section */}
                 <div className="text-center animate-slide-up">
-                    <div className="bg-gradient-to-r from-blood-600 to-blood-800 rounded-3xl p-12 text-white relative overflow-hidden">
-                        {/* Background Pattern */}
-                        <div className="absolute inset-0 bg-hero-pattern opacity-10"></div>
-
-                        <div className="relative z-10">
-                            <h3 className="text-3xl font-bold mb-4">
-                                Chia sẻ câu chuyện của bạn
-                            </h3>
-                            <p className="text-xl text-blood-100 mb-8 max-w-2xl mx-auto">
-                                Hãy để câu chuyện hiến máu của bạn truyền cảm hứng cho nhiều người khác
-                                tham gia vào hành trình cứu sống.
-                            </p>
-
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <button className="bg-white text-blood-600 px-8 py-4 rounded-xl font-semibold hover:bg-blood-50 transition-colors duration-200 transform hover:scale-105 flex items-center justify-center">
-                                    <UserIcon className="w-5 h-5 mr-2" />
-                                    Chia sẻ câu chuyện
-                                </button>
-                                <button className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blood-600 transition-all duration-200 transform hover:scale-105">
-                                    Xem thêm đánh giá
-                                </button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
