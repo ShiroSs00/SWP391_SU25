@@ -29,7 +29,6 @@ public class BloodRequest {
 
 
     @Column(name ="request_date") //ngày mong muốn
-    @Future(message = "Ngày yêu cầu phải ở tương lai")
     @NotNull(message = "Ngày yêu cầu không được để trống")
     private LocalDate requestDate;
 

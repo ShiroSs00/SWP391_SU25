@@ -21,4 +21,8 @@ public interface BloodRequestRepository extends JpaRepository<BloodRequest, Stri
     long countByRequestCreationDate(@Param("date") LocalDate date);
 
     List<BloodRequest> findByStatus(BloodRequest.statusBloodRequest status);
+
+    @Query("SELECT COUNT(br) > 0 FROM BloodRequest br WHERE br.account.accountId = :accountId AND br.status = 'PENDING'")
+    boolean existsPendingRequestByAccountId(@Param("accountId") String accountId);
+
 }
