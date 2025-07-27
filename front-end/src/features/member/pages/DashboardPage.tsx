@@ -18,8 +18,9 @@ import {
 } from "lucide-react"
 import LoadingSpinner from "../components/LoadingSpinner"
 import ErrorMessage from "../components/ErrorMessage"
-import type { ProfileData, DonationRecord } from "../types/dashboard.type"
+import type { DonationRecord } from "../types/dashboard.type"
 import { Link } from "react-router-dom"
+import type { ProfileData } from "../types/accounts.types"
 
 interface DashboardPageProps {
   profile: ProfileData | null
@@ -30,6 +31,38 @@ interface DashboardPageProps {
 }
 
 const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory, loading, error, onRetry }) => {
+  // Helper functions để xử lý dữ liệu từ ProfileData
+  const getGenderDisplay = (gender: boolean | undefined): string => {
+    if (gender === undefined) return "Không xác định"
+    return gender ? "Nam" : "Nữ"
+  }
+
+  const getAddressString = (address: ProfileData['address'] | undefined): string => {
+    if (!address) return "Chưa cập nhật"
+    if (typeof address === 'string') return address
+    
+    const parts = [address.street, address.ward, address.city, address.state].filter(Boolean)
+    return parts.length > 0 ? parts.join(', ') : "Chưa cập nhật"
+  }
+
+  const formatDateOfBirth = (dob: string | undefined): string => {
+    if (!dob) return "Chưa cập nhật"
+    try {
+      return new Date(dob).toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    } catch {
+      return dob
+    }
+  }
+
+  const getEmergencyNotificationStatus = (): boolean => {
+    // Vì ProfileData không có emergencyNotifications, ta có thể suy ra từ isActive
+    return profile?.isActive || false
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -58,10 +91,12 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
   const completedDonations = donationHistory.filter((d) => d.status === "Completed" || d.status === "Success").length
   const totalVolume = donationHistory
     .filter((d) => d.status === "Completed" || d.status === "Success")
-    .reduce((sum, d) => sum + d.volumeToTake, 0)
+    .reduce((sum, d) => sum + (d.volumeToTake || 0), 0)
   const recentDonations = donationHistory.slice(0, 5)
 
-  const getBloodTypeColor = (bloodType: string) => {
+  const getBloodTypeColor = (bloodType: string | undefined) => {
+    if (!bloodType) return "bg-gray-100 text-gray-800 border-gray-200"
+    
     const colors = {
       "A+": "bg-red-100 text-red-800 border-red-200",
       "A-": "bg-red-200 text-red-900 border-red-300",
@@ -87,6 +122,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
     }
   }
 
+  const canDonateBlood = profile.restDate ? new Date(profile.restDate) <= new Date() : true
+  const emergencyNotifications = getEmergencyNotificationStatus()
+
   return (
     <div className="space-y-6">
       {/* Profile Header */}
@@ -100,7 +138,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
               <div className="relative">
                 <img
                   src={
-                    profile.avatar ||
+                    profile.avatarUrl ||
                     "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&fit=crop"
                   }
                   alt={profile.name}
@@ -118,23 +156,23 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
                     className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border-2 ${getBloodTypeColor(profile.bloodType)}`}
                   >
                     <Droplet className="w-4 h-4 mr-1" />
-                    {profile.bloodType}
+                    {profile.bloodType || "Chưa xác định"}
                   </div>
                   <div
                     className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${
-                      profile.isAvailableToDonate
+                      canDonateBlood
                         ? "bg-green-100 text-green-800 border-green-200"
                         : "bg-red-100 text-red-800 border-red-200"
                     }`}
                   >
-                    {profile.isAvailableToDonate ? "Sẵn sàng hiến máu" : "Tạm hoãn"}
+                    {canDonateBlood ? "Sẵn sàng hiến máu" : "Tạm hoãn"}
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="text-right">
-              <div className="text-4xl font-bold mb-1">{completedDonations}</div>
+              <div className="text-4xl font-bold mb-1">{profile.numberOfBloodDonation || completedDonations}</div>
               <div className="text-red-100">Lần hiến máu</div>
               <button className="mt-3 flex items-center space-x-2 px-4 py-2 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 transition-colors">
                 <Edit2 className="w-4 h-4" />
@@ -168,7 +206,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
                 <Phone className="w-5 h-5 text-gray-400" />
                 <div>
                   <p className="text-sm text-gray-500">Số điện thoại</p>
-                  <p className="font-medium text-gray-900">{profile.phone}</p>
+                  <p className="font-medium text-gray-900">{profile.phone || "Chưa cập nhật"}</p>
                 </div>
               </div>
 
@@ -176,7 +214,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
                 <Calendar className="w-5 h-5 text-gray-400" />
                 <div>
                   <p className="text-sm text-gray-500">Ngày sinh</p>
-                  <p className="font-medium text-gray-900">{formatDate(profile.birthDate)}</p>
+                  <p className="font-medium text-gray-900">{formatDateOfBirth(profile.dob)}</p>
                 </div>
               </div>
 
@@ -184,41 +222,43 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
                 <User className="w-5 h-5 text-gray-400" />
                 <div>
                   <p className="text-sm text-gray-500">Giới tính</p>
-                  <p className="font-medium text-gray-900">
-                    {profile.gender === "Male" ? "Nam" : profile.gender === "Female" ? "Nữ" : "Khác"}
-                  </p>
+                  <p className="font-medium text-gray-900">{getGenderDisplay(profile.gender)}</p>
                 </div>
               </div>
 
-              {profile.address && (
-                <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-gray-500">Địa chỉ</p>
-                    <p className="font-medium text-gray-900 text-sm">{profile.address}</p>
-                  </div>
+              <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                <div>
+                  <p className="text-sm text-gray-500">Địa chỉ</p>
+                  <p className="font-medium text-gray-900 text-sm">{getAddressString(profile.address)}</p>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Health Status */}
             <div className="mt-6 pt-6 border-t border-gray-200">
               <h4 className="font-semibold text-gray-800 mb-4">Trạng thái sức khỏe</h4>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className={`flex items-center justify-between p-3 rounded-lg border ${
+                  canDonateBlood ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'
+                }`}>
                   <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="font-medium text-green-800">Sẵn sàng hiến máu</span>
+                    <div className={`w-3 h-3 rounded-full ${canDonateBlood ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                    <span className={`font-medium ${canDonateBlood ? 'text-green-800' : 'text-yellow-800'}`}>
+                      {canDonateBlood ? 'Sẵn sàng hiến máu' : 'Đang trong thời gian nghỉ'}
+                    </span>
                   </div>
-                  <span className="text-green-600 text-sm">Tình trạng tốt</span>
+                  <span className={`text-sm ${canDonateBlood ? 'text-green-600' : 'text-yellow-600'}`}>
+                    {canDonateBlood ? 'Tình trạng tốt' : profile.restDate ? `Đến ${formatDate(profile.restDate)}` : ''}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center space-x-2">
                     <Bell className="w-4 h-4 text-blue-500" />
-                    <span className="font-medium text-blue-800">Thông báo khẩn cấp</span>
+                    <span className="font-medium text-blue-800">Trạng thái tài khoản</span>
                   </div>
-                  <span className="text-blue-600 text-sm">{profile.emergencyNotifications ? "Đã bật" : "Đã tắt"}</span>
+                  <span className="text-blue-600 text-sm">{profile.isActive ? "Đang hoạt động" : "Không hoạt động"}</span>
                 </div>
               </div>
             </div>
@@ -228,12 +268,12 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
         {/* Statistics & Recent Activity */}
         <div className="lg:col-span-2 space-y-6">
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-600 text-sm font-medium">Tổng lần hiến</p>
-                  <p className="text-3xl font-bold text-gray-800">{completedDonations}</p>
+                  <p className="text-3xl font-bold text-gray-800">{profile.numberOfBloodDonation || completedDonations}</p>
                   <p className="text-green-600 text-sm mt-1">
                     <TrendingUp className="w-4 h-4 inline mr-1" />
                     Hoạt động tích cực
@@ -245,25 +285,14 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-600 text-sm font-medium">Tổng thể tích</p>
-                  <p className="text-3xl font-bold text-gray-800">{totalVolume.toLocaleString()}</p>
-                  <p className="text-blue-600 text-sm mt-1">ml máu đã hiến</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Droplet className="w-6 h-6 text-blue-500" />
-                </div>
-              </div>
-            </div>
-
             <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-600 text-sm font-medium">Nhóm máu</p>
-                  <p className="text-3xl font-bold text-gray-800">{profile.bloodType}</p>
-                  <p className="text-purple-600 text-sm mt-1">Hiếm có</p>
+                  <p className="text-3xl font-bold text-gray-800">{profile.bloodType || "Chưa xác định"}</p>
+                  <p className="text-purple-600 text-sm mt-1">
+                    {profile.achievementName || "Người hiến tâm huyết"}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                   <Star className="w-6 h-6 text-purple-500" />
@@ -300,7 +329,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="font-medium text-gray-800">Hiến máu {donation.volume}ml</p>
+                        <p className="font-medium text-gray-800">
+                          Hiến máu {donation.volume || donation.volumeToTake || 0}ml
+                        </p>
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             donation.status === "Completed" || donation.status === "Success"
@@ -320,11 +351,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
                       <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
                         <span className="flex items-center">
                           <Calendar className="w-3 h-3 mr-1" />
-                          {formatDate(donation.date)}
+                          {formatDate(donation.date || donation.requestDate || '')}
                         </span>
                         <span className="flex items-center">
                           <MapPin className="w-3 h-3 mr-1" />
-                          {donation.location}
+                          {donation.location || "Chưa xác định"}
                         </span>
                       </div>
                     </div>
@@ -358,7 +389,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ profile, donationHistory,
                 </div>
                 <div className="text-left">
                   <p className="font-medium text-blue-800">Sự kiện đang diễn ra</p>
-                  <p className="text-sm text-blue-600">Cùng nhau đi hiến máu nào </p>
+                  <p className="text-sm text-blue-600">Cùng nhau đi hiến máu nào</p>
                 </div>
               </Link>
             </div>
