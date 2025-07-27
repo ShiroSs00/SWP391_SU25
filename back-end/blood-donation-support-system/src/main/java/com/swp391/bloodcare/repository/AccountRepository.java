@@ -23,10 +23,13 @@ public interface AccountRepository extends JpaRepository<Account, String> {
     @Query(value = """
     SELECT * FROM account a
     JOIN profile p ON a.id = p.account_id
-    JOIN blood b ON p.blood_code = b.blood_code
+    LEFT JOIN blood b ON p.blood_code = b.blood_code
     WHERE a.is_active = true
       AND p.latitude IS NOT NULL AND p.longitude IS NOT NULL
-      AND b.blood_code IN (:compatibleBloodTypes)
+      AND (
+          :compatibleBloodTypes IS NULL 
+          OR b.blood_code IN (:compatibleBloodTypes)
+      )
       AND (
           6371 * acos(
               cos(radians(:lat)) * cos(radians(p.latitude)) *
@@ -37,35 +40,14 @@ public interface AccountRepository extends JpaRepository<Account, String> {
       AND a.id <> :excludedAccountId
       AND (p.rest_date IS NULL OR p.rest_date < CURDATE())
     """, nativeQuery = true)
-    List<Account> findNearbyCompatibleDonorsByLatLng(
+    List<Account> findNearbyCompatibleDonors(
             @Param("lat") Double latitude,
             @Param("lng") Double longitude,
             @Param("radiusKm") Double radiusKm,
             @Param("compatibleBloodTypes") List<String> compatibleBloodTypes,
             @Param("excludedAccountId") String excludedAccountId
     );
-    @Query(value = """
-    SELECT * FROM account a
-    JOIN profile p ON a.id = p.account_id
-    JOIN blood b ON p.blood_code = b.blood_code
-    WHERE a.is_active = true
-      AND p.latitude IS NOT NULL AND p.longitude IS NOT NULL
-      AND (
-          6371 * acos(
-              cos(radians(:lat)) * cos(radians(p.latitude)) *
-              cos(radians(p.longitude) - radians(:lng)) +
-              sin(radians(:lat)) * sin(radians(p.latitude))
-          )
-      ) <= :radiusKm
-      AND a.id <> :excludedAccountId
-      AND (p.rest_date IS NULL OR p.rest_date < CURDATE())
-    """, nativeQuery = true)
-    List<Account> findNearbyCompatibleDonorsWithoutBlood(
-            @Param("lat") Double latitude,
-            @Param("lng") Double longitude,
-            @Param("radiusKm") Double radiusKm,
-            @Param("excludedAccountId") String excludedAccountId
-    );
+
 
 
 
