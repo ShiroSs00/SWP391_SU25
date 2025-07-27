@@ -197,7 +197,7 @@ public class EventService {
         </p>
 
         <div style="text-align:center;margin-top:30px;">
-            <a href="https://localhost:5173/" target="_blank" style="
+            <a href="http://localhost:5173/" target="_blank" style="
                 display:inline-block;
                 background-color:#d62828;
                 color:#fff;
