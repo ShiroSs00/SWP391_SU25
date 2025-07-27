@@ -22,7 +22,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ accountI
   const [filterType, setFilterType] = useState<string>("all")
   const [filterStatus, setFilterStatus] = useState<string>("all")
 
-  const { notifications, loading, error, unreadCount, markAsRead, deleteNotification, markAllAsRead, refetch } =
+  const { notifications, loading, error, unreadCount, refetch } =
     useNotifications(accountId)
 
   // Filter notifications based on search and filters
@@ -41,10 +41,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ accountI
     return matchesSearch && matchesType && matchesStatus
   })
 
-  const handleBulkDelete = async () => {
-    const readNotifications = notifications.filter((n) => n.isRead)
-    await Promise.all(readNotifications.map((n) => deleteNotification(n.notificationId)))
-  }
 
   if (loading) {
     return (
@@ -78,18 +74,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ accountI
             )}
           </h2>
 
-          <div className="flex items-center space-x-2">
-            {unreadCount > 0 && (
-              <Button onClick={markAllAsRead} variant="outline" size="sm">
-                <CheckCheck className="w-4 h-4 mr-2" />
-                Đánh dấu tất cả
-              </Button>
-            )}
-            <Button onClick={handleBulkDelete} variant="outline" size="sm">
-              <Trash2 className="w-4 h-4 mr-2" />
-              Xóa đã đọc
-            </Button>
-          </div>
         </div>
 
         {/* Search and Filters */}
@@ -151,8 +135,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ accountI
               <NotificationItem
                 key={notification.notificationId}
                 notification={notification}
-                onMarkAsRead={markAsRead}
-                onDelete={deleteNotification}
                 onClick={onNotificationClick}
               />
             ))}

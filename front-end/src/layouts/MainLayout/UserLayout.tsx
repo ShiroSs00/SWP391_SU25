@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { Outlet } from "react-router-dom"
-import Sidebar from "../../features/accounts/components/Sidebar"
+import Sidebar from "../../features/member/components/Sidebar"
 import { SimpleHeader } from "../SimpleHeader"
 import LoadingSpinner from "../../features/accounts/components/LoadingSpinner"
 import ErrorMessage from "../../features/accounts/components/ErrorMessage"
@@ -46,7 +46,7 @@ export const SimpleUserLayout: React.FC = () => {
       {/* Simple Header with Notification Bell */}
       <SimpleHeader
         userName={profile?.name || "Người dùng"}
-        accountId={profile?.id || profile?.accountId || ""}
+        accountId={profile?.accountId || ""}
         onLogout={handleLogout}
       />
 

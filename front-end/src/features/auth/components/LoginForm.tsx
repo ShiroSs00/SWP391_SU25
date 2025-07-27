@@ -47,17 +47,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, showToast, isLoading }) 
       const role = response.role.toUpperCase();
       console.log('Login response role:', role);
       if (role === 'ADMIN') {
-        console.log('Navigate to /admin - before');
         setTimeout(() => navigate('/admin'), 0);
-        console.log('Navigate to /admin - after');
       } else if (role === 'STAFF') {
-        console.log('Navigate to /staff');
         setTimeout(() => navigate('/staff'), 0);
       } else if (role === 'MEMBER') {
-        console.log('Navigate to /member/dashboard');
-        setTimeout(() => navigate('/member/dashboard'), 0);
+        setTimeout(() => navigate('/'), 0);
       } else {
-        console.log('Navigate to / (unknown role)');
         setTimeout(() => navigate('/'), 0);
       }
       setFormData({ username: '', password: '' });

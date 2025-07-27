@@ -1,5 +1,6 @@
 import api from "../../../services/axios/api"
 import type { ProfileData, DonationRecord, Achievement, PointsData, EventParticipation, FeedbackItem } from '../types/dashboard.type';
+import { type ApiResponse, type AdminEvent } from "../../event/types/admin.types";
 
 // ==================== PROFILE SERVICES ====================
 export const getProfile = async (): Promise<ProfileData> => {
@@ -45,13 +46,12 @@ export const updateProfile = async (profileData: Partial<ProfileData>): Promise<
 };
 
 // ==================== DONATION HISTORY SERVICES ====================
+// Thay thế phần getDonationHistory trong service của bạn
 export const getDonationHistory = async (): Promise<DonationRecord[]> => {
   try {
-    // Get current user's account ID from profile
     const profile = await getProfile();
     const response = await getBloodDonationHistoryByAccountId(profile.accountId);
-    
-    // Handle different response structures
+
     let donations = [];
     if (response.data && Array.isArray(response.data.data)) {
       donations = response.data.data;
@@ -59,33 +59,56 @@ export const getDonationHistory = async (): Promise<DonationRecord[]> => {
       donations = response.data;
     } else if (Array.isArray(response)) {
       donations = response;
-    } else {
-      console.log('Unexpected response structure:', response);
-      return [];
     }
 
-    return donations.map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      event: item.event || '',
-      bloodCode: item.bloodCode || '',
-      volumeToTake: parseInt(item.volumeToTake) || 450,
-      healCheck: item.healCheck || '',
-      afterDonationBlood: item.afterDonationBlood || '',
-      status: item.status,
-      type: 'donation' as const,
-      feedback: item.feedback,
-      date: item.donationDate || item.dateCreated || new Date().toISOString(),
-      location: item.location || 'Không có thông tin địa điểm',
-      registrationId: item.registrationId || item.id,
-    }));
+    console.log('=== FULL DONATIONS ARRAY ===');
+    console.log('Donations array:', donations);
+    console.log('Array length:', donations.length);
+
+    return donations.map((item: any, index: number) => {
+      console.log(`\n=== PROCESSING DONATION ${index} ===`);
+      console.log('Raw item from API:', JSON.stringify(item, null, 2));
+      console.log('Available keys:', Object.keys(item));
+
+      // Test all possible ID fields
+      const possibleIds = [
+        item.registerId,
+        item.registrationId,
+        item.donationId,
+        item.bloodDonationId,
+        item.donationRegisterId,
+        item.eventRegistrationId,
+        item.participationId,
+        item.id
+      ];
+
+      console.log('Possible ID values:', possibleIds);
+
+      // Find the first non-empty ID
+      const actualRegisterId = possibleIds.find(id => id && id !== '' && id !== null && id !== undefined) || '';
+
+      console.log('Selected registerId:', actualRegisterId);
+
+      const mapped = {
+        id: item.id,
+        name: item.name,
+        event: item.event || '',
+        bloodCode: item.bloodCode || '',
+        healthCheck: item.healthCheck || '',
+        afterDonationBlood: item.afterDonationBlood || '',
+        status: item.status,
+        type: 'donation' as const,
+        registerId: actualRegisterId, // Use the found ID
+      };
+
+      console.log('Final mapped object:', mapped);
+      return mapped;
+    });
   } catch (error) {
     console.error('Error fetching donation history:', error);
     return [];
   }
 };
-
-
 
 export const getBloodDonationHistoryByAccountId = async (accountId: string) => {
   try {
@@ -97,12 +120,22 @@ export const getBloodDonationHistoryByAccountId = async (accountId: string) => {
   }
 };
 
+export const getBloodDonationHistory = async () => {
+  try {
+    const response = await api.get(`/blood-donation-history/`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching blood donation history:", error);
+    throw error; // Hoặc return null/[] tùy use-case
+  }
+};
+
 // ==================== BLOOD REQUEST HISTORY (RECEIVING) ====================
 // ==================== BLOOD REQUEST UPDATE SERVICE ====================
 export const updateBloodRequest = async (
-  bloodRequestId: string, 
+  bloodRequestId: string,
   updateData: {
-    requestDate?:string,
+    requestDate?: string,
     bloodType?: string;
     component?: string;
     volume?: number;
@@ -122,7 +155,7 @@ export const getReceivingHistory = async (): Promise<DonationRecord[]> => {
   try {
     const response = await api.get('/blood-requests/my-requests');
     let receivingRecords = [];
-    
+
     if (response.data && Array.isArray(response.data.data)) {
       receivingRecords = response.data.data;
     } else if (response.data && Array.isArray(response.data)) {
@@ -139,7 +172,7 @@ export const getReceivingHistory = async (): Promise<DonationRecord[]> => {
       name: item.requesterName,
       event: '', // Blood requests không có event
       bloodCode: item.bloodBagId || '', // Sử dụng bloodBagId làm bloodCode
-      volumeToTake: parseInt(item.volume) || 450,
+      volumeToTake: parseInt(item.volume),
       healCheck: '', // Blood request không có health check
       afterDonationBlood: '', // Blood request không có after donation
       status: mapBloodRequestStatus(item.status),
@@ -148,7 +181,7 @@ export const getReceivingHistory = async (): Promise<DonationRecord[]> => {
       date: item.requestDate || item.requestCreationDate || new Date().toISOString(),
       location: item.requesterAddress || 'Không có thông tin địa điểm',
       registrationId: item.idBloodRequest,
-      
+
       // Thêm các field đặc thù của blood request
       requesterName: item.requesterName,
       requesterPhone: item.requesterPhone,
@@ -176,32 +209,90 @@ export const getReceivingHistory = async (): Promise<DonationRecord[]> => {
 const mapBloodRequestStatus = (apiStatus: string): string => {
   const statusMap: { [key: string]: string } = {
     'PENDING': 'Pending',
-    'APPROVED': 'Approved', 
+    'APPROVED': 'Approved',
     'REJECTED': 'Rejected',
     'CANCELLED': 'Cancelled'
   };
-  
+
   return statusMap[apiStatus] || apiStatus;
 };
 
 
-export const getHealthCheckByRegistrationId = async (registrationId: string) => {
+// dashboard.service.ts - Fixed version
+export const getHealthCheckByRegisterId = async (registrationId: string, token: string) => {
+  console.log('=== API SERVICE DEBUG ===');
+  console.log('Input registerId:', registrationId);
+  console.log('Input type:', typeof registrationId);
+  console.log('Token present:', !!token);
+
+  // Validate registerId
+  if (!registrationId || registrationId === 'undefined' || registrationId === 'null') {
+    console.error('Invalid registerId provided to API service');
+    return {
+      success: false,
+      data: null,
+      message: 'Invalid registerId provided'
+    };
+  }
+
   try {
-    const response = await api.get(`/healthcheck/get-by-registration/${registrationId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching healthcheck:", error);
-    throw error;
+    const fullUrl = `/healthcheck/get-by-registration/${registrationId}`;
+    console.log('Full API URL:', fullUrl);
+    console.log('Making API call...');
+
+    const response = await api.get(fullUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+
+    console.log('API Response received:', response);
+    console.log('Response status:', response.status);
+    console.log('Response data:', response.data);
+
+    return {
+      success: true,
+      data: response.data.data || response.data,
+      message: response.data.message || 'Success'
+    };
+  } catch (error: any) {
+    console.error("=== API ERROR DEBUG ===");
+    console.error("Error object:", error);
+    console.error("Error response:", error.response);
+    console.error("Error status:", error.response?.status);
+    console.error("Error data:", error.response?.data);
+
+    return {
+      success: false,
+      data: null,
+      message: error.response?.data?.message || error.message || 'Failed to fetch health check data'
+    };
   }
 };
 
-export const getAfterDonationByHealthCheckId = async (healthCheckId: string) => {
+export const getAfterDonationByHealthCheckId = async (healthCheckId: string, token: string) => {
   try {
-    const response = await api.get(`/after-donation/get-by-healthcheck/${healthCheckId}`);
-    return response.data;
-  } catch (error) {
+    const response = await api.get(`/after-donation/get-by-healthcheck/${healthCheckId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+
+    // Return consistent structure
+    return {
+      success: true,
+      data: response.data.data || response.data,
+      message: response.data.message || 'Success'
+    };
+  } catch (error: any) {
     console.error("Error fetching after-donation:", error);
-    throw error;
+
+    // Return consistent error structure
+    return {
+      success: false,
+      data: null,
+      message: error.response?.data?.message || error.message || 'Failed to fetch after donation data'
+    };
   }
 };
 
@@ -417,16 +508,49 @@ export const getEmergencyRequests = async () => {
   }
 };
 
-// Search events
-export const searchEvents = async (query: string) => {
+export const getAllEvents = async (): Promise<AdminEvent[]> => {
   try {
-    const response = await api.get('/event/search', {
-      params: { query }
-    });
-    return response.data.data || response.data || [];
-  } catch (error) {
-    console.error('Error searching events:', error);
-    return [];
+    const res = await api.get<ApiResponse<AdminEvent[]>>('/event/getall');
+
+    // VALIDATION: Kiểm tra response structure
+    if (!res.data) {
+      throw new Error('Không nhận được dữ liệu từ server');
+    }
+
+    if (!Array.isArray(res.data.data)) {
+      throw new Error('Dữ liệu trả về không đúng định dạng');
+    }
+
+    return res.data.data;
+  } catch (error: any) {
+    // ENHANCED ERROR HANDLING
+    if (error.code === 'ERR_NETWORK') {
+      const networkError = new Error('Lỗi kết nối mạng');
+      (networkError as any).code = 'NETWORK_ERROR';
+      throw networkError;
+    }
+
+    if (error.response) {
+      // Server responded with error status
+      const status = error.response.status;
+      const message = error.response.data?.message || error.response.data?.error;
+
+      switch (status) {
+        case 404:
+          throw new Error('Không tìm thấy dữ liệu sự kiện');
+        case 500:
+          throw new Error('Lỗi server nội bộ');
+        case 403:
+          throw new Error('Không có quyền truy cập');
+        case 401:
+          throw new Error('Phiên đăng nhập đã hết hạn');
+        default:
+          throw new Error(message || `Lỗi server (${status})`);
+      }
+    }
+
+    // Re-throw the original error if it's already processed
+    throw error;
   }
 };
 

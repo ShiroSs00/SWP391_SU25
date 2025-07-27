@@ -68,8 +68,8 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
     try {
       setCheckingEligibility(true);
       setRetryCount(0);
-      
-      
+
+
       // Check if feedback already exists
       const existing = await getFeedbackByRegistrationId(registrationId);
       if (existing) {
@@ -81,7 +81,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
       // Check if user can submit feedback
       const eligibility = await canSubmitFeedback(registrationId);
       setCanSubmit(eligibility.canSubmit);
-      
+
       if (!eligibility.canSubmit && eligibility.reason) {
         toast.error(eligibility.reason);
       }
@@ -102,7 +102,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
       checkFeedbackEligibility();
     }
 
-    if(initialData){
+    if (initialData) {
       setFormData({
         process: initialData.process || 0,
         bloodTest: initialData.bloodTest || 0,
@@ -118,7 +118,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
       ...prev,
       [category]: rating,
     }));
-    
+
     // Clear error for this field when user makes a selection
     setErrors(prev => prev.filter(error => error.field !== category));
   };
@@ -129,7 +129,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
       ...prev,
       description: sanitizedValue,
     }));
-    
+
     // Clear error when user starts typing
     if (sanitizedValue.trim().length > 0) {
       setErrors(prev => prev.filter(error => error.field !== 'description'));
@@ -138,12 +138,14 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    console.log('Form data:', formData); // Debug log
+
     const validationErrors = validateFeedbackForm(formData);
     setErrors(validationErrors);
 
     if (validationErrors.length > 0) {
-      // Scroll to first error
+      console.log('Validation errors:', validationErrors); // Debug log
       const firstErrorField = document.querySelector(`[data-field="${validationErrors[0].field}"]`);
       firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       toast.error('Vui lòng kiểm tra và điền đầy đủ thông tin');
@@ -151,10 +153,13 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
     }
 
     try {
+      console.log('Submitting feedback...'); // Debug log
       await onSubmit(formData);
       setSubmitted(true);
       toast.success('Gửi feedback thành công!');
+      onSubmitSuccess?.(); // Gọi callback nếu có
     } catch (error: any) {
+      console.error('Submit error:', error); // Debug log
       const errorMessage = formatErrorMessage(error);
       toast.error(errorMessage);
     }
@@ -179,47 +184,67 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
   };
 
   const averageRating = (
-    formData.process + 
-    formData.bloodTest + 
-    formData.postDonationCare + 
+    formData.process +
+    formData.bloodTest +
+    formData.postDonationCare +
     formData.comfortable
   ) / 4;
 
-  const isFormValid = () => {
-    return formData.process > 0 && 
-           formData.bloodTest > 0 && 
-           formData.postDonationCare > 0 && 
-           formData.comfortable > 0 && 
-           formData.description.trim().length >= 10;
+  const validateFeedbackForm = (formData: CreateFeedbackRequest): ValidationError[] => {
+    const errors: ValidationError[] = [];
+
+    // Kiểm tra các rating phải > 0
+    if (!formData.process || formData.process <= 0) {
+      errors.push({ field: 'process', message: 'Vui lòng đánh giá quy trình hiến máu' });
+    }
+
+    if (!formData.bloodTest || formData.bloodTest <= 0) {
+      errors.push({ field: 'bloodTest', message: 'Vui lòng đánh giá xét nghiệm máu' });
+    }
+
+    if (!formData.postDonationCare || formData.postDonationCare <= 0) {
+      errors.push({ field: 'postDonationCare', message: 'Vui lòng đánh giá chăm sóc sau hiến máu' });
+    }
+
+    if (!formData.comfortable || formData.comfortable <= 0) {
+      errors.push({ field: 'comfortable', message: 'Vui lòng đánh giá sự thoải mái' });
+    }
+
+    // Kiểm tra description
+    if (!formData.description || formData.description.trim().length < 10) {
+      errors.push({ field: 'description', message: 'Mô tả phải có ít nhất 10 ký tự' });
+    }
+
+    return errors;
   };
 
   // Loading state while checking eligibility
-  if (checkingEligibility) {
-    return (
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-8 text-center">
-            <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-              <Clock className="w-8 h-8 text-blue-600 animate-spin" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
-              Đang kiểm tra thông tin...
-            </h2>
-            <p className="text-gray-600">
-              Vui lòng chờ trong giây lát
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (checkingEligibility) {
+  //   return (
+  //     <div className="max-w-2xl mx-auto">
+  //       <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+  //         <div className="p-8 text-center">
+  //           <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+  //             <Clock className="w-8 h-8 text-blue-600 animate-spin" />
+  //           </div>
+  //           <h2 className="text-xl font-bold text-gray-900 mb-2">
+  //             Đang kiểm tra thông tin...
+  //           </h2>
+  //           <p className="text-gray-600">
+  //             Vui lòng chờ trong giây lát
+  //           </p>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Show existing feedback
   if (existingFeedback) {
     const existingAverage = (
-      existingFeedback.process + 
-      existingFeedback.bloodTest + 
-      existingFeedback.postDonationCare + 
+      existingFeedback.process +
+      existingFeedback.bloodTest +
+      existingFeedback.postDonationCare +
       existingFeedback.comfortable
     ) / 4;
 
@@ -239,7 +264,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
               </p>
             </div>
           </div>
-          
+
           <div className="p-8">
             <div className="bg-blue-50 rounded-xl p-6 mb-6">
               <div className="flex items-center gap-3 mb-3">
@@ -265,16 +290,16 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
                   </p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {ratingCategories.map((category) => (
                   <div key={category.key} className="flex items-center justify-between">
                     <span className="text-sm text-yellow-800">{category.label}:</span>
                     <div className="flex items-center gap-2">
-                      <RatingStars 
-                        rating={existingFeedback[category.key]} 
-                        readonly 
-                        size="sm" 
+                      <RatingStars
+                        rating={existingFeedback[category.key]}
+                        readonly
+                        size="sm"
                       />
                       <span className="text-sm font-medium text-yellow-900">
                         {existingFeedback[category.key] || 0}/5
@@ -320,7 +345,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
               </p>
             </div>
           </div>
-          
+
           <div className="p-8">
             <div className="bg-orange-50 rounded-xl p-6 mb-6">
               <div className="flex items-center gap-3">
@@ -371,7 +396,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
               </p>
             </div>
           </div>
-          
+
           <div className="p-8">
             <div className="bg-blue-50 rounded-xl p-6 mb-6">
               <div className="flex items-center gap-3 mb-3">
@@ -448,8 +473,8 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
 
           <div className="space-y-8">
             {ratingCategories.map((category, index) => (
-              <div 
-                key={category.key} 
+              <div
+                key={category.key}
                 className="border-b border-gray-100 pb-8 last:border-b-0"
                 data-field={category.key}
               >
@@ -466,7 +491,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="bg-gray-50 rounded-xl p-6">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-center gap-4">
@@ -485,7 +510,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
                       </div>
                     </div>
                   </div>
-                  
+
                   {getFieldError(category.key) && (
                     <div className="mt-4 flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg">
                       <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -506,7 +531,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
                 Chia sẻ thêm về trải nghiệm của bạn, những điều bạn thích hoặc muốn cải thiện
               </p>
             </div>
-            
+
             <div className="bg-gray-50 rounded-xl p-6">
               <textarea
                 id="description"
@@ -540,12 +565,12 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
           <div className="mt-10 flex justify-center">
             <button
               type="submit"
-              disabled={loading || !isFormValid()}
+              disabled={loading || !validateFeedbackForm(formData)}
               className={`
                 group flex items-center gap-3 px-10 py-4 font-bold text-lg rounded-xl 
                 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50
                 transition-all duration-200 shadow-lg transform
-                ${loading || !isFormValid()
+                ${loading || !validateFeedbackForm(formData)
                   ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                   : 'bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700 hover:shadow-xl hover:scale-105 active:scale-95'
                 }
@@ -555,6 +580,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({
                 <>
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Đang gửi feedback...
+                  
                 </>
               ) : (
                 <>

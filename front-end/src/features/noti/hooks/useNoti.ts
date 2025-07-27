@@ -29,46 +29,6 @@ export const useNotifications = (accountId: string) => {
     }
   }, [accountId])
 
-  const markAsRead = useCallback(async (notificationId: string) => {
-    try {
-      const success = await NotificationService.markAsRead(notificationId)
-      if (success) {
-        setNotifications((prev) => prev.map((n) => (n.notificationId === notificationId ? { ...n, isRead: true } : n)))
-        setUnreadCount((prev) => Math.max(0, prev - 1))
-      }
-    } catch (error) {
-      console.error("Error marking notification as read:", error)
-    }
-  }, [])
-
-  const deleteNotification = useCallback(async (notificationId: string) => {
-    try {
-      const success = await NotificationService.deleteNotification(notificationId)
-      if (success) {
-        setNotifications((prev) => {
-          const filtered = prev.filter((n) => n.notificationId !== notificationId)
-          const unread = filtered.filter((n) => !n.isRead).length
-          setUnreadCount(unread)
-          return filtered
-        })
-      }
-    } catch (error) {
-      console.error("Error deleting notification:", error)
-    }
-  }, [])
-
-  const markAllAsRead = useCallback(async () => {
-    const unreadNotifications = notifications.filter((n) => !n.isRead)
-
-    try {
-      await Promise.all(unreadNotifications.map((n) => NotificationService.markAsRead(n.notificationId)))
-
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
-      setUnreadCount(0)
-    } catch (error) {
-      console.error("Error marking all notifications as read:", error)
-    }
-  }, [notifications])
 
   useEffect(() => {
     fetchNotifications()
@@ -86,8 +46,5 @@ export const useNotifications = (accountId: string) => {
     error,
     unreadCount,
     refetch: fetchNotifications,
-    markAsRead,
-    deleteNotification,
-    markAllAsRead,
   }
 }
