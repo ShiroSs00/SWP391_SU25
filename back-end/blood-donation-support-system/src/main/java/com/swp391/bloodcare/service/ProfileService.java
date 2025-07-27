@@ -2,9 +2,7 @@ package com.swp391.bloodcare.service;
 
 import com.swp391.bloodcare.dto.AddressDTO;
 import com.swp391.bloodcare.dto.ApiResponse;
-import com.swp391.bloodcare.dto.PageResponse;
 import com.swp391.bloodcare.dto.account.AccountRegistrationDTO;
-import com.swp391.bloodcare.dto.account.AccountSearchDTO;
 import com.swp391.bloodcare.dto.profile.ProfileResponseDTO;
 import com.swp391.bloodcare.entity.*;
 import com.swp391.bloodcare.repository.AccountRepository;
@@ -13,13 +11,10 @@ import com.swp391.bloodcare.repository.ProfileRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -139,58 +134,6 @@ public class ProfileService {
         }
     }
 
-    //tìm kiếm accounts cho staff
-    public ApiResponse<PageResponse<AccountSearchDTO>> searchAccounts(String keyword, boolean isActive, String roleName, Pageable pageable){
-        try{
-
-            // Sử dụng cùng 1 keyword cho cả username và email
-            Page<Account> accountPage = accountRepository.findAccountsByMultipleCriteriaWithPaging(
-                    keyword, keyword, roleName, isActive, pageable);
-            List<AccountSearchDTO> accountDTOs = accountPage.getContent()
-                    .stream()
-                    .map(this::mapToAccountSearchDTO)
-                    .collect(Collectors.toList());
-            PageResponse<AccountSearchDTO> pageResponse = new PageResponse<>(
-                    accountDTOs,
-                    accountPage.getNumber(),
-                    accountPage.getSize(),
-                    accountPage.getTotalElements(),
-                    accountPage.getTotalPages(),
-                    accountPage.isFirst(),
-                    accountPage.isLast()
-            );
-
-            return new ApiResponse<>(true, "Tìm kiếm thành công", pageResponse);
-
-        }catch(Exception e){
-            return new ApiResponse<>(false,"Có lỗi xảy ra: " + e.getMessage(), null);
-        }
-    }
-
-    private AccountSearchDTO mapToAccountSearchDTO(Account account){
-        AccountSearchDTO dto = new AccountSearchDTO();
-        dto.setAccountId(account.getAccountId());
-        dto.setUsername(account.getUserName());
-        dto.setEmail(account.getEmail());
-        dto.setActive(account.getIsActive());
-        dto.setCreationDate(account.getCreationDate());
-
-        //role
-        if(account.getProfile() != null){
-            dto.setRoleName(account.getRole().getRole());
-        }
-
-
-        //profile
-        if(account.getProfile() != null){
-            Profile profle = account.getProfile();
-            dto.setName(profle.getName());
-            dto.setPhone(profle.getPhone());
-            dto.setNumberOfBloodDonation(profle.getNumberOfBloodDonation());
-        }
-        return dto;
-
-    }
 
     public void decreaseBloodDonationCount(String accountId){
         Profile profile = profileRepository.findByAccountId(accountId)

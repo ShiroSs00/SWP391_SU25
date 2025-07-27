@@ -3,6 +3,7 @@ package com.swp391.bloodcare.service;
 import com.swp391.bloodcare.dto.account.AccountRegistrationDTO;
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.account.AccountResponseDTO;
+import com.swp391.bloodcare.dto.account.AccountSearchDTO;
 import com.swp391.bloodcare.dto.account.ChangePassDTO;
 import com.swp391.bloodcare.dto.log.GoogleAccountCompletionDTO;
 import com.swp391.bloodcare.entity.Account;
@@ -48,6 +49,8 @@ public class AccountService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private static final double HOSPITAL_LAT = 10.8585043;
+    private static final double HOSPITAL_LNG = 106.7560814;
 
 
 
@@ -416,5 +419,63 @@ public class AccountService {
             return new ApiResponse<>(false, "Có lỗi khi tạo tài khoản: " + e.getMessage(), null);
         }
     }
+
+
+    private AccountSearchDTO mapToAccountSearchDTO(Account account){
+        AccountSearchDTO dto = new AccountSearchDTO();
+        dto.setAccountId(account.getAccountId());
+        dto.setUsername(account.getUserName());
+        dto.setEmail(account.getEmail());
+        dto.setActive(account.getIsActive());
+        dto.setCreationDate(account.getCreationDate());
+
+        //role
+        if(account.getRole() != null){
+            dto.setRoleName(account.getRole().getRole());
+        }
+
+
+        //profile
+        if(account.getProfile() != null){
+            Profile profile = account.getProfile();
+            dto.setName(profile.getName());
+            dto.setPhone(profile.getPhone());
+            if(profile.getBloodCode() != null){
+                dto.setBloodCode(profile.getBloodCode().getBloodCode());
+            }
+            dto.setNumberOfBloodDonation(profile.getNumberOfBloodDonation());
+        }
+        return dto;
+
+    }
+
+    public List<Account> findNearbyDonors(
+            double radiusKm,
+            List<String> bloodTypes,
+            String excludedAccountId
+    ) {
+        if (bloodTypes == null || bloodTypes.isEmpty()) {
+            bloodTypes = null;
+            return accountRepository.findNearbyCompatibleDonorsWithoutBlood(
+                    HOSPITAL_LAT, HOSPITAL_LNG, radiusKm, excludedAccountId
+            );
+        }
+
+        return accountRepository.findNearbyCompatibleDonorsByLatLng(
+                HOSPITAL_LAT,
+                HOSPITAL_LNG,
+                radiusKm,
+                bloodTypes,
+                excludedAccountId
+        );
+    }
+
+    public List<AccountSearchDTO> mapToAccountSearchDTOList(List<Account> accounts) {
+        return accounts.stream()
+                .map(this::mapToAccountSearchDTO)
+                .collect(Collectors.toList());
+    }
+
+
 
 }

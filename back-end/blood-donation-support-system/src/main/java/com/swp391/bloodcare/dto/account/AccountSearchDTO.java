@@ -15,9 +15,9 @@ public class AccountSearchDTO {
     private String email;
     private String name;
     private String phone;
+    private String bloodCode;
     private boolean isActive;
     private LocalDate creationDate;
     private String roleName;
-    private String hospitalName;
     private long numberOfBloodDonation;
 }

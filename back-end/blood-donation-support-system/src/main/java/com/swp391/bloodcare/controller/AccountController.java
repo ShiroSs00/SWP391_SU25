@@ -2,8 +2,10 @@ package com.swp391.bloodcare.controller;
 
 import com.swp391.bloodcare.dto.ApiResponse;
 import com.swp391.bloodcare.dto.account.AccountResponseDTO;
+import com.swp391.bloodcare.dto.account.AccountSearchDTO;
 import com.swp391.bloodcare.dto.account.AccountStatisticsDTO;
 import com.swp391.bloodcare.dto.account.ChangePassDTO;
+import com.swp391.bloodcare.entity.Account;
 import com.swp391.bloodcare.service.AccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,5 +110,22 @@ public class AccountController {
         ApiResponse<String> response = accountService.changePassword(dto);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @GetMapping("/near-hospital")
+    public ResponseEntity<List<AccountSearchDTO>> getNearbyDonorsAsDTO(
+            @RequestParam double radiusKm,
+            @RequestParam(required = false) List<String> bloodTypes,
+            @RequestParam String currentAccountId
+    ) {
+        List<Account> accounts = accountService.findNearbyDonors(
+                radiusKm, bloodTypes, currentAccountId
+        );
+
+        List<AccountSearchDTO> result = accountService.mapToAccountSearchDTOList(accounts);
+
+        return ResponseEntity.ok(result);
+    }
+
+
 
 }
