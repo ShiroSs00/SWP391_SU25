@@ -266,6 +266,10 @@ public class BloodRequestService {
             throw new IllegalStateException("Bạn đã hủy đơn nhiều lần và bị tạm khóa quyền đăng ký nhận máu");
         }
 
+        if (bloodRequestRepository.existsPendingRequestByAccountId(accountId)) {
+            throw new IllegalStateException("Bạn đã có một đơn xin máu đang chờ xử lý. Vui lòng huỷ hoặc đợi xử lý trước khi tạo đơn mới.");
+        }
+
         validateBloodRequest(bloodRequestDTO, account);
 
         Blood blood = bloodRepository.findByBloodCode(bloodRequestDTO.getBloodCode())
